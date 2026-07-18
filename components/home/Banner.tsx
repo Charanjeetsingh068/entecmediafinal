@@ -41,7 +41,7 @@ export default function Banner() {
           <div className="collab-wrapper">
             <p className="collab-label">Ready to start something great?</p>
             <div className="collab-box">
-              <span className="collab-text">Let's Collaborate</span>
+              <span className="collab-text">Let&apos;s Collaborate</span>
               <div className="collab-dots">
                 <span className="dot"></span>
                 <span className="dot"></span>

@@ -1,7 +1,12 @@
+import Image from "next/image";
+import clsx from "clsx";
+import team1Img from "@/public/images/team1.png";
+import entecLogoImg from "@/public/images/ENTEC.png";
+
 export default function Banner() {
   return (
     <section className="banner-section">
-      <div className="figma-container banner-content">
+      <div className={clsx('figma-container', 'banner-content')}>
         {/* Left Column */}
         <div className="banner-left">
           <h1 className="banner-title">
@@ -18,10 +23,10 @@ export default function Banner() {
           {/* Top Rating Card */}
           <div className="rating-container">
             <div className="avatar-group">
-              <img src="/images/team1.png" alt="Team member" className="avatar-bubble" />
-              <img src="/images/team1.png" alt="Team member" className="avatar-bubble" />
-              <img src="/images/team1.png" alt="Team member" className="avatar-bubble" />
-              <img src="/images/team1.png" alt="Team member" className="avatar-bubble" />
+              <Image src={team1Img} alt="Team member" className="avatar-bubble" />
+              <Image src={team1Img} alt="Team member" className="avatar-bubble" />
+              <Image src={team1Img} alt="Team member" className="avatar-bubble" />
+              <Image src={team1Img} alt="Team member" className="avatar-bubble" />
             </div>
             <div className="rating-info">
               <div className="rating-stars-row">
@@ -49,8 +54,9 @@ export default function Banner() {
 
       {/* Giant Bottom Text Logo ENTEC */}
       <div className="giant-logo-text-wrapper">
-        <img src="/images/ENTEC.png" alt="ENTEC" className="giant-logo-img" />
+        <Image src={entecLogoImg} alt="ENTEC" className="giant-logo-img" />
       </div>
     </section>
   );
 }
+

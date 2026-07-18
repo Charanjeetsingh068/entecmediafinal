@@ -248,7 +248,7 @@ export default function Header() {
   return (
     <>
       <header className={headerClass}>
-        <div className="figma-container header-wrapper">
+        <div className="container header-wrapper">
           <Link href="/" className="logo-link">
             <Image src={logoImg} alt="Entec Media Logo" className="logo-img" priority />
           </Link>
@@ -260,7 +260,7 @@ export default function Header() {
 
       {/* Full Page Navigation Overlay */}
       <div className={`nav-overlay ${menuOpen ? "nav-overlay-open" : ""}`}>
-        <div className="figma-container nav-overlay-wrapper">
+        <div className="container nav-overlay-wrapper">
           {/* Top Row Header */}
           <div className="nav-overlay-header">
             <Link href="/" className="logo-link" onClick={() => setMenuOpen(false)}>

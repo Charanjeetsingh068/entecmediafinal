@@ -1,7 +1,7 @@
 export default function Services() {
   return (
     <section id="services" className="services-section">
-      <div className="figma-container">
+      <div className="container">
         <div className="section-header">
           <span className="section-label">Capabilities</span>
           <h2 className="section-title">Designed for Growth & Impact</h2>

@@ -1,7 +1,7 @@
 export default function Stats() {
   return (
     <section className="stats-section">
-      <div className="figma-container">
+      <div className="container">
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-number text-gradient">120+</div>

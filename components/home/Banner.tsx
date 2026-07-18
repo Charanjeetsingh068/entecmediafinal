@@ -22,7 +22,7 @@ export default function Banner() {
       </video>
       <div className="banner-video-overlay"></div>
 
-      <div className="figma-container banner-content">
+      <div className="container banner-content">
         {/* Left Column */}
         <div className="banner-left">
           <h1 className="banner-title">

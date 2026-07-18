@@ -1,7 +1,7 @@
 export default function CTA() {
   return (
     <section id="contact" className="cta-banner-section">
-      <div className="figma-container">
+      <div className="container">
         <div className="cta-banner-container">
           <h2 className="cta-banner-title">
             Ready to Accelerate Your <br />

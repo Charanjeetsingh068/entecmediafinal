@@ -1,5 +1,6 @@
 import Banner from "@/components/home/Banner";
 import Mission from "@/components/home/Mission";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
 import Services from "@/components/home/Services";
 import CTA from "@/components/home/CTA";
 
@@ -9,6 +10,7 @@ export default function Home() {
       <Banner />
       <div className="main-content-wrapper">
         <Mission />
+        <WhyChooseUs />
         <Services />
         <CTA />
       </div>

@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Entec Media | Creative Agency",
   description: "Next-generation digital experiences and custom media services that scale.",
+  icons: {
+    icon: "/images/fav.jpg",
+    shortcut: "/images/fav.jpg",
+    apple: "/images/fav.jpg",
+  },
 };
 
 export default function RootLayout({

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import logoImg from "@/public/images/logo.svg";
+import whiteLogoImg from "@/public/images/whitelogo.svg";
+import darkLogoImg from "@/public/images/darklogo.svg";
 import hamburgerMenuImg from "@/public/images/hamburger-menu.svg";
 
 // ==========================================
@@ -250,7 +251,12 @@ export default function Header() {
       <header className={headerClass}>
         <div className="container header-wrapper">
           <Link href="/" className="logo-link">
-            <Image src={logoImg} alt="Entec Media Logo" className="logo-img" priority />
+            <Image 
+              src={scrollState.sticky && scrollState.theme === "light" ? darkLogoImg : whiteLogoImg} 
+              alt="Entec Media Logo" 
+              className="logo-img" 
+              priority 
+            />
           </Link>
           <button className="menu-toggle" onClick={() => setMenuOpen(true)} aria-label="Open Menu">
             <Image src={hamburgerMenuImg} alt="Menu" className="menu-icon-img" />
@@ -264,7 +270,7 @@ export default function Header() {
           {/* Top Row Header */}
           <div className="nav-overlay-header">
             <Link href="/" className="logo-link" onClick={() => setMenuOpen(false)}>
-              <Image src={logoImg} alt="Entec Media Logo" className="logo-img-dark" />
+              <Image src={darkLogoImg} alt="Entec Media Logo" className="logo-img-dark" />
             </Link>
             <button className="nav-close-btn" onClick={() => setMenuOpen(false)} aria-label="Close Menu">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -368,7 +374,7 @@ export default function Header() {
 
           {/* Giant Watermark Background Text */}
           <div className="nav-watermark-text">
-            {NAVIGATION_CONFIG.brand.name.toUpperCase()}
+            ENTECMEDIA
           </div>
         </div>
       </div>

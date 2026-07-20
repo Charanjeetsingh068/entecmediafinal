@@ -4,7 +4,7 @@ import WhyChooseUs from "@/components/home/WhyChooseUs";
 import Services from "@/components/home/Services";
 import Projects from "@/components/home/Projects";
 import Testimonials from "@/components/home/Testimonials";
-import CTA from "@/components/home/CTA";
+import BlogSection from "@/components/home/BlogSection";
 
 export default function Home() {
   return (
@@ -16,7 +16,7 @@ export default function Home() {
         <Services />
         <Projects />
         <Testimonials />
-        <CTA />
+        <BlogSection />
       </div>
     </div>
   );

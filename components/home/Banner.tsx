@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import team1Img from "@/public/images/team1.png";
 import team2Img from "@/public/images/team2.png";
@@ -6,8 +9,26 @@ import team4Img from "@/public/images/team4.png";
 import entecLogoImg from "@/public/images/ENTEC.png";
 
 export default function Banner() {
+  const [isSticky, setIsSticky] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Switch to static absolute positioning when banner is completely scrolled out of view (100vh)
+      if (window.scrollY >= window.innerHeight) {
+        setIsSticky(false);
+      } else {
+        setIsSticky(true);
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <section className="banner-section">
+    <section className={`banner-section ${isSticky ? "sticky-fixed" : "static-absolute"}`}>
       {/* Background Video */}
       <video
         autoPlay
@@ -78,4 +99,3 @@ export default function Banner() {
     </section>
   );
 }
-

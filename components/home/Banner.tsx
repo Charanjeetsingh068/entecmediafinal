@@ -10,26 +10,37 @@ import entecLogoImg from "@/public/images/ENTEC.png";
 
 export default function Banner() {
   const [isSticky, setIsSticky] = useState(true);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
+  // Scroll handler for position toggling
   useEffect(() => {
     const handleScroll = () => {
-      // Switch to static absolute positioning when banner is completely scrolled out of view (100vh)
       if (window.scrollY >= window.innerHeight) {
         setIsSticky(false);
       } else {
         setIsSticky(true);
       }
     };
-    
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-    
+
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Performance Optimization: Defer the loading of the 352MB background video
+  // This allows the critical page assets (CSS, JS, Fonts) and LCP images to load instantly
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVideoSrc("/images/homebanner.mp4");
+    }, 1500); // 1.5 seconds delay after mount
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <section className={`banner-section ${isSticky ? "sticky-fixed" : "static-absolute"}`}>
-      {/* Background Video */}
+      {/* Background Video - Preload set to none & dynamic source to prevent initial blocking */}
       <video
         autoPlay
         loop
@@ -37,8 +48,9 @@ export default function Banner() {
         playsInline
         poster="/images/bannerbac.png"
         className="banner-video-bg"
+        preload="none"
       >
-        <source src="/images/homebanner.mp4" type="video/mp4" />
+        {videoSrc && <source src={videoSrc} type="video/mp4" />}
         Your browser does not support the video tag.
       </video>
       <div className="banner-video-overlay"></div>
@@ -60,10 +72,10 @@ export default function Banner() {
           {/* Top Rating Card */}
           <div className="rating-container">
             <div className="avatar-group">
-              <Image src={team1Img} alt="Team member 1" className="avatar-bubble" />
-              <Image src={team2Img} alt="Team member 2" className="avatar-bubble" />
-              <Image src={team3Img} alt="Team member 3" className="avatar-bubble" />
-              <Image src={team4Img} alt="Team member 4" className="avatar-bubble" />
+              <Image src={team1Img} alt="Team member 1" className="avatar-bubble" priority />
+              <Image src={team2Img} alt="Team member 2" className="avatar-bubble" priority />
+              <Image src={team3Img} alt="Team member 3" className="avatar-bubble" priority />
+              <Image src={team4Img} alt="Team member 4" className="avatar-bubble" priority />
             </div>
             <div className="rating-info">
               <div className="rating-stars-row">
@@ -92,9 +104,9 @@ export default function Banner() {
         </div>
       </div>
 
-      {/* Giant Bottom Text Logo ENTEC */}
+      {/* Giant Bottom Text Logo ENTEC - Priority load for LCP optimization */}
       <div className="giant-logo-text-wrapper">
-        <Image src={entecLogoImg} alt="ENTEC" className="giant-logo-img" />
+        <Image src={entecLogoImg} alt="ENTEC" className="giant-logo-img" priority />
       </div>
     </section>
   );

@@ -230,17 +230,17 @@ export default function Services() {
 
 
                 {/* Bottom Collaboration Box */}
-              <div className="collab-wrapper services-cta" style={{ opacity: 1, animation: "none" }}>
-                <p className="collab-label">Ready to start something great?</p>
-                <Link href="/contact" className="collab-box" style={{ textDecoration: "none" }}>
-                  <span className="collab-text">Let&apos;s Collaborate</span>
-                  <div className="collab-dots">
-                    <span className="dot"></span>
-                    <span className="dot"></span>
-                    <span className="dot"></span>
-                  </div>
-                </Link>
-              </div>
+                <div className="collab-wrapper services-cta" style={{ opacity: 1, animation: "none" }}>
+                  <p className="collab-label">Ready to start something great?</p>
+                  <Link href="/contact" className="collab-box" style={{ textDecoration: "none" }}>
+                    <span className="collab-text">Let&apos;s Collaborate</span>
+                    <div className="collab-dots">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </div>
+                  </Link>
+                </div>
 
 
               </div>

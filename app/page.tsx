@@ -3,6 +3,7 @@ import Mission from "@/components/home/Mission";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
 import Services from "@/components/home/Services";
 import Projects from "@/components/home/Projects";
+import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
         <WhyChooseUs />
         <Services />
         <Projects />
+        <Testimonials />
         <CTA />
       </div>
     </div>

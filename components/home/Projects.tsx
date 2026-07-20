@@ -191,7 +191,7 @@ export default function Projects() {
             <div className="projects-sticky-content projects-sticky-pin-trigger" ref={leftRef}>
               <div className="projects-sticky-inner projects-sticky-gsap">
                 {/* Section Label at the top of left sticky column */}
-                <span className="projects-section-label" style={{ marginBottom: "24px", display: "inline-block" }}>
+                <span className="projects-section-label">
                   ✦ Featured Projects
                 </span>
 
@@ -228,13 +228,11 @@ export default function Projects() {
 
           {/* Right Column: Scrolling Header & MacBook Cards */}
           <div className="projects-col-right">
-            <div ref={listRef} style={{ width: "100%", willChange: "transform" }}>
+            <div ref={listRef} className="projects-scroll-container">
               {/* Header Row is now part of the scrolling container! */}
-              <div className="projects-header-right-col" style={{ marginBottom: "60px", paddingTop: "40px" }}>
+              <div className="projects-header-right-col">
                 <div className="projects-header-title-box">
-                  <h2 className="projects-section-title">
-                    Created <span className="highlight-dark">with clear purpose</span>
-                  </h2>
+                  <h2 className="why-main-title"><span className="text-gradient">Created</span> for<br />with clear purpose</h2>
                 </div>
                 <div className="projects-header-desc-box">
                   <p className="projects-section-desc">
@@ -298,6 +296,50 @@ export default function Projects() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Other Projects Row */}
+              <div className="other-projects-row">
+                <div className="other-projects-left">
+                  <span className="other-projects-label">+ OTHER PROJECTS</span>
+                </div>
+                <div className="other-projects-right">
+                  <div className="other-projects-middle">
+                    <span className="other-projects-sublabel">Keep exploring our work</span>
+                    <div className="other-projects-links">
+                      <div className="other-project-link-item">
+                        <img src="/images/icons/xzero.png" alt="XZERO" className="other-project-icon" />
+                        <span>+XZERO®</span>
+                      </div>
+                      <div className="other-project-separator"></div>
+                      <div className="other-project-link-item">
+                        <img src="/images/icons/neozen.png" alt="Neozen" className="other-project-icon" />
+                        <span>Neozen</span>
+                      </div>
+                      <div className="other-project-separator"></div>
+                      <div className="other-project-link-item">
+                        <img src="/images/icons/predict.png" alt="Predict" className="other-project-icon" />
+                        <span>Predict</span>
+                      </div>
+                      <div className="other-project-separator"></div>
+                      <div className="other-project-link-item">
+                        <img src="/images/icons/quomi.png" alt="Quomi" className="other-project-icon" />
+                        <span>Quomi</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="other-projects-cta">
+                    <span className="other-projects-sublabel-right">See what we&apos;ve built</span>
+                    <Link href="/projects" className="all-case-studies-button">
+                      <span>All case studies</span>
+                      <div className="cta-dots-vertical">
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -14,11 +14,19 @@ export default function Banner() {
 
   // Scroll handler for position toggling
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      if (window.scrollY >= window.innerHeight) {
-        setIsSticky(false);
-      } else {
-        setIsSticky(true);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY >= window.innerHeight) {
+            setIsSticky(false);
+          } else {
+            setIsSticky(true);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

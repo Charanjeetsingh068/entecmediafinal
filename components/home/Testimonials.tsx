@@ -138,6 +138,25 @@ export default function Testimonials() {
 
   // Text scroll highlight calculation
   useEffect(() => {
+    let isAnimating = false;
+
+    const updateAnimation = () => {
+      const diffText = targetProgress.current - currentProgress.current;
+      if (Math.abs(diffText) > 0.0005) {
+        currentProgress.current += diffText * 0.08;
+        setScrollProgress(currentProgress.current);
+        animationFrameId.current = requestAnimationFrame(updateAnimation);
+      } else {
+        currentProgress.current = targetProgress.current;
+        setScrollProgress(targetProgress.current);
+        isAnimating = false;
+        if (animationFrameId.current) {
+          cancelAnimationFrame(animationFrameId.current);
+          animationFrameId.current = null;
+        }
+      }
+    };
+
     const handleScroll = () => {
       if (textRef.current) {
         const rect = textRef.current.getBoundingClientRect();
@@ -151,21 +170,16 @@ export default function Testimonials() {
 
         const rawProgress = current / total;
         targetProgress.current = Math.max(0, Math.min(1, rawProgress));
-      }
-    };
 
-    const updateAnimation = () => {
-      const diffText = targetProgress.current - currentProgress.current;
-      if (Math.abs(diffText) > 0.0005) {
-        currentProgress.current += diffText * 0.08;
-        setScrollProgress(currentProgress.current);
+        if (!isAnimating) {
+          isAnimating = true;
+          animationFrameId.current = requestAnimationFrame(updateAnimation);
+        }
       }
-      animationFrameId.current = requestAnimationFrame(updateAnimation);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-    animationFrameId.current = requestAnimationFrame(updateAnimation);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);

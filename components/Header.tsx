@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import whiteLogoImg from "@/public/images/whitelogo.svg";
 import darkLogoImg from "@/public/images/darklogo.svg";
 import hamburgerMenuImg from "@/public/images/hamburger-menu.svg";
@@ -25,7 +26,7 @@ const NAVIGATION_CONFIG = {
   },
   menuLinks: [
     { label: "Home", href: "/" },
-    { label: "About", href: "#about" },
+    { label: "About", href: "/about" },
     { label: "Services", href: "#services" },
     { label: "Articles", href: "#articles" },
     { label: "Careers", href: "#careers" },
@@ -46,7 +47,7 @@ const NAVIGATION_CONFIG = {
   ],
   footer: {
     copyright: "© 2026 Entec Media. All rights reserved.",
-    credit: "Made with Passion",
+    credit: "",
   }
 };
 
@@ -144,6 +145,7 @@ function getLegalIcon(label: string) {
 }
 
 export default function Header() {
+  const pathname = usePathname();
   const [scrollState, setScrollState] = useState({
     visible: true,
     sticky: false,
@@ -163,10 +165,17 @@ export default function Header() {
     };
   }, [menuOpen]);
 
+  // Close menu overlay instantly on route navigation
+  useEffect(() => {
+    setMenuOpen(false);
+    document.body.classList.remove("menu-open-scroll-lock");
+  }, [pathname]);
+
   useEffect(() => {
     let lastScrollY = window.scrollY;
+    let ticking = false;
 
-    const handleScroll = () => {
+    const updateHeaderTheme = () => {
       const currentScrollY = window.scrollY;
 
       // 1. Determine stickiness (sticky after scrolling past 90px)
@@ -182,9 +191,9 @@ export default function Header() {
         }
       }
 
-      // 3. Determine theme of the section under the header
-      let theme = "dark";
-      const sections = document.querySelectorAll("section, header, footer, div[class*='section']");
+      // 3. Determine theme of the section under the header (Inner pages default to light, homepage defaults to dark)
+      let theme = pathname === "/" ? "dark" : "light";
+      const sections = document.querySelectorAll("section, header, footer, main, div[class*='section'], div[class*='wrapper']");
       
       for (let i = 0; i < sections.length; i++) {
         const section = sections[i] as HTMLElement;
@@ -211,11 +220,14 @@ export default function Header() {
             const g = parseInt(rgb[1]);
             const b = parseInt(rgb[2]);
             const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-            
-            // Check if transparency is not 0
             const a = rgb[3] !== undefined ? parseFloat(rgb[3]) : 1;
-            if (a > 0.1 && brightness > 200) {
-              theme = "light";
+            
+            if (a > 0.1) {
+              if (brightness > 160) {
+                theme = "light";
+              } else {
+                theme = "dark";
+              }
               break;
             }
           }
@@ -229,21 +241,32 @@ export default function Header() {
       });
 
       lastScrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeaderTheme);
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Run once initially
+    updateHeaderTheme(); // Run once initially
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [pathname]);
+
+  const isLightMode = scrollState.theme === "light";
 
   const headerClass = [
     "header-main",
+    pathname === "/" ? "header-home" : "",
     scrollState.sticky ? "header-sticky" : "header-normal",
     !scrollState.visible && scrollState.sticky ? "header-hidden" : "",
-    scrollState.sticky && scrollState.theme === "light" ? "header-theme-light" : "header-theme-dark",
+    isLightMode ? "header-theme-light" : "header-theme-dark",
   ].filter(Boolean).join(" ");
 
   return (
@@ -252,7 +275,7 @@ export default function Header() {
         <div className="container header-wrapper">
           <Link href="/" className="logo-link">
             <Image 
-              src={scrollState.sticky && scrollState.theme === "light" ? darkLogoImg : whiteLogoImg} 
+              src={isLightMode ? darkLogoImg : whiteLogoImg} 
               alt="Entec Media Logo" 
               className="logo-img" 
               priority 
@@ -318,8 +341,13 @@ export default function Header() {
               <ul className="nav-main-links">
                 {NAVIGATION_CONFIG.menuLinks.map((link, idx) => (
                   <li key={idx}>
-                    <Link href={link.href} onClick={() => setMenuOpen(false)}>
-                      {link.label}
+                    <Link
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="nav-main-link-item"
+                    >
+                      <span className="nav-link-text">{link.label}</span>
+                      <span className="nav-link-arrow">→</span>
                     </Link>
                   </li>
                 ))}
@@ -366,15 +394,15 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Footer Row */}
-          <div className="nav-overlay-footer">
-            <p className="nav-copyright">{NAVIGATION_CONFIG.footer.copyright}</p>
-            <p className="nav-credit">{NAVIGATION_CONFIG.footer.credit}</p>
-          </div>
 
-          {/* Giant Watermark Background Text */}
-          <div className="nav-watermark-text">
-            ENTECMEDIA
+
+          {/* Giant Watermark Background Image */}
+          <div className="nav-watermark-wrapper">
+            <img 
+              src="/images/ENTEC.png" 
+              alt="ENTEC Watermark" 
+              className="nav-watermark-img" 
+            />
           </div>
         </div>
       </div>

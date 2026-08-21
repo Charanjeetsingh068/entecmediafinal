@@ -262,7 +262,7 @@ export default function Services() {
                 {servicesData.map((service) => (
                   <Link
                     key={service.id}
-                    href={`/services/${service.slug}`}
+                    href="/services"
                     className="service-row-link service-row-item-gsap"
                     aria-label={`Explore our ${service.title} service`}
                   >

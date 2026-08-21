@@ -3,11 +3,13 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getPublishedBlogs, BlogPost as ApiBlogPost } from "@/lib/blogApi";
 import { blogsData } from "@/data/blogs";
 
 export default function BlogSection() {
   const [isRevealed, setIsRevealed] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [blogs, setBlogs] = useState<any[]>([]);
 
   // Intersection Observer for scroll entrance
   useEffect(() => {
@@ -31,8 +33,34 @@ export default function BlogSection() {
     };
   }, []);
 
-  // Display only the latest 4 blogs in this section
-  const latestBlogs = blogsData.slice(0, 4);
+  // Fetch dynamic published blogs from PHP API with fallback
+  useEffect(() => {
+    async function loadDynamicBlogs() {
+      try {
+        const { blogs: apiBlogs } = await getPublishedBlogs({ limit: 4 });
+        if (apiBlogs && apiBlogs.length > 0) {
+          const mapped = apiBlogs.map((b: ApiBlogPost, idx: number) => ({
+            id: b.id,
+            title: b.title,
+            category: b.category_name || "Insight",
+            date: b.formatted_date || b.published_at || "Recent",
+            description: b.excerpt,
+            image: b.featured_image_url || "/images/aboutimg.png",
+            imgHeight: idx % 2 === 0 ? "350px" : "220px",
+            slug: b.slug,
+          }));
+          setBlogs(mapped);
+          return;
+        }
+      } catch (e) {
+        // Silently catch and fallback to blogsData
+      }
+      setBlogs(blogsData.slice(0, 4));
+    }
+    loadDynamicBlogs();
+  }, []);
+
+  const displayBlogs = blogs.length > 0 ? blogs : blogsData.slice(0, 4);
 
   return (
     <section id="blog" ref={sectionRef} className="blog-section">
@@ -65,7 +93,7 @@ export default function BlogSection() {
 
         {/* 4-Column Bento Blog Grid */}
         <div className={`blog-grid reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.15s" }}>
-          {latestBlogs.map((post) => (
+          {displayBlogs.map((post) => (
             <Link
               key={post.id}
               href={`/blog/${post.slug}`}
@@ -74,7 +102,7 @@ export default function BlogSection() {
               {/* Image Box with Dynamic Height */}
               <div
                 className="blog-card-image-box"
-                style={{ height: post.imgHeight }}
+                style={{ height: post.imgHeight || "250px" }}
               >
                 <Image
                   src={post.image}

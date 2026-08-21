@@ -85,16 +85,16 @@ export default function Footer() {
               <Link href="/about" className="kudos-nav-item">
                 About
               </Link>
-              <Link href="#projects" className="kudos-nav-item">
-                Projects
+              <Link href="/services" className="kudos-nav-item">
+                Services
               </Link>
-              <Link href="#articles" className="kudos-nav-item">
-                Articles
+              <Link href="/portfolio" className="kudos-nav-item">
+                Portfolio
               </Link>
-              <Link href="#careers" className="kudos-nav-item">
-                Careers
+              <Link href="/blog" className="kudos-nav-item">
+                Blog
               </Link>
-              <Link href="#contact" className="kudos-nav-item">
+              <Link href="/contact" className="kudos-nav-item">
                 Contact
               </Link>
             </nav>

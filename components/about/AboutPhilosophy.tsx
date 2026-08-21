@@ -2,63 +2,62 @@
 
 export default function AboutPhilosophy() {
   return (
-    <section className="about-values-section" style={{ padding: "100px 0", background: "#f8f9fa" }}>
+    <section className="about-values-section">
       <div className="container">
-        <div className="why-top-layout" style={{ marginBottom: "60px" }}>
+        <div className="why-top-layout about-section-top-mb60">
           <div className="why-col-left">
-            <span className="why-section-label">+ OUR PHILOSOPHY</span>
+            <span className="why-section-label">+ VISION & MISSION</span>
           </div>
           <div className="why-col-center">
             <h2 className="why-main-title">
-              Principles <span className="highlight-focus">that guide</span><br />
-              every project
+              Driven by vision, <span className="highlight-focus">guided by values</span>
             </h2>
           </div>
           <div className="why-col-right">
             <p className="why-header-desc">
-              We choose clarity over clutter and depth over decoration, because strong brands deserve meaningful foundations.
+              At Entec Media, our core purpose and principles shape every decision, strategy, and line of code we craft for our global partners.
             </p>
           </div>
         </div>
 
-        <div className="why-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "30px" }}>
-          <div className="testimonial-card" style={{ height: "auto", minHeight: "260px" }}>
+        <div className="about-cards-grid">
+          <div className="testimonial-card about-card-auto-height">
             <div className="testimonial-card-quote-icon">01</div>
-            <h3 style={{ fontSize: "20px", fontWeight: "800", margin: "16px 0 10px", color: "#000000" }}>
-              Relentless Strategy
+            <h3 className="about-card-title">
+              Our Vision
             </h3>
-            <p className="testimonial-card-text" style={{ fontSize: "14.5px" }}>
-              We dive deep into market dynamics, audience behaviors, and brand positioning to ensure every pixel serves a clear business objective.
+            <p className="testimonial-card-text about-card-desc">
+              To be the global benchmark for creative technology agencies—building digital experiences that inspire audiences, elevate brands, and define industry standards.
             </p>
           </div>
 
-          <div className="testimonial-card" style={{ height: "auto", minHeight: "260px" }}>
+          <div className="testimonial-card about-card-auto-height">
             <div className="testimonial-card-quote-icon">02</div>
-            <h3 style={{ fontSize: "20px", fontWeight: "800", margin: "16px 0 10px", color: "#000000" }}>
-              Engineering Excellence
+            <h3 className="about-card-title">
+              Our Mission
             </h3>
-            <p className="testimonial-card-text" style={{ fontSize: "14.5px" }}>
-              Built on Next.js, React, and modern Web APIs for lightning-fast speed, flawless responsiveness, and bulletproof security.
+            <p className="testimonial-card-text about-card-desc">
+              To empower ambitious businesses through bespoke brand identities, cutting-edge Next.js engineering, and data-backed growth strategies that deliver real-world ROI.
             </p>
           </div>
 
-          <div className="testimonial-card" style={{ height: "auto", minHeight: "260px" }}>
+          <div className="testimonial-card about-card-auto-height">
             <div className="testimonial-card-quote-icon">03</div>
-            <h3 style={{ fontSize: "20px", fontWeight: "800", margin: "16px 0 10px", color: "#000000" }}>
-              Distinctive Identity
+            <h3 className="about-card-title">
+              Core Values
             </h3>
-            <p className="testimonial-card-text" style={{ fontSize: "14.5px" }}>
-              We create bespoke brand identities, typography systems, and motion languages that leave a lasting mark in crowded industries.
+            <p className="testimonial-card-text about-card-desc">
+              Clarity over clutter, depth over decoration, and uncompromised quality. We hold ourselves to relentless standards in design precision and performance speed.
             </p>
           </div>
 
-          <div className="testimonial-card" style={{ height: "auto", minHeight: "260px" }}>
+          <div className="testimonial-card about-card-auto-height">
             <div className="testimonial-card-quote-icon">04</div>
-            <h3 style={{ fontSize: "20px", fontWeight: "800", margin: "16px 0 10px", color: "#000000" }}>
-              Scalable Growth
+            <h3 className="about-card-title">
+              Culture & Impact
             </h3>
-            <p className="testimonial-card-text" style={{ fontSize: "14.5px" }}>
-              Our work doesn't stop at launch. We continuously refine, optimize, and scale campaigns to maximize conversion and long-term brand equity.
+            <p className="testimonial-card-text about-card-desc">
+              A collaborative, transparent environment where top-tier strategists, designers, and engineers work as true partners with every client we serve.
             </p>
           </div>
         </div>

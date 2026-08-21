@@ -40,11 +40,6 @@ export default function Footer() {
 
   return (
     <footer className="kudos-footer-container">
-      {/* Background Watermark Text */}
-      <div className="kudos-bg-watermark" aria-hidden="true">
-        ENTEC MEDIA
-      </div>
-
       <div className="container kudos-footer-content">
         {/* Main Footer Grid Layout */}
         <div className="kudos-footer-grid">

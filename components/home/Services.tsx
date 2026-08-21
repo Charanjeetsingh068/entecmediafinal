@@ -230,9 +230,9 @@ export default function Services() {
 
 
                 {/* Bottom Collaboration Box */}
-                <div className="collab-wrapper services-cta" style={{ opacity: 1, animation: "none" }}>
+                <div className="collab-wrapper services-cta services-cta-no-anim">
                   <p className="collab-label">Ready to start something great?</p>
-                  <Link href="/contact" className="collab-box" style={{ textDecoration: "none" }}>
+                  <Link href="/contact" className="collab-box services-cta-link">
                     <span className="collab-text">Let&apos;s Collaborate</span>
                     <div className="collab-dots">
                       <span className="dot"></span>
@@ -249,7 +249,7 @@ export default function Services() {
 
           {/* Right Column: Scrolling Bento-Grid Rows */}
           <div className="services-col-right">
-            <div ref={listRef} style={{ width: "100%", willChange: "transform" }}>
+            <div ref={listRef} className="services-list-container">
               <div className="services-list">
                 {/* Blank row for spacing and grid border alignments at the top */}
                 <div className="service-row service-blank-row">

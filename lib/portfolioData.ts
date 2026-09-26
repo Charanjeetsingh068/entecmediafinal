@@ -11,6 +11,9 @@ export interface PortfolioProjectDetail {
   heroTagline: string;
   heroDesc: string;
   heroImage: string;
+  /** Optional full-length screenshot of the project's home page (tall image). When set, the home page
+   *  "Featured projects" laptop scrolls through it; otherwise heroImage is panned. */
+  fullPageImage?: string;
   /** Short card description used on listing pages */
   summary: string;
   metric: string;

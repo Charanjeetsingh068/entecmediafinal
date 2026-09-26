@@ -4,7 +4,8 @@
  *   progress = 0 when the element's top meets the viewport bottom, 1 when its bottom meets the viewport bottom
  *   value    = from → identity by progress, smoothed with a spring (stiffness 200, damping 60, mass 1)
  * It is fully scroll-linked, so scrolling back up plays it in reverse — exactly like Kudos.
- * With the OS "reduce motion" setting on, only opacity animates (Framer does the same).
+ * Effects run for everyone, including visitors with the OS "reduce motion" setting on — the site owner
+ * reviews on such a machine and expects to see them. Movement is small (≤120px) and spring-damped.
  */
 
 export interface FxFrom {
@@ -38,7 +39,6 @@ const items = new Map<HTMLElement, Item>();
 let frame = 0;
 let lastTime = 0;
 let listening = false;
-let reduceMotion = false;
 
 const channel = (from: number, rest: number): Channel => ({ from, rest, value: from, velocity: 0 });
 
@@ -117,7 +117,6 @@ function schedule() {
 function listen() {
   if (listening) return;
   listening = true;
-  reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   window.addEventListener("scroll", schedule, { passive: true });
   window.addEventListener("resize", schedule);
 }
@@ -135,11 +134,10 @@ function unlisten() {
 /** Registers an element. Returns a cleanup that restores its inline styles. */
 export function registerFx(el: HTMLElement, from: FxFrom, inClass?: string): () => void {
   listen();
-  // Like Framer: with "reduce motion" on, only opacity animates — no movement
   const item: Item = {
     el,
-    x: channel(reduceMotion ? 0 : from.x ?? 0, 0),
-    y: channel(reduceMotion ? 0 : from.y ?? 0, 0),
+    x: channel(from.x ?? 0, 0),
+    y: channel(from.y ?? 0, 0),
     opacity: channel(from.opacity ?? 1, 1),
     inClass,
   };

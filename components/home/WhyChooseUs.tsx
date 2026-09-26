@@ -13,62 +13,64 @@ import ScrollHighlightText from "@/components/shared/ScrollHighlightText";
 const paragraphText =
   "At the end of the day, we’re here to help your business grow. That means combining smart design, solid technology and data-driven marketing into one strategy that supports your goals, your team and your future plans.";
 
-// Bar heights (px at desktop) — light grey → black, exactly like the Kudos "For ambitious teams" card
-const bars = [11, 11, 22, 33, 43, 54, 87, 130, 174, 217];
+// "For ambitious teams" bar chart — 10 bars rising left → right (height in % of the chart)
+const bars = [16, 24, 32, 40, 48, 57, 66, 76, 86, 96];
 
-// 4 × 5 tile grid for "Strategy > aesthetics": l = light grey, m = mid grey, w = white, a = accent, s = soft accent, d = dark, g = grey
-const strategyTiles = [
-  "s", "", "m", "",
-  "", "m", "w", "g",
-  "m", "l", "a", "",
-  "", "d", "w", "m",
-  "m", "s", "m", "s",
+// "Strategy > aesthetics" board — rows of segments (flex weight, tone): g = grey, l = light, a = accent
+const strategyRows: Array<Array<[number, "g" | "l" | "a"]>> = [
+  [[5, "l"], [3, "g"]],
+  [[1.5, "l"], [3, "g"], [3.5, "g"]],
+  [[0.7, "l"], [3.4, "g"], [0.4, "l"], [3.5, "a"]],
+  [[2, "l"], [3, "g"], [3, "l"]],
+];
+
+const features = [
+  {
+    label: "Clarity",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      </svg>
+    ),
+  },
+  {
+    label: "Performance",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Scale",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M3 3v18h18" />
+        <path d="M7 15l4-4 3 3 6-6" />
+      </svg>
+    ),
+  },
 ];
 
 export default function WhyChooseUs() {
-  const gridRef = useRef<HTMLDivElement>(null);
-  const betterRef = useRef<HTMLSpanElement>(null);
-  const squareRef = useRef<HTMLSpanElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Scroll-linked Kudos values written straight to the DOM (no React re-render per frame):
-  // BETTER slides from translateY(48px) → 0 and the white card flattens from a tilted 3D pose.
-  useEffect(() => {
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const grid = gridRef.current;
-      if (!grid) return;
-      const vh = window.innerHeight;
-      const top = grid.getBoundingClientRect().top;
-      const p = Math.max(0, Math.min(1, (vh * 0.82 - top) / (vh * 0.82)));
-      const inv = 1 - p;
-      if (betterRef.current) betterRef.current.style.transform = `translate3d(0, ${48 * inv}px, 0)`;
-      if (squareRef.current) {
-        squareRef.current.style.transform = `perspective(1200px) translate3d(${48 * inv}px, ${-48 * inv}px, 0) rotateX(${24 * inv}deg) rotateY(${-12 * inv}deg) rotateZ(${-6 * inv}deg) scale(${1 + 0.16 * inv})`;
-      }
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  // The card video only downloads when the grid comes near the screen, and pauses when it leaves.
+  // Card video: nothing downloads on page load. It starts only when the card nears the screen
+  // (same file as the hero, so usually already cached), pauses off-screen, and is skipped on
+  // data-saver / 2G connections — the wave image stays as the backdrop.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (conn?.saveData || /2g/.test(conn?.effectiveType ?? "")) return;
+
+    const onPlaying = () => video.classList.add("is-playing");
+    video.addEventListener("playing", onPlaying);
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          if (!video.src) {
+          if (!video.getAttribute("src")) {
             video.src = "/images/homebanner.mp4";
             video.load();
           }
@@ -80,7 +82,10 @@ export default function WhyChooseUs() {
       { rootMargin: "300px 0px" }
     );
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      video.removeEventListener("playing", onPlaying);
+    };
   }, []);
 
   return (
@@ -121,102 +126,101 @@ export default function WhyChooseUs() {
           <ScrollHighlightText className="k-why-paragraph" text={paragraphText} />
         </div>
 
-        <div className="k-why-grid" ref={gridRef}>
-          {/* Design that drives growth — video card, 2 columns × 2 rows */}
-          <Reveal className="k-why-card k-why-video">
-            <video ref={videoRef} loop muted playsInline preload="none" poster="/images/bannerbac.webp" className="k-why-video-bg" aria-hidden="true" />
-            <div className="k-why-video-shade" />
-            <div className="k-why-card-inner">
-              <div>
-                <span className="k-why-dot" aria-hidden="true" />
-                <h3 className="k-why-video-title">
-                  <span className="text-gradient">Design</span> that
-                  <br />
-                  drives growth
-                </h3>
-                <p className="k-why-video-desc">
-                  Websites, apps and campaigns that help businesses grow, scale and compete with confidence.
-                </p>
-              </div>
-              <div className="k-why-video-footer">
-                <ul className="k-why-pills">
-                  <li>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" /></svg>
-                    Clarity
+        <div className="wcu-grid">
+          {/* Design that drives growth — dark wave card, 2 rows tall */}
+          <Reveal className="wcu-card wcu-main">
+            <div className="wcu-main-bg" aria-hidden="true" />
+            <video ref={videoRef} className="wcu-main-video" muted loop playsInline preload="none" aria-hidden="true" />
+            <div className="wcu-main-top">
+              <h3 className="wcu-main-title">
+                <span className="text-gradient">Design</span> that
+                <br />
+                drives growth
+              </h3>
+              <p className="wcu-main-desc">
+                Websites, apps and campaigns that help businesses grow, scale and compete with confidence.
+              </p>
+            </div>
+            <div className="wcu-main-bottom">
+              <ul className="wcu-features">
+                {features.map((f) => (
+                  <li key={f.label}>
+                    <span className="wcu-feature-icon" aria-hidden="true">
+                      {f.icon}
+                    </span>
+                    {f.label}
                   </li>
-                  <li>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-                    Performance
-                  </li>
-                  <li>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><path d="M7 15l4-4 3 3 6-6" /></svg>
-                    Scale
-                  </li>
-                </ul>
-                <span className="k-why-counter">
-                  <CountUp end={100} suffix="%" duration={2200} />
-                </span>
-              </div>
+                ))}
+              </ul>
+              <span className="wcu-main-stat">
+                <CountUp end={100} suffix="%" duration={2200} />
+              </span>
             </div>
           </Reveal>
 
-          {/* Clarity over complexity — BETTER slides up over LESS */}
-          <Reveal className="k-why-card k-why-accent" delay={0.08}>
-            <div className="k-why-card-inner">
-              <div>
-                <span className="k-why-dot" aria-hidden="true" />
-                <h4 className="k-why-card-title">Clarity over complexity</h4>
-                <p className="k-why-card-desc">
-                  Simple, user-friendly websites and apps that customers understand instantly — no unnecessary noise.
-                </p>
-              </div>
-              <div className="k-why-words" aria-hidden="true">
-                <span className="k-why-less">LESS</span>
-                <span className="k-why-better" ref={betterRef}>
-                  BETTER
-                </span>
-              </div>
+          {/* Clarity over complexity — blue card, BETTER rises over LESS */}
+          <Reveal className="wcu-card wcu-blue" delay={0.08}>
+            <h3 className="wcu-blue-title">
+              <span aria-hidden="true">+</span> Clarity over complexity
+            </h3>
+            <p className="wcu-blue-desc">
+              Simple, user-friendly websites and apps that customers understand instantly — no unnecessary noise.
+            </p>
+            <div className="wcu-words" aria-hidden="true">
+              <span className="wcu-less">Less</span>
+              <span className="wcu-better">Better</span>
             </div>
           </Reveal>
 
-          {/* Built with intention — tilted card settles flat */}
-          <Reveal className="k-why-card k-why-white k-why-intention" delay={0.16}>
-            <div className="k-why-stack" aria-hidden="true">
-              <span className="k-why-line k-why-line-top" />
-              <span className="k-why-line k-why-line-bottom" />
-              <span className="k-why-line-v k-why-line-left" />
-              <span className="k-why-line-v k-why-line-right" />
-              <span className="k-why-square" />
-              <span className="k-why-square-main" ref={squareRef} />
-            </div>
-            <div className="k-why-intention-text">
-              <h4 className="k-why-card-title">Built with intention</h4>
-              <p className="k-why-card-desc">We believe the smallest choices make the biggest difference.</p>
-            </div>
-          </Reveal>
-
-          {/* For ambitious teams — bar chart */}
-          <Reveal className="k-why-card k-why-white k-why-bars-card" delay={0.1}>
-            <h4 className="k-why-card-title">For ambitious teams</h4>
-            <div className="k-why-bars" aria-hidden="true">
+          {/* For ambitious teams — rising bar chart */}
+          <Reveal className="wcu-card wcu-white wcu-bars-card" delay={0.16}>
+            <div className="wcu-bars" aria-hidden="true">
               {bars.map((h, i) => (
-                <span
-                  key={i}
-                  className="k-why-bar"
-                  style={{ "--h": `${(h / 217) * 100}%`, "--o": 0.14 + (i / (bars.length - 1)) * 0.86, "--d": `${i * 0.06}s` } as React.CSSProperties}
-                />
+                <span key={i} className="wcu-bar" style={{ "--h": `${h}%`, "--d": `${i * 0.06}s` } as React.CSSProperties} />
               ))}
             </div>
+            <h3 className="wcu-card-title">For ambitious teams</h3>
           </Reveal>
 
-          {/* Strategy > aesthetics — tile board */}
-          <Reveal className="k-why-card k-why-white k-why-strategy" delay={0.18}>
-            <div className="k-why-tiles" aria-hidden="true">
-              {strategyTiles.map((t, i) => (
-                <span key={i} className={`k-why-tile ${t ? `k-why-tile-${t}` : ""}`} />
+          {/* Built with intention — precision area chart */}
+          <Reveal className="wcu-card wcu-white wcu-area-card" delay={0.1}>
+            <span className="wcu-kicker">Precision rate</span>
+            <span className="wcu-area-stat">
+              <CountUp end={98} suffix="%" duration={2000} />
+            </span>
+            <div className="wcu-area" aria-hidden="true">
+              <svg viewBox="0 0 240 80" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="wcu-area-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2a27d8" stopOpacity="0.18" />
+                    <stop offset="100%" stopColor="#2a27d8" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path className="wcu-area-fill" d="M0 70 C 30 68, 50 64, 80 52 S 120 30, 150 28 S 200 26, 240 12 L 240 80 L 0 80 Z" fill="url(#wcu-area-fill)" />
+                <path className="wcu-area-line" d="M0 70 C 30 68, 50 64, 80 52 S 120 30, 150 28 S 200 26, 240 12" pathLength={100} />
+              </svg>
+              <span className="wcu-area-dot" />
+            </div>
+            <h3 className="wcu-card-title">Built with intention</h3>
+            <p className="wcu-card-desc">We believe the smallest choices make the biggest difference.</p>
+          </Reveal>
+
+          {/* Strategy > aesthetics — segment board */}
+          <Reveal className="wcu-card wcu-white wcu-strategy-card" delay={0.18}>
+            <div className="wcu-strategy" aria-hidden="true">
+              {strategyRows.map((row, r) => (
+                <div key={r} className="wcu-strategy-row">
+                  {row.map(([grow, tone], i) => (
+                    <span
+                      key={i}
+                      className={`wcu-seg wcu-seg-${tone}`}
+                      style={{ "--g": grow, "--d": `${(r * 3 + i) * 0.05}s` } as React.CSSProperties}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
-            <h4 className="k-why-card-title k-why-strategy-title">Strategy &gt; aesthetics</h4>
+            <h3 className="wcu-card-title">Strategy &gt; aesthetics</h3>
           </Reveal>
         </div>
       </div>

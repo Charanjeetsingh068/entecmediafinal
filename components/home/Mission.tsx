@@ -148,7 +148,7 @@ export default function Mission() {
         </div>
 
         {/* Asymmetrical Layout Content */}
-        <div className="mission-content-area" data-kfx="y:-120">
+        <div className="mission-content-area" data-kfx="y:48">
 
           {/* Center Visual Horizontal Card with absolute overlays */}
           <div className="mission-visual-card">

@@ -97,4 +97,22 @@ CREATE TABLE IF NOT EXISTS `blog_views` (
   CONSTRAINT `fk_bv_blog` FOREIGN KEY (`blog_id`) REFERENCES `blogs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 7. Website Contact Form Enquiries
+CREATE TABLE IF NOT EXISTS `enquiries` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(120) NOT NULL,
+  `email` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(30) DEFAULT NULL,
+  `company` VARCHAR(150) DEFAULT NULL,
+  `website` VARCHAR(200) DEFAULT NULL,
+  `services` VARCHAR(1000) DEFAULT NULL,
+  `budget` VARCHAR(50) DEFAULT NULL,
+  `details` TEXT DEFAULT NULL,
+  `source_page` VARCHAR(100) DEFAULT NULL,
+  `ip_address` VARCHAR(45) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_enquiries_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

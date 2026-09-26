@@ -15,6 +15,7 @@ function CountUp({ end, duration = 2000, suffix = "" }: { end: number; duration?
       return () => clearTimeout(timer);
     }
 
+    let frame = 0;
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
@@ -26,12 +27,13 @@ function CountUp({ end, duration = 2000, suffix = "" }: { end: number; duration?
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
             setCount(Math.floor(progress * end));
             if (progress < 1) {
-              window.requestAnimationFrame(step);
+              frame = window.requestAnimationFrame(step);
             } else {
               setCount(end);
             }
           };
-          window.requestAnimationFrame(step);
+          frame = window.requestAnimationFrame(step);
+          observer.disconnect();
         }
       },
       { threshold: 0.1 }
@@ -43,9 +45,8 @@ function CountUp({ end, duration = 2000, suffix = "" }: { end: number; duration?
     }
 
     return () => {
-      if (currentEl) {
-        observer.unobserve(currentEl);
-      }
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
     };
   }, [end, duration]);
 
@@ -56,39 +57,71 @@ const slides = [
   {
     text: (
       <>
-        We believe in <strong>clarity over complexity</strong>, and <strong>creativity over conformity</strong>, because the best work is both <strong>simple and distinctive</strong>.
+        We believe in <strong>clarity over complexity</strong> and <strong>results over vanity metrics</strong> — every website, app and campaign we deliver is built to <strong>grow your business</strong>.
       </>
     ),
     avatar: "/images/founder1.png",
-    name: "Kate Lee Cobe",
-    role: "Founder, ENTEC"
+    name: "Team Entec Media",
+    role: "Strategy & Leadership"
   },
   {
     text: (
       <>
-        Our goal is to build <strong>digital products</strong> that feel natural, run fast, and leave a <strong>lasting impression</strong> on your users.
+        Our developers build <strong>fast, secure websites and mobile apps</strong> that feel natural to use and are <strong>easy for you to manage</strong>.
       </>
     ),
-    avatar: "/images/team1.png",
-    name: "Marcus Vance",
-    role: "Lead Architect, ENTEC"
+    avatar: "/images/team1-avatar.webp",
+    name: "Development Team",
+    role: "Web & App Development"
   },
   {
     text: (
       <>
-        We merge <strong>strategy, design, and technology</strong> to help modern brands <strong>scale and win</strong> in their industries.
+        We combine <strong>SEO, Google Ads and Meta Ads</strong> with creative design to bring you <strong>quality leads and real ROI</strong>.
       </>
     ),
-    avatar: "/images/team2.png",
-    name: "Sarah Jenkins",
-    role: "Strategy Director, ENTEC"
+    avatar: "/images/team2-avatar.webp",
+    name: "Marketing Team",
+    role: "Digital Marketing & Ads"
   }
 ];
 
 export default function Mission() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+
+  // Kudos intro effect: while the panel slides up, its wordmark stays exactly on top of the banner's
+  // giant logo, so the letters read as one (chrome above the panel edge, image-filled inside it).
+  // Once the panel edge has passed the banner logo, the wordmark locks to the top of the panel
+  // with a little breathing room. Works for every screen size because it uses live measurements.
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const sec = sectionRef.current;
+      const logo = logoRef.current;
+      const bannerLogo = document.querySelector<HTMLElement>(".giant-logo-img");
+      if (!sec || !logo || !bannerLogo) return;
+      const vh = window.innerHeight;
+      // Banner logo is flush with the bottom of the fixed hero and drifts up at 0.24× (see Banner.tsx)
+      const bannerTop = vh - bannerLogo.offsetHeight - Math.min(window.scrollY, vh) * 0.24;
+      const panelTop = sec.getBoundingClientRect().top;
+      const shift = Math.min(0, bannerTop - (panelTop + logo.offsetTop));
+      logo.style.transform = `translate3d(0, ${shift}px, 0)`;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -97,42 +130,15 @@ export default function Mission() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
-      setIsRevealed(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsRevealed(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.05 }
-    );
-
-    const currentSec = sectionRef.current;
-    if (currentSec) {
-      observer.observe(currentSec);
-    }
-
-    return () => {
-      if (currentSec) {
-        observer.unobserve(currentSec);
-      }
-    };
-  }, []);
 
   return (
     <section id="mission" ref={sectionRef} className="mission-section">
       <div className="container">
 
         {/* Giant ENTEC Text Visual */}
-        <div className={`mission-giant-title reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.1s" }}>
+        <div className="mission-giant-title" ref={logoRef}>
           <Image
-            src="/images/entec-about.png"
+            src="/images/entec-about.webp"
             alt="ENTEC"
             width={3430}
             height={640}
@@ -142,7 +148,7 @@ export default function Mission() {
         </div>
 
         {/* Asymmetrical Layout Content */}
-        <div className={`mission-content-area reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.3s" }}>
+        <div className="mission-content-area" data-kfx="y:-120">
 
           {/* Center Visual Horizontal Card with absolute overlays */}
           <div className="mission-visual-card">
@@ -157,12 +163,12 @@ export default function Mission() {
             {/* Overlay 2: Top Right Intro Text */}
             <div className="mission-right-intro">
               <p>
-                We work closely with our clients to turn ideas into clear, compelling brands and digital experiences.
+                We partner with startups and businesses to turn ideas into websites, apps and marketing campaigns that deliver results.
               </p>
             </div>
 
             <Image
-              src="/images/aboutimg.png"
+              src="/images/aboutimg.webp"
               alt="Our Mission Visual"
               width={3440}
               height={726}
@@ -188,7 +194,7 @@ export default function Mission() {
                         className="mission-author-avatar"
                       />
                       <div className="mission-author-info">
-                        <h4 className="mission-author-name">{slide.name}</h4>
+                        <p className="mission-author-name">{slide.name}</p>
                         <p className="mission-author-title">{slide.role}</p>
                       </div>
                     </div>
@@ -200,8 +206,8 @@ export default function Mission() {
             {/* Overlay 4: Bottom Right Call to Action block */}
             <div className="mission-cta-card">
               <span className="mission-cta-label">MEET THE PEOPLE BEHIND THE WORK</span>
-              <Link href="#contact" className="mission-collab-box">
-                <span className="mission-collab-text">Let's Collaborate</span>
+              <Link href="/contact" className="mission-collab-box">
+                <span className="mission-collab-text">Let&apos;s Collaborate</span>
                 <div className="mission-collab-dots">
                   <span className="mission-collab-dot"></span>
                   <span className="mission-collab-dot"></span>
@@ -216,7 +222,7 @@ export default function Mission() {
         <div className="mission-stats-grid">
 
           {/* Card 1 */}
-          <div className={`mission-stat-card reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.4s" }}>
+          <div className="mission-stat-card" data-kfx="y:48">
             <div className="stat-card-header">
               <Image src="/images/years.png" alt="" width={18} height={6} className="stat-pill-icon" />
               <span className="stat-label">YEARS OF EXPERIENCE</span>
@@ -228,19 +234,19 @@ export default function Mission() {
           </div>
 
           {/* Card 2 */}
-          <div className={`mission-stat-card reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.5s" }}>
+          <div className="mission-stat-card" data-kfx="y:72">
             <div className="stat-card-header">
               <Image src="/images/years.png" alt="" width={18} height={6} className="stat-pill-icon" />
-              <span className="stat-label">BRANDS TRANSFORMED</span>
+              <span className="stat-label">PROJECTS DELIVERED</span>
             </div>
             <h3 className="stat-value">
               <CountUp end={100} suffix="+" />
             </h3>
-            <p className="stat-desc">Helping brands evolve and stand out.</p>
+            <p className="stat-desc">Websites, apps and campaigns launched.</p>
           </div>
 
           {/* Card 3 */}
-          <div className={`mission-stat-card reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.6s" }}>
+          <div className="mission-stat-card" data-kfx="y:96">
             <div className="stat-card-header">
               <Image src="/images/years.png" alt="" width={18} height={6} className="stat-pill-icon" />
               <span className="stat-label">CLIENT RETENTION RATE</span>
@@ -252,15 +258,15 @@ export default function Mission() {
           </div>
 
           {/* Card 4 */}
-          <div className={`mission-stat-card reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.7s" }}>
+          <div className="mission-stat-card" data-kfx="y:120">
             <div className="stat-card-header">
               <Image src="/images/years.png" alt="" width={18} height={6} className="stat-pill-icon" />
-              <span className="stat-label">AWARDS & RECOGNITIONS</span>
+              <span className="stat-label">DIGITAL SERVICES</span>
             </div>
             <h3 className="stat-value">
-              <CountUp end={30} suffix="+" />
+              <CountUp end={10} suffix="+" />
             </h3>
-            <p className="stat-desc">Industry recognition for our work.</p>
+            <p className="stat-desc">Design, development &amp; marketing under one roof.</p>
           </div>
 
         </div>

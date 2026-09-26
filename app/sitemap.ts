@@ -1,5 +1,10 @@
 import { MetadataRoute } from "next";
+
+export const dynamic = "force-static";
 import { getPublishedBlogs, getBlogCategories } from "@/lib/blogApi";
+import { servicesList } from "@/lib/servicesData";
+import { portfolioProjects } from "@/lib/portfolioData";
+import { jobOpenings } from "@/lib/careersData";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.SITE_URL || "https://entecmedia.com";
@@ -11,8 +16,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/services`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/portfolio`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: `${baseUrl}/careers`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/terms-of-service`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/data-deletion`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
+
+  const serviceUrls: MetadataRoute.Sitemap = servicesList.map((service) => ({
+    url: `${baseUrl}/services/${service.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
+
+  const portfolioUrls: MetadataRoute.Sitemap = portfolioProjects.map((project) => ({
+    url: `${baseUrl}/portfolio/${project.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
+  const careerUrls: MetadataRoute.Sitemap = jobOpenings.map((job) => ({
+    url: `${baseUrl}/careers/${job.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
 
   // Dynamic Published Blogs
   const { blogs } = await getPublishedBlogs({ limit: 1000 });
@@ -32,5 +62,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...blogUrls, ...categoryUrls];
+  return [...staticPages, ...serviceUrls, ...portfolioUrls, ...careerUrls, ...blogUrls, ...categoryUrls];
 }

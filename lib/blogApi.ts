@@ -65,41 +65,47 @@ export interface FetchBlogsParams {
 const BLOG_API_BASE_URL =
   process.env.NEXT_PUBLIC_BLOG_API_URL || 'http://localhost/blog-cms/api';
 
-// Fallback Categories
-const DEFAULT_CATEGORIES: BlogCategory[] = [
-  { id: 1, name: "Design Philosophy", slug: "design-philosophy", published_blogs_count: 1 },
-  { id: 2, name: "Business Strategy", slug: "business-strategy", published_blogs_count: 1 },
-  { id: 3, name: "Tech & Trends", slug: "tech-trends", published_blogs_count: 1 },
-  { id: 4, name: "Process", slug: "process", published_blogs_count: 1 },
-];
+const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+
+// Fallback categories derived from the fallback posts
+const DEFAULT_CATEGORIES: BlogCategory[] = Array.from(new Set(blogsData.map((b) => b.category))).map(
+  (name, idx) => ({
+    id: idx + 1,
+    name,
+    slug: toSlug(name),
+    published_blogs_count: blogsData.filter((b) => b.category === name).length,
+  })
+);
 
 // Helper for fallback blogs
 function getFallbackBlogs(): BlogPost[] {
-  return blogsData.map((b) => ({
-    id: b.id,
-    category_id: b.id,
-    title: b.title,
-    slug: b.slug,
-    excerpt: b.description,
-    content: `<p>${b.description}</p><p>Designing an intuitive, functional, and engaging digital experience requires strategic clarity, collaboration, and high-performance engineering. From concept wireframing to high-fidelity design systems, we build modern web applications that elevate brand authority and drive measurable conversion growth.</p><h2>Strategic Precision &amp; User Experience</h2><p>In modern web engineering, minimalism strips away unnecessary complexity to highlight core business value. Every typography choice, color palette, and micro-interaction is crafted to guide visitors seamlessly through the conversion funnel.</p>`,
-    featured_image: null,
-    featured_image_alt: b.title,
-    featured_image_url: b.image || "/images/aboutimg.png",
-    author_name: "Entec Media Team",
-    status: "published",
-    meta_title: b.title,
-    meta_description: b.description,
-    published_at: b.date,
-    created_at: "2026-03-01T00:00:00Z",
-    category_name: b.category,
-    category_slug: b.category.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-    formatted_date: b.date,
-    tags: [
-      { id: 1, name: "Web Design", slug: "web-design" },
-      { id: 2, name: "Strategy", slug: "strategy" },
-      { id: 3, name: "UI/UX", slug: "uiux" },
-    ],
-  }));
+  return blogsData.map((b) => {
+    const category = DEFAULT_CATEGORIES.find((c) => c.name === b.category);
+    return {
+      id: b.id,
+      category_id: category?.id ?? null,
+      title: b.title,
+      slug: b.slug,
+      excerpt: b.description,
+      content: b.content,
+      featured_image: null,
+      featured_image_alt: b.title,
+      featured_image_url: b.image,
+      author_name: "Entec Media Team",
+      status: "published",
+      meta_title: b.title,
+      meta_description: b.description,
+      published_at: b.date,
+      created_at: b.date,
+      category_name: b.category,
+      category_slug: toSlug(b.category),
+      formatted_date: formatDate(b.date),
+      tags: [],
+    };
+  });
 }
 
 /**
@@ -120,6 +126,7 @@ export async function getPublishedBlogs(params: FetchBlogsParams = {}): Promise<
     const url = `${BLOG_API_BASE_URL}/public/blogs.php?${queryParams.toString()}`;
     const res = await fetch(url, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(1500),
     });
 
     if (res.ok) {
@@ -138,7 +145,7 @@ export async function getPublishedBlogs(params: FetchBlogsParams = {}): Promise<
         };
       }
     }
-  } catch (error) {
+  } catch {
     // API offline - use fallback
   }
 
@@ -178,6 +185,7 @@ export async function getBlogBySlug(slug: string): Promise<{
     const url = `${BLOG_API_BASE_URL}/public/blog.php?slug=${encodeURIComponent(slug)}`;
     const res = await fetch(url, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(1500),
     });
 
     if (res.ok) {
@@ -189,7 +197,7 @@ export async function getBlogBySlug(slug: string): Promise<{
         };
       }
     }
-  } catch (error) {
+  } catch {
     // Fallback
   }
 
@@ -212,6 +220,7 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
     const url = `${BLOG_API_BASE_URL}/public/categories.php`;
     const res = await fetch(url, {
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(1500),
     });
 
     if (res.ok) {
@@ -220,7 +229,7 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
         return data.data.categories;
       }
     }
-  } catch (error) {
+  } catch {
     // Fallback
   }
 

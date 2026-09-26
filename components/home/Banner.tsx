@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import team1Img from "@/public/images/team1.png";
-import team2Img from "@/public/images/team2.png";
-import team3Img from "@/public/images/team3.png";
-import team4Img from "@/public/images/team4.png";
+import Link from "next/link";
+import team1Img from "@/public/images/team1-avatar.webp";
+import team2Img from "@/public/images/team2-avatar.webp";
+import team3Img from "@/public/images/team3-avatar.webp";
+import team4Img from "@/public/images/team4-avatar.webp";
 import entecLogoImg from "@/public/images/ENTEC.png";
 
 export default function Banner() {
   const [isSticky, setIsSticky] = useState(true);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
 
   // Scroll handler for position toggling
   useEffect(() => {
@@ -19,10 +22,21 @@ export default function Banner() {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          if (window.scrollY >= window.innerHeight) {
-            setIsSticky(false);
-          } else {
-            setIsSticky(true);
+          // Kudos hero parallax: copy drifts up at 10% of the scroll speed while the page slides over it
+          if (contentRef.current && window.scrollY <= window.innerHeight) {
+            contentRef.current.style.transform = `translate3d(0, ${-window.scrollY * 0.1}px, 0)`;
+          }
+          // The giant wordmark drifts up a little faster (0.24×), exactly like the Kudos hero logo
+          if (logoRef.current && window.scrollY <= window.innerHeight) {
+            logoRef.current.style.transform = `translate3d(0, ${-window.scrollY * 0.24}px, 0)`;
+          }
+          const covered = window.scrollY >= window.innerHeight;
+          setIsSticky(!covered);
+          // No point decoding video frames while the banner is hidden under the page
+          const video = videoRef.current;
+          if (video && video.currentSrc) {
+            if (covered && !video.paused) video.pause();
+            else if (!covered && video.paused) video.play().catch(() => {});
           }
           ticking = false;
         });
@@ -36,42 +50,68 @@ export default function Banner() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Performance Optimization: Defer the loading of the 352MB background video
-  // This allows the critical page assets (CSS, JS, Fonts) and LCP images to load instantly
+  // Load the background video only after the page has finished loading and the browser is idle,
+  // so it never competes with fonts, CSS, JS or the poster image. Skipped on data-saver / 2G.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setVideoSrc("/images/homebanner.mp4");
-    }, 1500); // 1.5 seconds delay after mount
+    const video = videoRef.current;
+    if (!video) return;
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (conn?.saveData || /2g/.test(conn?.effectiveType ?? "")) return;
 
-    return () => clearTimeout(timer);
+    let idleId: number | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const start = () => {
+      if (video.getAttribute("src")) return; // already started by the other trigger
+      video.src = "/images/homebanner.mp4";
+      video.load();
+      if (window.scrollY < window.innerHeight) video.play().catch(() => {});
+    };
+    const schedule = () => {
+      // Idle callback when available, with a hard timeout fallback so the video always starts
+      if ("requestIdleCallback" in window) idleId = window.requestIdleCallback(start, { timeout: 2000 });
+      timer = setTimeout(start, 2200);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+
+    const onVisibility = () => {
+      if (document.hidden) video.pause();
+      else if (video.currentSrc && window.scrollY < window.innerHeight) video.play().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      window.removeEventListener("load", schedule);
+      document.removeEventListener("visibilitychange", onVisibility);
+      if (idleId !== undefined) window.cancelIdleCallback(idleId);
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   return (
     <section className={`banner-section ${isSticky ? "sticky-fixed" : "static-absolute"}`}>
       {/* Background Video - Preload set to none & dynamic source to prevent initial blocking */}
       <video
-        autoPlay
+        ref={videoRef}
         loop
         muted
         playsInline
-        poster="/images/bannerbac.png"
+        poster="/images/bannerbac.webp"
         className="banner-video-bg"
         preload="none"
-      >
-        {videoSrc && <source src={videoSrc} type="video/mp4" />}
-        Your browser does not support the video tag.
-      </video>
+        aria-hidden="true"
+      />
       <div className="banner-video-overlay"></div>
 
-      <div className="container banner-content">
+      <div className="container banner-content" ref={contentRef}>
         {/* Left Column */}
         <div className="banner-left">
           <h1 className="banner-title">
-            We design brands <br />
-            <span className="purple-text">people remember</span>
+            We design, build <br />
+            <span className="purple-text">&amp; grow brands</span>
           </h1>
           <p className="banner-desc">
-            Built for designers, agencies, and creatives who want to showcase their best work, make a strong first impression, and create real impact without bloated workflows.
+            Entec Media is an IT &amp; digital marketing company — websites, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads that turn your business goals into measurable growth.
           </p>
         </div>
 
@@ -88,7 +128,7 @@ export default function Banner() {
             <div className="rating-info">
               <div className="rating-stars-row">
                 <span className="rating-stars">◆◆◆◆◆</span>
-                <span className="rating-val">4.4/5</span>
+                <span className="rating-val">4.9/5</span>
               </div>
               <p className="rating-label">
                 Trusted by <br />
@@ -100,20 +140,20 @@ export default function Banner() {
           {/* Bottom Collaboration Box */}
           <div className="collab-wrapper">
             <p className="collab-label">Ready to start something great?</p>
-            <div className="collab-box">
+            <Link href="/contact" className="collab-box">
               <span className="collab-text">Let&apos;s Collaborate</span>
               <div className="collab-dots">
                 <span className="dot"></span>
                 <span className="dot"></span>
                 <span className="dot"></span>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Giant Bottom Text Logo ENTEC - Priority load for LCP optimization */}
-      <div className="giant-logo-text-wrapper">
+      <div className="giant-logo-text-wrapper" ref={logoRef}>
         <Image src={entecLogoImg} alt="ENTEC" className="giant-logo-img" priority />
       </div>
     </section>

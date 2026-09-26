@@ -1,49 +1,31 @@
-"use client";
+import FAQSection from "@/components/shared/FAQSection";
+import { generalFaqs } from "@/lib/faqData";
 
+const contactFaqs = [
+  {
+    group: "Getting in touch",
+    items: [
+      {
+        question: "How fast will I hear back after submitting a project request?",
+        answer:
+          "Our team reviews every submission carefully. You will receive a reply within 24 business hours with initial thoughts and options for a discovery call.",
+      },
+      {
+        question: "Do you sign NDAs before initial calls?",
+        answer:
+          "Yes. We hold confidentiality in the highest regard and are happy to sign a mutual NDA before reviewing your documents, ideas or code.",
+      },
+      {
+        question: "What is your onboarding workflow?",
+        answer:
+          "A 30–45 minute discovery call, followed by a detailed proposal. Once approved we move into planning, design, development and launch with regular updates.",
+      },
+    ],
+  },
+  ...generalFaqs.slice(1),
+];
+
+/** Contact page FAQ. */
 export default function ContactFAQ() {
-  const faqs = [
-    {
-      q: "How fast will I hear back after submitting a project request?",
-      a: "Our client strategy leads review every submission carefully. You will receive a direct email response within 24 business hours outlining initial thoughts and discovery call options."
-    },
-    {
-      q: "Do you sign Non-Disclosure Agreements (NDAs) prior to initial calls?",
-      a: "Yes, absolutely. We hold confidentiality in the highest regard and are glad to sign mutual NDAs before reviewing proprietary brand documents or code bases."
-    },
-    {
-      q: "What is your typical project onboarding workflow?",
-      a: "We start with a 45-minute discovery alignment call, followed by a detailed scope proposal. Once approved, we move rapidly into discovery wireframing, high-fidelity design, and Next.js development."
-    }
-  ];
-
-  return (
-    <section className="service-faq-section">
-      <div className="container">
-        <div className="why-top-layout about-section-top-mb50">
-          <div className="why-col-left">
-            <span className="why-section-label">+ COMMON QUESTIONS</span>
-          </div>
-          <div className="why-col-center">
-            <h2 className="why-main-title">
-              What to expect <span className="highlight-focus">when you reach out</span>
-            </h2>
-          </div>
-          <div className="why-col-right">
-            <p className="why-header-desc">
-              Clear processes, fast response times, and total transparency from day one.
-            </p>
-          </div>
-        </div>
-
-        <div className="service-faq-list">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="service-faq-item">
-              <h3 className="faq-question">{faq.q}</h3>
-              <p className="faq-answer">{faq.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return <FAQSection groups={contactFaqs} />;
 }

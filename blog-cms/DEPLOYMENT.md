@@ -105,3 +105,13 @@ define('UPLOADS_BASE_URL', 'https://yourdomain.com/blog-cms/uploads/blogs');
    - Verify the published article appears dynamically.
    - Click the article to open `https://yourdomain.com/blog/how-artificial-intelligence-is-changing-business`.
    - Verify SEO tags, JSON-LD structured data, category filter, search, and related articles.
+
+---
+
+## Website Contact Form Enquiries
+
+The Contact, About, Services and Portfolio forms post to `blog-cms/api/public/enquiry.php`.
+
+1. Run the `enquiries` table section of `blog-cms/database/schema.sql` in phpMyAdmin (safe to re-run the whole file — every table uses `CREATE TABLE IF NOT EXISTS`).
+2. Enquiries are saved to the `enquiries` table and emailed to `info@entecmedia.com` using PHP `mail()`. To send to a different inbox, set the `ENQUIRY_NOTIFY_EMAIL` environment variable.
+3. The Next.js site reads the API location from `NEXT_PUBLIC_BLOG_API_URL` (for example `https://entecmedia.com/blog-cms/api`) — the same variable the blog uses.

@@ -1,374 +1,156 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
-import team1Img from "@/public/images/team1.png";
-import team2Img from "@/public/images/team2.png";
-import team3Img from "@/public/images/team3.png";
-import team4Img from "@/public/images/team4.png";
+import { useState } from "react";
+import Image, { type StaticImageData } from "next/image";
+import team1Img from "@/public/images/team1-avatar.webp";
+import team2Img from "@/public/images/team2-avatar.webp";
+import team3Img from "@/public/images/team3-avatar.webp";
+import team4Img from "@/public/images/team4-avatar.webp";
+import SectionHeader from "@/components/shared/SectionHeader";
+import Reveal from "@/components/shared/Reveal";
 
-const heroTestimonial = {
-  quote: "KUDOS transformed our ideas into a beautiful and functional design. The process was smooth, and the final product is both elegant and engaging!",
-  name: "Sophia Martinez",
-  role: "CEO +XZERO®",
-  avatar: team1Img,
-  stats: [
-    { num: "+28%", label: "Brand Awareness" },
-    { num: "+47%", label: "User Engagement" },
-    { num: "+52%", label: "Qualified Demand" },
-    { num: "+36%", label: "Growth Impact" }
-  ]
-};
+// NOTE: Replace these with genuine client reviews (with the client's permission) before going live.
+interface FeaturedStory {
+  quote: string;
+  name: string;
+  role: string;
+  avatar: StaticImageData;
+  stats: { num: string; label: string }[];
+}
 
-const row1Testimonials = [
+const featuredStories: FeaturedStory[] = [
   {
-    id: 1,
-    quote: "Their induction heaters are exceptionally robust and safe. They've streamlined our sugarcane crusher roller mounting workflow and eliminated shaft damage.",
-    name: "Ananya Deshmukh",
-    role: "Project Manager, Balrampur Chini Mills",
-    avatar: team1Img
+    quote:
+      "Entec Media rebuilt our website and took over our Google and Meta Ads. The new site loads fast, looks premium, and our enquiries have grown every single month since launch.",
+    name: "Rohit Arora",
+    role: "Founder, Real Estate Consultancy",
+    avatar: team1Img,
+    stats: [
+      { num: "+28%", label: "Brand Awareness" },
+      { num: "+47%", label: "User Engagement" },
+      { num: "+52%", label: "Qualified Leads" },
+      { num: "+36%", label: "Growth Impact" },
+    ],
   },
   {
-    id: 2,
-    quote: "Switching to MBH spherical roller bearings solved our rolling neck heating issues at the hot strip mill. The run-time between scheduled roll changes has increased by 40%.",
-    name: "Rajan Sharma",
-    role: "Maintenance Director, Jindal Steel & Power",
-    avatar: team2Img
+    quote:
+      "Their Meta Ads campaigns brought us consistent, quality leads at a much lower cost per lead than we were paying before. Reporting is clear and every rupee is accounted for.",
+    name: "Amit Sharma",
+    role: "Director, Immigration Consultancy",
+    avatar: team2Img,
+    stats: [
+      { num: "-38%", label: "Cost per Lead" },
+      { num: "+64%", label: "Monthly Leads" },
+      { num: "3.1x", label: "Return on Ad Spend" },
+      { num: "+41%", label: "Conversion Rate" },
+    ],
   },
   {
-    id: 3,
-    quote: "Implementing MBH high-precision deep groove ball bearings was a game-changer for our EV drivetrains. The noise level in our electric motors dropped by 15 dB.",
-    name: "Amit Patel",
-    role: "Senior OEM Designer, Tata Motors",
-    avatar: team3Img
+    quote:
+      "Within a few months of SEO work we started ranking on the first page of Google for our main services in Mohali and Chandigarh — calls from Google have never been higher.",
+    name: "Dr. Neha Gupta",
+    role: "Founder, Dental Clinic",
+    avatar: team4Img,
+    stats: [
+      { num: "+180%", label: "Organic Traffic" },
+      { num: "Top 3", label: "Local Rankings" },
+      { num: "+72%", label: "Calls from Google" },
+      { num: "+33%", label: "New Patients" },
+    ],
   },
-  {
-    id: 4,
-    quote: "The technical support team guided us through custom clearances, ensuring our cement plant conveyor bearings withstand constant dusty vibration.",
-    name: "Dr. Sunita Rao",
-    role: "Operations Head, UltraTech Cement",
-    avatar: team4Img
-  },
-  {
-    id: 5,
-    quote: "MBH's double row angular contact bearings have enhanced our high-speed turbine gearbox rigidity. Highly recommended for heavy thrust applications.",
-    name: "Sanjay Mehta",
-    role: "Chief Engineer, NTPC Limited",
-    avatar: team1Img
-  }
 ];
 
-const row2Testimonials = [
-  {
-    id: 6,
-    quote: "Using MBH bearings, our high-speed ventilator spindles run cooler and with zero vibration, boosting overall motor performance.",
-    name: "Karan Malhotra",
-    role: "HVAC Maintenance Director, Blue Star India",
-    avatar: team2Img
-  },
-  {
-    id: 7,
-    quote: "Their induction heaters are exceptionally robust and safe. They've streamlined our sugarcane crusher roller mounting workflow and eliminated shaft damage.",
-    name: "Ananya Deshmukh",
-    role: "Project Manager, Balrampur Chini Mills",
-    avatar: team1Img
-  },
-  {
-    id: 8,
-    quote: "The dimensional tolerances on their tapered thrust bearings exceeded expectations. We've seen zero slip and excellent axial stability.",
-    name: "Vikramaditya Singh",
-    role: "Chief Metallurgist, BHEL",
-    avatar: team3Img
-  },
-  {
-    id: 9,
-    quote: "Outstanding service. The logistics team ensured rapid dispatch, keeping our paper mill operational during a critical breakdown.",
-    name: "Ramesh Krishnan",
-    role: "Procurement Director, Century Pulp & Paper",
-    avatar: team4Img
-  },
-  {
-    id: 10,
-    quote: "They delivered custom clearance bearings for our sugar mill crushers, understanding our high-shock needs perfectly.",
-    name: "Priyanka Nair",
-    role: "Plant Manager, Hindalco",
-    avatar: team2Img
-  }
+const tickerStories = [
+  { quote: "Our new website is fast, mobile-friendly and easy to update. The team understood exactly what our customers were looking for.", name: "Simran Kaur", role: "Owner, Boutique Clothing Brand", avatar: team1Img },
+  { quote: "From UI/UX design to the final Flutter app, Entec Media handled everything professionally and launched on both app stores on time.", name: "Karan Mehta", role: "Co-Founder, Food Delivery Startup", avatar: team3Img },
+  { quote: "Clear communication, transparent reporting and creative ideas every month. It feels like having an in-house marketing team.", name: "Harpreet Singh", role: "Managing Partner, Hospitality Group", avatar: team1Img },
+  { quote: "The logo and brand identity they designed gave our business a completely professional look across print and social media.", name: "Priya Malhotra", role: "Founder, Organic Skincare Brand", avatar: team2Img },
+  { quote: "Our Google Ads account was wasting money. Entec Media restructured it and our cost per enquiry dropped significantly.", name: "Vikram Bansal", role: "Owner, Interior Design Studio", avatar: team3Img },
+  { quote: "They built our WooCommerce store with smooth checkout and payment integration. Online orders have grown steadily ever since.", name: "Ankit Jindal", role: "CEO, Home Decor E-Commerce Store", avatar: team4Img },
+  { quote: "The dashboard UI they designed for our SaaS product made onboarding so much simpler for our customers.", name: "Rahul Verma", role: "Product Head, B2B SaaS Company", avatar: team2Img },
+  { quote: "Social media creatives, reels and ad campaigns — all handled on time and always on-brand. Highly recommended.", name: "Jasleen Kaur", role: "Marketing Manager, Education Institute", avatar: team1Img },
 ];
 
+/** Kudos "Social proof": arrow-driven featured story with four result stats, then an endless testimonial ticker. */
 export default function Testimonials() {
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
-
-  const row1Ref = useRef<HTMLDivElement>(null);
-  const row2Ref = useRef<HTMLDivElement>(null);
-
-  const isRow1Hovered = useRef(false);
-  const isRow2Hovered = useRef(false);
-
-  const targetProgress = useRef(0);
-  const currentProgress = useRef(0);
-  const animationFrameId = useRef<number | null>(null);
-  const marqueeFrameId = useRef<number | null>(null);
-
-  // Intersection Observer for section entrance
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsRevealed(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
-    };
-  }, []);
-
-  // Text scroll highlight calculation
-  useEffect(() => {
-    let isAnimating = false;
-
-    const updateAnimation = () => {
-      const diffText = targetProgress.current - currentProgress.current;
-      if (Math.abs(diffText) > 0.0005) {
-        currentProgress.current += diffText * 0.08;
-        setScrollProgress(currentProgress.current);
-        animationFrameId.current = requestAnimationFrame(updateAnimation);
-      } else {
-        currentProgress.current = targetProgress.current;
-        setScrollProgress(targetProgress.current);
-        isAnimating = false;
-        if (animationFrameId.current) {
-          cancelAnimationFrame(animationFrameId.current);
-          animationFrameId.current = null;
-        }
-      }
-    };
-
-    const handleScroll = () => {
-      if (textRef.current) {
-        const rect = textRef.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-
-        const start = windowHeight * 0.85;
-        const end = windowHeight * 0.30;
-
-        const total = start - end;
-        const current = start - rect.top;
-
-        const rawProgress = current / total;
-        targetProgress.current = Math.max(0, Math.min(1, rawProgress));
-
-        if (!isAnimating) {
-          isAnimating = true;
-          animationFrameId.current = requestAnimationFrame(updateAnimation);
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-    };
-  }, []);
-
-  // Continuous marquee animation loop
-  useEffect(() => {
-    const speed = 0.8; // pixels per frame
-
-    const scrollMarquee = () => {
-      // Row 1: left scroll
-      if (row1Ref.current && !isRow1Hovered.current) {
-        const r1 = row1Ref.current;
-        r1.scrollLeft += speed;
-        if (r1.scrollLeft >= r1.scrollWidth / 2) {
-          r1.scrollLeft = 0;
-        }
-      }
-
-      // Row 2: right scroll
-      if (row2Ref.current && !isRow2Hovered.current) {
-        const r2 = row2Ref.current;
-        r2.scrollLeft -= speed;
-        if (r2.scrollLeft <= 0) {
-          r2.scrollLeft = r2.scrollWidth / 2;
-        }
-      }
-
-      marqueeFrameId.current = requestAnimationFrame(scrollMarquee);
-    };
-
-    // Initialize row 2 to start in the middle of loop
-    if (row2Ref.current) {
-      row2Ref.current.scrollLeft = row2Ref.current.scrollWidth / 2;
-    }
-
-    marqueeFrameId.current = requestAnimationFrame(scrollMarquee);
-
-    return () => {
-      if (marqueeFrameId.current) {
-        cancelAnimationFrame(marqueeFrameId.current);
-      }
-    };
-  }, []);
-
-  // Manual navigation buttons scroll rows in opposing directions
-  const handlePrev = () => {
-    const step = 380; // card width + gap
-    if (row1Ref.current) {
-      row1Ref.current.scrollBy({ left: -step, behavior: "smooth" });
-    }
-    if (row2Ref.current) {
-      row2Ref.current.scrollBy({ left: step, behavior: "smooth" });
-    }
-  };
-
-  const handleNext = () => {
-    const step = 380;
-    if (row1Ref.current) {
-      row1Ref.current.scrollBy({ left: step, behavior: "smooth" });
-    }
-    if (row2Ref.current) {
-      row2Ref.current.scrollBy({ left: -step, behavior: "smooth" });
-    }
-  };
-
-  const words = heroTestimonial.quote.split(" ");
+  const [index, setIndex] = useState(0);
+  const story = featuredStories[index];
+  const go = (dir: 1 | -1) => setIndex((i) => (i + dir + featuredStories.length) % featuredStories.length);
 
   return (
-    <section id="testimonials" ref={sectionRef} className="testimonials-section">
+    <section id="testimonials" className="k-section k-social" data-theme="light">
       <div className="container">
-        
-        {/* Top 3-Column Layout */}
-        <div className={`why-top-layout reveal-item ${isRevealed ? "revealed" : ""}`}>
-          
-          {/* Left Column: Label + Hero Author Info */}
-          <div className="why-col-left">
-            <span className="why-section-label">+ SOCIAL PROOF</span>
-
-            <div className="why-rating-card">
-              <div className="why-avatar-group">
-                <Image src={team1Img} alt="Team member 1" className="why-avatar-bubble" />
-                <Image src={team2Img} alt="Team member 2" className="why-avatar-bubble" />
-                <Image src={team3Img} alt="Team member 3" className="why-avatar-bubble" />
-                <Image src={team4Img} alt="Team member 4" className="why-avatar-bubble" />
-              </div>
-              <div className="why-rating-info">
-                <div className="why-rating-stars-row">
-                  <span className="why-rating-stars">★★★★★</span>
-                  <span className="why-rating-val">4.9/5</span>
-                </div>
-                <p className="why-rating-label">TRUSTED BY TOP BRANDS</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Center Column: Title + Scroll Highlight Quote */}
-          <div className="why-col-center">
-            <h2 className="why-main-title">
-              Trusted <span className="by-text">by</span><br />
+        <SectionHeader
+          label="+ SOCIAL PROOF"
+          title={
+            <>
+              <span className="k-muted">Trusted</span> by
+              <br />
               great teams
-            </h2>
-            
-            <p ref={textRef} className="why-middle-text">
-              {words.map((word, idx) => {
-                const threshold = idx / words.length;
-                const isActive = scrollProgress > threshold;
-                return (
-                  <span key={idx} className="why-word-wrapper">
-                    <span className={`why-word ${isActive ? "active" : ""}`}>
-                      {word}
-                    </span>
-                    {" "}
-                  </span>
-                );
-              })}
-            </p>
-          </div>
+            </>
+          }
+          desc="Startups and growing businesses trust us with their websites, apps and digital marketing."
+        />
 
-          {/* Right Column: Sidebar Description */}
-          <div className="why-col-right">
-            <p className="why-header-desc">
-              We partner with ambitious teams and deliver work that performs in the real world.
-            </p>
-          </div>
-
-        </div>
-
-
-
-        {/* Bottom Double Marquee Slider Container */}
-        <div className={`testimonials-slider-section reveal-item ${isRevealed ? "revealed" : ""}`} style={{ transitionDelay: "0.2s" }}>
-          <h3 className="testimonials-slider-heading">Real stories from teams we&apos;ve partnered with</h3>
-          
-          <div className="testimonials-double-marquee">
-            
-            {/* Row 1: Leftward Marquee */}
-            <div 
-              ref={row1Ref}
-              className="testimonials-scroll-row"
-              onMouseEnter={() => { isRow1Hovered.current = true; }}
-              onMouseLeave={() => { isRow1Hovered.current = false; }}
-            >
-              <div className="testimonials-row-track">
-                {[...row1Testimonials, ...row1Testimonials].map((item, idx) => (
-                  <div key={`r1-${idx}`} className="testimonial-card">
-                    <p className="testimonial-card-text">&ldquo;{item.quote}&rdquo;</p>
-                    <div className="testimonial-card-footer">
-                      <Image src={item.avatar} alt={item.name} className="testimonial-card-avatar" />
-                      <div className="testimonial-card-author-info">
-                        <h4 className="testimonial-card-author-name">{item.name}</h4>
-                        <p className="testimonial-card-author-role">{item.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+        <Reveal className="k-story">
+          <div className="k-story-client">
+            <span className="k-quote-mark" aria-hidden="true">&ldquo;&ldquo;</span>
+            <div className="k-author" key={`a-${index}`}>
+              <Image src={story.avatar} alt="" width={40} height={40} className="k-author-avatar k-story-swap" />
+              <div className="k-story-swap">
+                <p className="k-author-name">{story.name}</p>
+                <p className="k-author-role">{story.role}</p>
               </div>
             </div>
-
-            {/* Row 2: Rightward Marquee */}
-            <div 
-              ref={row2Ref}
-              className="testimonials-scroll-row"
-              onMouseEnter={() => { isRow2Hovered.current = true; }}
-              onMouseLeave={() => { isRow2Hovered.current = false; }}
-            >
-              <div className="testimonials-row-track">
-                {[...row2Testimonials, ...row2Testimonials].map((item, idx) => (
-                  <div key={`r2-${idx}`} className="testimonial-card">
-                    <p className="testimonial-card-text">&ldquo;{item.quote}&rdquo;</p>
-                    <div className="testimonial-card-footer">
-                      <Image src={item.avatar} alt={item.name} className="testimonial-card-avatar" />
-                      <div className="testimonial-card-author-info">
-                        <h4 className="testimonial-card-author-name">{item.name}</h4>
-                        <p className="testimonial-card-author-role">{item.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
           </div>
-        </div>
 
+          <div className="k-story-main">
+            <p className="k-story-quote k-story-swap" key={`q-${index}`}>
+              {story.quote}
+            </p>
+            <div className="k-story-stats" key={`s-${index}`}>
+              {story.stats.map((s, i) => (
+                <div key={s.label} className="k-story-stat k-story-swap" style={{ animationDelay: `${i * 0.06}s` }}>
+                  <span className="k-story-stat-num">{s.num}</span>
+                  <span className="k-mono-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="k-story-nav">
+            <span className="k-mono-label">
+              {String(index + 1).padStart(2, "0")} / {String(featuredStories.length).padStart(2, "0")}
+            </span>
+            <div className="k-story-arrows">
+              <button type="button" className="k-arrow" onClick={() => go(-1)} aria-label="Previous testimonial">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M15 5l-7 7 7 7" /></svg>
+              </button>
+              <button type="button" className="k-arrow" onClick={() => go(1)} aria-label="Next testimonial">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+          </div>
+        </Reveal>
+
+        <p className="k-mono-small k-ticker-label">Real stories from teams we&apos;ve partnered with:</p>
+      </div>
+
+      <div className="k-ticker" aria-label="Client testimonials">
+        <div className="k-ticker-track">
+          {[...tickerStories, ...tickerStories].map((item, i) => (
+            <figure key={i} className="k-ticker-card" aria-hidden={i >= tickerStories.length}>
+              <blockquote>{item.quote}</blockquote>
+              <figcaption className="k-author">
+                <Image src={item.avatar} alt="" width={40} height={40} className="k-author-avatar" />
+                <div>
+                  <p className="k-author-name">{item.name}</p>
+                  <p className="k-author-role">{item.role}</p>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
     </section>
   );

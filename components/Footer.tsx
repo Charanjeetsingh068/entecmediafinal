@@ -2,232 +2,154 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import darkLogoImg from "@/public/images/darklogo.svg";
+import whiteLogoImg from "@/public/images/whitelogo.svg";
+import { siteConfig } from "@/lib/siteConfig";
+import SectionHeader from "@/components/shared/SectionHeader";
+import NewsletterForm from "@/components/forms/NewsletterForm";
 
 export default function Footer() {
   const scrollToTop = () => {
-    const startPosition =
-      window.scrollY ||
-      window.pageYOffset ||
-      document.documentElement.scrollTop;
-
+    if (window.__lenis) {
+      window.__lenis.scrollTo(0, { duration: 1.2 });
+      return;
+    }
+    const startPosition = window.scrollY || document.documentElement.scrollTop;
     if (startPosition === 0) return;
 
-    const duration = 800; // 800ms duration for butter smooth scrolling
+    const duration = 800;
     let startTime: number | null = null;
-
-    const easeInOutCubic = (t: number): number => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
+    const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
     const animateScroll = (currentTime: number) => {
       if (startTime === null) startTime = currentTime;
-      const timeElapsed = currentTime - startTime;
-      const progress = Math.min(timeElapsed / duration, 1);
-      const easeProgress = easeInOutCubic(progress);
-
-      window.scrollTo(0, startPosition * (1 - easeProgress));
-
-      if (timeElapsed < duration) {
-        requestAnimationFrame(animateScroll);
-      } else {
-        window.scrollTo(0, 0);
-      }
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      window.scrollTo(0, startPosition * (1 - easeInOutCubic(progress)));
+      if (progress < 1) requestAnimationFrame(animateScroll);
     };
-
     requestAnimationFrame(animateScroll);
   };
 
   return (
-    <footer className="kudos-footer-container">
-      <div className="container kudos-footer-content">
-        {/* Main Footer Grid Layout */}
-        <div className="kudos-footer-grid">
-          {/* Left Column: Logo, Tagline, Large Email & Phone */}
-          <div className="kudos-left-col">
-            <div className="kudos-hero-block">
-              {/* Entec Media Logo above 'We choose' quote */}
-              <div className="kudos-footer-logo-wrapper">
-                <Link href="/">
-                  <Image
-                    src={darkLogoImg}
-                    alt="Entec Media Logo"
-                    className="kudos-footer-logo"
-                    height={82}
-                    priority
-                  />
+    <>
+      {/* Newsletter (Kudos "Signals worth paying attention") */}
+      <section className="k-newsletter-section" data-theme="light">
+        <div className="container" data-kfx="y:-24">
+          <SectionHeader
+            label="+ NEWSLETTER"
+            title={
+              <>
+                <span className="k-muted">Signals</span> worth
+                <br />
+                paying attention
+              </>
+            }
+            desc="A monthly digest of practical tips on websites, apps, SEO and ads that help businesses grow online."
+          />
+          <div className="k-newsletter-row">
+            <p className="k-mono-small">No spam. Unsubscribe anytime.</p>
+            <NewsletterForm />
+          </div>
+        </div>
+      </section>
+
+      <footer className="kudos-footer-container" data-theme="dark">
+        {/* Giant watermark */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/entec-wordmark-light.svg" alt="" aria-hidden="true" className="k-footer-watermark" />
+
+        <div className="container kudos-footer-content">
+          <div className="kudos-footer-grid">
+            {/* Column 1: Brand statement + contact */}
+            <div className="kudos-left-col">
+              <div className="kudos-hero-block">
+                <Link href="/" className="kudos-footer-logo-wrapper" aria-label="Entec Media home">
+                  <Image src={whiteLogoImg} alt="Entec Media" className="kudos-footer-logo" height={52} />
                 </Link>
+                <p className="kudos-quote-text">
+                  We <strong>design</strong>, <strong>develop</strong> and <strong>market</strong> digital
+                  experiences that help businesses <strong>grow online</strong>.
+                </p>
+                <p className="k-mono-small kudos-footer-meta">
+                  IT &amp; Digital Marketing Company
+                  <br />
+                  Based in Zirakpur, Punjab, India
+                </p>
               </div>
 
-              <p className="kudos-quote-text">
-                We choose <strong>clarity over clutter</strong> and{" "}
-                <strong>depth over decoration</strong>, because strong brands
-                deserve <strong>meaningful foundations</strong>.
-              </p>
+              <div className="kudos-contact-block">
+                <a href={`mailto:${siteConfig.contact.email}`} className="kudos-email-link">
+                  {siteConfig.contact.email}
+                </a>
+                <a href={siteConfig.contact.phoneHref} className="kudos-phone-link">
+                  {siteConfig.contact.phone}
+                </a>
+              </div>
             </div>
 
-            <div className="kudos-contact-block">
-              <a href="mailto:info@entecmedia.com" className="kudos-email-link">
-                info@entecmedia.com
-              </a>
-              <a href="tel:+919812388888" className="kudos-phone-link">
-                +91-9812388888
-              </a>
-            </div>
-          </div>
+            {/* Column 2: Main navigation */}
+            <div className="kudos-mid-col">
+              <nav className="kudos-main-nav" aria-label="Footer">
+                {siteConfig.navLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="kudos-nav-item">
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
 
-          {/* Middle Column: Main Navigation Links */}
-          <div className="kudos-mid-col">
-            <nav className="kudos-main-nav">
-              <Link href="/" className="kudos-nav-item">
-                Home
-              </Link>
-              <Link href="/about" className="kudos-nav-item">
-                About
-              </Link>
-              <Link href="/services" className="kudos-nav-item">
-                Services
-              </Link>
-              <Link href="/portfolio" className="kudos-nav-item">
-                Portfolio
-              </Link>
-              <Link href="/blog" className="kudos-nav-item">
-                Blog
-              </Link>
-              <Link href="/contact" className="kudos-nav-item">
-                Contact
-              </Link>
-            </nav>
-          </div>
-
-          {/* Vertical Dotted Divider */}
-          <div className="kudos-vertical-divider" aria-hidden="true" />
-
-          {/* Right Column: Address (Top), Social media & Legal (Bottom) */}
-          <div className="kudos-right-col">
-            {/* Top Right Address Section */}
-            <div className="kudos-address-block">
-              <span className="kudos-address-title">Location / Address</span>
-              <p className="kudos-address-text">
-                #123, First Floor, Complex Street,<br />
-                Zirakpur, Punjab, India
-              </p>
+              <div className="kudos-sub-links-grid">
+                <div className="kudos-link-group">
+                  <span className="kudos-link-section-title">Social media</span>
+                  <ul className="kudos-sub-links-list">
+                    {siteConfig.socialLinks.map((link) => (
+                      <li key={link.label}>
+                        <a href={link.href} target="_blank" rel="noopener noreferrer" className="kudos-sub-link">
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
 
-            {/* Bottom Right Social & Legal Links Grid */}
-            <div className="kudos-sub-links-grid">
-              {/* Social media column */}
-              <div className="kudos-link-group">
-                <span className="kudos-link-section-title">Social media</span>
-                <ul className="kudos-sub-links-list">
-                  <li>
-                    <a
-                      href="https://framer.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="kudos-sub-link"
-                    >
-                      Framer
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="https://twitter.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="kudos-sub-link"
-                    >
-                      Twitter
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="https://linkedin.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="kudos-sub-link"
-                    >
-                      LinkedIn
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="https://instagram.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="kudos-sub-link"
-                    >
-                      Instagram
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#academy" className="kudos-sub-link">
-                      Academy
-                    </a>
-                  </li>
-                </ul>
+            {/* Column 3: Address + legal */}
+            <div className="kudos-right-col">
+              <div className="kudos-address-block">
+                <span className="kudos-link-section-title">Location / Address</span>
+                <p className="kudos-address-text">
+                  {siteConfig.contact.addressLines[0]}
+                  <br />
+                  {siteConfig.contact.addressLines[1]}
+                </p>
+                <p className="kudos-address-text kudos-hours">{siteConfig.contact.hours}</p>
               </div>
 
-              {/* Legal column */}
               <div className="kudos-link-group">
                 <span className="kudos-link-section-title">Legal</span>
                 <ul className="kudos-sub-links-list">
-                  <li>
-                    <Link href="#terms" className="kudos-sub-link">
-                      Terms of Service
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#privacy" className="kudos-sub-link">
-                      Privacy Policy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#cookie-policy" className="kudos-sub-link">
-                      Cookie Policy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#cookie-settings" className="kudos-sub-link">
-                      Cookie Settings
-                    </Link>
-                  </li>
+                  {siteConfig.legalLinks.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="kudos-sub-link">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Bar: Copyright & Back to Top */}
-        <div className="kudos-bottom-bar">
-          <div className="kudos-bottom-left">
-            <span>© 2026 Entec Media. All rights reserved.</span>
-          </div>
-
-          <div className="kudos-bottom-right">
-            <button
-              onClick={scrollToTop}
-              className="kudos-scroll-top-btn"
-              title="Back to top"
-              aria-label="Scroll back to top"
-            >
+          <div className="kudos-bottom-bar">
+            <span className="k-mono-small">© {new Date().getFullYear()} Entec Media. All rights reserved.</span>
+            <button onClick={scrollToTop} className="kudos-scroll-top-btn" aria-label="Scroll back to top">
               <span>Back to top</span>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 15l-6-6-6 6" />
               </svg>
             </button>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }

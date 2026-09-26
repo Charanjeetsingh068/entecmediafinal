@@ -11,6 +11,8 @@ export interface PortfolioProjectDetail {
   heroTagline: string;
   heroDesc: string;
   heroImage: string;
+  /** Short card description used on listing pages */
+  summary: string;
   metric: string;
   stats: { value: string; label: string }[];
   challengeTitle: string;
@@ -20,6 +22,9 @@ export interface PortfolioProjectDetail {
   galleryImages: string[];
   results: { value: string; title: string; desc: string }[];
 }
+
+const img = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?w=1600&auto=format&fit=crop&q=75`;
 
 export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail> = {
   "nexatech-enterprise": {
@@ -34,7 +39,8 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
     duration: "8 Weeks",
     heroTagline: "High-speed Next.js 16 web application built for enterprise SaaS solutions.",
     heroDesc: "We engineered a server-rendered, microservices-driven web portal for NexaTech Global. Featuring real-time data visualization, instant page transitions, and strict TypeScript architecture.",
-    heroImage: "/images/aboutimg.png",
+    heroImage: img("1551288049-bebda4e38f71"),
+    summary: "A high-performance Next.js web application for an enterprise SaaS company with real-time analytics dashboards and a headless CMS.",
     metric: "+240% Organic Traffic",
     stats: [
       { value: "+240%", label: "Organic Traffic Lift" },
@@ -51,7 +57,7 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
       "We rebuilt the web platform from the ground up using Next.js 16 and TypeScript. By deploying to Vercel's global edge network and connecting Sanity Headless CMS, we achieved instant page renders.",
       "A custom UI/UX design system was created in Figma, featuring interactive product demos, clean dark/light mode switches, and automated lead capture webhooks.",
     ],
-    galleryImages: ["/images/aboutbac.png", "/images/entec-about.png", "/images/bannerbac.png"],
+    galleryImages: [img("1498050108023-c5249f4df085"), img("1555066931-4365d14bab8c"), img("1504868584819-f8e8b4b6d7e3")],
     results: [
       { value: "240%", title: "Organic SEO Growth", desc: "Achieved top 3 Google search rankings for competitive enterprise SaaS keywords." },
       { value: "0.3s", title: "Page Speed Load Time", desc: "Reduced initial server load time from 4.2s to sub-300ms across all global edge nodes." },
@@ -71,7 +77,8 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
     duration: "6 Weeks",
     heroTagline: "Bespoke brand identity, luxury typography, and interactive Figma design system.",
     heroDesc: "A complete visual brand identity transformation for Lumina Studios. We established cohesive design tokens, typography scales, editorial print packaging, and high-fidelity UI design.",
-    heroImage: "/images/entec-about.png",
+    heroImage: img("1581291518857-4e27b48ff24e"),
+    summary: "Complete visual identity, brand guidelines and a responsive Figma UI design system for a premium lifestyle brand.",
     metric: "3.5x Brand Perception",
     stats: [
       { value: "3.5x", label: "Brand Perception Uplift" },
@@ -88,7 +95,7 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
       "We developed an atomic Figma design system with strict color tokens, bespoke serif typography, and dark/light UI variants.",
       "The visual identity was expanded into luxury print packaging, digital marketing assets, and dynamic web prototypes.",
     ],
-    galleryImages: ["/images/aboutimg.png", "/images/aboutbac.png", "/images/about.png"],
+    galleryImages: [img("1586717791821-3f44a563fa4c"), img("1626785774573-4b799315345d"), img("1559028012-481c04fa702d")],
     results: [
       { value: "3.5x", title: "Brand Equity Index", desc: "Elevated market positioning to attract high-net-worth client accounts." },
       { value: "100%", title: "Design Consistency", desc: "Eliminated visual discrepancy across marketing, social media, and web assets." },
@@ -108,7 +115,8 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
     duration: "7 Weeks",
     heroTagline: "Custom WooCommerce storefront engineered for seamless checkout and revenue growth.",
     heroDesc: "We designed and developed a bespoke WordPress e-commerce experience for Apex Retail Group. Featuring custom checkout drawers, high-speed product filters, and payment gateway integrations.",
-    heroImage: "/images/bannerbac.png",
+    heroImage: img("1523474253046-8cd2748b5fd2"),
+    summary: "Custom WordPress & WooCommerce store with optimised checkout, product filters and payment gateway integration.",
     metric: "+185% Sales Revenue",
     stats: [
       { value: "+185%", label: "Sales Revenue Lift" },
@@ -125,7 +133,7 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
       "We engineered a light-weight custom WordPress theme from scratch without bloated page builder plugins.",
       "Implemented a 1-step Ajax cart drawer, dynamic cross-sell recommendations, dynamic shipping progress bars, and localized Stripe payment gateways.",
     ],
-    galleryImages: ["/images/aboutbac.png", "/images/aboutimg.png", "/images/team1.png"],
+    galleryImages: [img("1563986768609-322da13575f3"), img("1547658719-da2b51169166"), img("1522542550221-31fd19575a2d")],
     results: [
       { value: "185%", title: "Revenue Increase", desc: "Achieved record monthly sales volume within 60 days of launch." },
       { value: "52%", title: "Higher Conversion Rate", desc: "Streamlined checkout drawer reduced cart abandonment by over 40%." },
@@ -145,7 +153,8 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
     duration: "Ongoing",
     heroTagline: "Organic SEO strategy & Core Web Vitals optimization achieving #1 Google rankings.",
     heroDesc: "A complete technical SEO and content strategy transformation for CyberShield Security. We optimized site architecture, resolved indexing errors, and acquired high-authority industry backlinks.",
-    heroImage: "/images/about.png",
+    heroImage: img("1432888498266-38ffec3eaf0a"),
+    summary: "Technical SEO overhaul, keyword mapping, content and link building that took a cybersecurity brand to page one of Google.",
     metric: "#1 Rank for 40+ Keywords",
     stats: [
       { value: "#1 Rank", label: "Google Keyword Dominance" },
@@ -162,7 +171,7 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
       "We executed an in-depth technical audit, fixed canonical redirects, implemented JSON-LD structured schema markup, and optimized page speed metrics.",
       "Created a high-intent content hub with targeted articles, whitepapers, and authoritative digital PR backlinks.",
     ],
-    galleryImages: ["/images/aboutimg.png", "/images/bannerbac.png", "/images/team2.png"],
+    galleryImages: [img("1562577309-4932fdd64cd1"), img("1460925895917-afdab827c52f"), img("1504868584819-f8e8b4b6d7e3")],
     results: [
       { value: "#1 Rank", title: "Top Google Rankings", desc: "Secured top 3 search positions for over 40 high-value cybersecurity keywords." },
       { value: "310%", title: "Inbound Organic Leads", desc: "Generated a steady stream of qualified inbound sales leads month over month." },
@@ -182,7 +191,8 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
     duration: "Ongoing",
     heroTagline: "Data-backed Google & Meta PPC advertising scaling customer acquisition profitability.",
     heroDesc: "Multi-channel paid acquisition engine combining targeted Google Search campaigns and Meta Ads (Facebook & Instagram) with server-side conversion tracking.",
-    heroImage: "/images/team1.png",
+    heroImage: img("1573804633927-bfcbcd909acd"),
+    summary: "Google Ads and Meta Ads (Facebook & Instagram) campaigns with server-side tracking, built for profitable customer acquisition.",
     metric: "4.2x Average ROAS",
     stats: [
       { value: "4.2x", label: "Average Campaign ROAS" },
@@ -199,7 +209,7 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
       "We implemented Meta Conversions API (CAPI) and Google Server-Side Tagging to capture 100% of purchase data.",
       "Launched dedicated high-converting landing pages and deployed dynamic video creative A/B testing across Meta Reels and Google Search.",
     ],
-    galleryImages: ["/images/aboutbac.png", "/images/about.png", "/images/team3.png"],
+    galleryImages: [img("1611162617213-7d7a39e9b1d7"), img("1557838923-2985c318be48"), img("1460925895917-afdab827c52f")],
     results: [
       { value: "4.2x", title: "Proven ROAS", desc: "Scaled monthly ad spend profitably while maintaining a 4.2x return on ad spend." },
       { value: "-35%", title: "Lower Acquisition Cost", desc: "Decreased cost-per-acquisition (CPA) by testing high-converting ad hooks." },
@@ -219,7 +229,8 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
     duration: "10 Weeks",
     heroTagline: "Full-stack React.js web portal with real-time data widgets and responsive UI.",
     heroDesc: "A state-of-the-art cloud management application built with React.js and Node.js APIs. Features intuitive interactive data widgets, custom dark theme UI, and fast API response.",
-    heroImage: "/images/team2.png",
+    heroImage: img("1555066931-4365d14bab8c"),
+    summary: "Full-stack React.js cloud application with data visualisation widgets, companion mobile app screens and REST API integrations.",
     metric: "99/100 Speed Score",
     stats: [
       { value: "99/100", label: "Performance Score" },
@@ -236,7 +247,7 @@ export const portfolioProjectsDictionary: Record<string, PortfolioProjectDetail>
       "We designed and developed a modular React.js frontend connected to Node.js REST APIs.",
       "Incorporated real-time chart widgets, smooth micro-interactions, dark/light theme switching, and accessible keyboard navigation.",
     ],
-    galleryImages: ["/images/aboutimg.png", "/images/entec-about.png", "/images/bannerbac.png"],
+    galleryImages: [img("1551650975-87deedd944c3"), img("1512941937669-90a1b58e7e9c"), img("1551288049-bebda4e38f71")],
     results: [
       { value: "99/100", title: "Performance Benchmark", desc: "Delivered ultra-smooth 60fps UI renders even under heavy data polling." },
       { value: "70%", title: "Faster User Onboarding", desc: "Intuitive UI reduced user onboarding time from hours to minutes." },
@@ -254,7 +265,9 @@ export const portfolioSlugAliases: Record<string, string> = {
   "project-6": "hyperion-cloud",
 };
 
-export function getPortfolioProjectDetail(slug: string): PortfolioProjectDetail {
+export const portfolioProjects: PortfolioProjectDetail[] = Object.values(portfolioProjectsDictionary);
+
+export function getPortfolioProjectDetail(slug: string): PortfolioProjectDetail | undefined {
   const normalizedSlug = portfolioSlugAliases[slug] || slug;
-  return portfolioProjectsDictionary[normalizedSlug] || portfolioProjectsDictionary["nexatech-enterprise"];
+  return portfolioProjectsDictionary[normalizedSlug];
 }

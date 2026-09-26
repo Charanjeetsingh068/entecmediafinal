@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import whiteLogoImg from "@/public/images/whitelogo.svg";
 import darkLogoImg from "@/public/images/darklogo.svg";
 import hamburgerMenuImg from "@/public/images/hamburger-menu.svg";
+import { siteConfig } from "@/lib/siteConfig";
 
 // ==========================================
 // NAVIGATION & BRAND CONFIGURATION
@@ -15,36 +16,18 @@ import hamburgerMenuImg from "@/public/images/hamburger-menu.svg";
 const NAVIGATION_CONFIG = {
   brand: {
     name: "Entec",
-    tagline: "We design brands <br /><strong>people remember</strong> and <br />develop digital experiences <br />that <span class=\"blue-highlight\">drive growth</span>.",
+    tagline: "We design, develop <br />and market <strong>digital products</strong> <br />that <span class=\"blue-highlight\">drive growth</span>.",
     agencyType: "",
     location: "",
   },
   contact: {
-    email: "hello@entecmedia.com",
-    phone: "+91 98765 43210",
-    phoneHref: "tel:+919876543210",
+    email: siteConfig.contact.email,
+    phone: siteConfig.contact.phone,
+    phoneHref: siteConfig.contact.phoneHref,
   },
-  menuLinks: [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Services", href: "/services" },
-    { label: "Portfolio", href: "/portfolio" },
-    { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
-  ],
-  socials: [
-    { label: "Facebook", href: "#" },
-    { label: "Twitter", href: "#" },
-    { label: "LinkedIn", href: "#" },
-    { label: "Instagram", href: "#" },
-    { label: "YouTube", href: "#" },
-  ],
-  legals: [
-    { label: "Terms of Service", href: "#" },
-    { label: "Privacy Policy", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-    { label: "Cookie Settings", href: "#" },
-  ],
+  menuLinks: siteConfig.navLinks,
+  socials: siteConfig.socialLinks,
+  legals: siteConfig.legalLinks,
   footer: {
     copyright: "© 2026 Entec Media. All rights reserved.",
     credit: "",
@@ -118,6 +101,16 @@ function getLegalIcon(label: string) {
           <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
       );
+    case "user data deletion":
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+        </svg>
+      );
     case "cookie policy":
     case "cookies policy":
       return (
@@ -150,6 +143,7 @@ export default function Header() {
     visible: true,
     sticky: false,
     theme: "dark", // "dark" | "light"
+    overBanner: false,
   });
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -165,15 +159,18 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  // Close menu overlay instantly on route navigation
-  useEffect(() => {
+  // Close menu overlay instantly on route navigation (state adjusted during render;
+  // the scroll-lock effect above removes the body class once menuOpen flips to false)
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setMenuOpen(false);
-    document.body.classList.remove("menu-open-scroll-lock");
-  }, [pathname]);
+  }
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
     let ticking = false;
+    let lastScrollY = window.scrollY;
+    let hidden = false;
 
     const updateHeaderTheme = () => {
       const currentScrollY = window.scrollY;
@@ -181,66 +178,58 @@ export default function Header() {
       // 1. Determine stickiness (sticky after scrolling past 90px)
       const isSticky = currentScrollY > 90;
 
-      // 2. Determine visibility (hide on scroll down, show on scroll up)
-      let isVisible = true;
-      if (isSticky) {
-        if (currentScrollY > lastScrollY) {
-          isVisible = false; // scrolling down
-        } else {
-          isVisible = true; // scrolling up
-        }
-      }
+      // 2. Kudos behaviour: hide while scrolling down, reveal on scroll up.
+      //    A small threshold stops tiny (smooth-scroll) direction changes from making it flicker.
+      const delta = currentScrollY - lastScrollY;
+      if (!isSticky) hidden = false;
+      else if (delta > 6) hidden = true;
+      else if (delta < -6) hidden = false;
+      if (Math.abs(delta) > 6 || !isSticky) lastScrollY = currentScrollY;
+      const isVisible = !hidden;
 
-      // 3. Determine theme of the section under the header (Inner pages default to light, homepage defaults to dark)
+      // 3. Theme of whatever is actually painted under the header's centre line.
+      //    elementsFromPoint respects stacking, so sticky/pinned sections underneath are ignored.
       let theme = pathname === "/" ? "dark" : "light";
-      const sections = document.querySelectorAll("section, header, footer, main, div[class*='section'], div[class*='wrapper']");
-      
-      for (let i = 0; i < sections.length; i++) {
-        const section = sections[i] as HTMLElement;
-        const rect = section.getBoundingClientRect();
-        
-        // If the header horizontal center (y = 45) is inside this section
-        if (rect.top <= 45 && rect.bottom >= 45) {
-          // Check explicit data-theme or light classes
-          const isLightClass = 
-            section.classList.contains("light") || 
-            section.classList.contains("light-section") ||
-            section.getAttribute("data-theme") === "light";
-            
-          if (isLightClass) {
-            theme = "light";
+      const headerEl = document.querySelector<HTMLElement>(".header-main");
+      const probeY = Math.max(40, (headerEl?.offsetHeight ?? 88) - 8); // section under the header's bottom edge
+      const stack = document.elementsFromPoint(Math.min(24, window.innerWidth * 0.02), probeY);
+      for (const el of stack) {
+        if (el.closest(".header-main, .nav-overlay, .k-guides")) continue;
+        let node: HTMLElement | null = el as HTMLElement;
+        let resolved: string | null = null;
+        while (node && node !== document.body) {
+          const explicit = node.getAttribute("data-theme");
+          if (explicit === "light" || explicit === "dark") {
+            resolved = explicit;
             break;
           }
-
-          // Check computed background brightness
-          const bg = window.getComputedStyle(section).backgroundColor;
-          const rgb = bg.match(/\d+/g);
-          if (rgb && rgb.length >= 3) {
-            const r = parseInt(rgb[0]);
-            const g = parseInt(rgb[1]);
-            const b = parseInt(rgb[2]);
-            const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
-            const a = rgb[3] !== undefined ? parseFloat(rgb[3]) : 1;
-            
-            if (a > 0.1) {
-              if (brightness > 160) {
-                theme = "light";
-              } else {
-                theme = "dark";
-              }
-              break;
-            }
+          const rgb = window.getComputedStyle(node).backgroundColor.match(/[\d.]+/g);
+          if (rgb && rgb.length >= 3 && (rgb[3] === undefined || parseFloat(rgb[3]) > 0.1)) {
+            const brightness = 0.299 * +rgb[0] + 0.587 * +rgb[1] + 0.114 * +rgb[2];
+            resolved = brightness > 160 ? "light" : "dark";
+            break;
           }
+          node = node.parentElement;
+        }
+        if (resolved) {
+          theme = resolved;
+          break;
         }
       }
 
-      setScrollState({
-        visible: isVisible,
-        sticky: isSticky,
-        theme: theme,
-      });
+      // Transparent only while the header sits over the home banner (the fixed hero video)
+      const banner = document.querySelector(".banner-section");
+      const overBanner =
+        pathname === "/" && !!banner && currentScrollY < window.innerHeight - 88 &&
+        !stack.some((el) => el.closest(".main-content-wrapper"));
 
-      lastScrollY = currentScrollY;
+      // Only re-render when something actually changed (this runs on every scroll frame)
+      setScrollState((prev) =>
+        prev.visible === isVisible && prev.sticky === isSticky && prev.theme === theme && prev.overBanner === overBanner
+          ? prev
+          : { visible: isVisible, sticky: isSticky, theme, overBanner }
+      );
+
       ticking = false;
     };
 
@@ -267,6 +256,7 @@ export default function Header() {
     scrollState.sticky ? "header-sticky" : "header-normal",
     !scrollState.visible && scrollState.sticky ? "header-hidden" : "",
     isLightMode ? "header-theme-light" : "header-theme-dark",
+    scrollState.overBanner ? "header-over-banner" : "",
   ].filter(Boolean).join(" ");
 
   return (
@@ -288,7 +278,7 @@ export default function Header() {
       </header>
 
       {/* Full Page Navigation Overlay */}
-      <div className={`nav-overlay ${menuOpen ? "nav-overlay-open" : ""}`}>
+      <div className={`nav-overlay ${menuOpen ? "nav-overlay-open" : ""}`} data-lenis-prevent>
         <div className="container nav-overlay-wrapper">
           {/* Top Row Header */}
           <div className="nav-overlay-header">
@@ -317,8 +307,9 @@ export default function Header() {
               
               {/* Services Tags */}
               <div className="nav-services-tags">
-                <p>Digital Marketing <span className="tag-dot">•</span> IT Solutions</p>
-                <p>Branding <span className="tag-dot">•</span> Web Development</p>
+                <p>Website Design <span className="tag-dot">•</span> Development</p>
+                <p>Mobile Apps <span className="tag-dot">•</span> UI/UX Design</p>
+                <p>SEO <span className="tag-dot">•</span> Google &amp; Meta Ads</p>
               </div>
 
               <div className="nav-brand-meta">
@@ -363,12 +354,12 @@ export default function Header() {
                 <ul className="nav-icon-links">
                   {NAVIGATION_CONFIG.legals.map((link, idx) => (
                     <li key={idx}>
-                      <a href={link.href}>
+                      <Link href={link.href} onClick={() => setMenuOpen(false)}>
                         <div className="nav-icon-box">
                           {getLegalIcon(link.label)}
                         </div>
                         <span className="nav-link-label">{link.label}</span>
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

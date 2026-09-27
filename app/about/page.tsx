@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import AboutInfo from "@/components/about/AboutInfo";
-import AboutMission from "@/components/about/AboutMission";
-import AboutTeam from "@/components/about/AboutTeam";
-import AboutPhilosophy from "@/components/about/AboutPhilosophy";
-import AboutCTA from "@/components/about/AboutCTA";
-import CTABand from "@/components/shared/CTABand";
-import BlogSection from "@/components/home/BlogSection";
+import AboutHero from "@/components/about/AboutHero";
+import AboutOverview from "@/components/about/AboutOverview";
+import AboutWhy from "@/components/about/AboutWhy";
+import AboutPurpose from "@/components/about/AboutPurpose";
+import AboutPeople from "@/components/about/AboutPeople";
+import Testimonials from "@/components/home/Testimonials";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -14,17 +13,21 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
+/**
+ * About page: hero with breadcrumb (pinned, the body slides over it) → overview → why choose us (dark)
+ * → vision, mission & values (pinned horizontal scroll) → testimonials (dark, shared with home) → team.
+ * Styles: the "ABOUT PAGE" block in app/globals.css.
+ */
 export default function AboutPage() {
   return (
-    <div className="k-page about-page-wrapper">
-      <AboutInfo />
-      <div className="k-page-body">
-        <AboutMission />
-        <AboutTeam variant="about" />
-        <AboutPhilosophy />
-        <CTABand />
-        <AboutCTA source="about-page" />
-        <BlogSection />
+    <div className="k-page ab-page">
+      <AboutHero />
+      <div className="k-page-body ab-body">
+        <AboutOverview />
+        <AboutWhy />
+        <AboutPurpose />
+        <Testimonials />
+        <AboutPeople />
       </div>
     </div>
   );

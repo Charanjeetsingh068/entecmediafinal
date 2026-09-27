@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Intel_One_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -9,19 +9,27 @@ import AutoReveal from "@/components/shared/AutoReveal";
 import ButtonMagnet from "@/components/shared/ButtonMagnet";
 import { siteConfig } from "@/lib/siteConfig";
 
-// Inter with the optical-size axis renders large headings in the "Inter Display" cut used by Kudos.
-const interSans = Inter({
+// Fonts are self-hosted from app/fonts so builds never depend on downloading from Google Fonts.
+// Inter's variable file carries the optical-size axis, which renders large headings in the "Inter Display" cut.
+const interSans = localFont({
+  src: "./fonts/Inter-Variable.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
-  axes: ["opsz"],
+  weight: "100 900",
   display: "swap",
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
 });
 
-const intelMono = Intel_One_Mono({
+// Intel One Mono has no metric overrides in Next's font data, so it gets an explicit monospace fallback.
+const intelMono = localFont({
+  src: [
+    { path: "./fonts/IntelOneMono-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/IntelOneMono-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/IntelOneMono-600.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-intel-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
   display: "swap",
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"],
 });
 
 export const metadata: Metadata = {

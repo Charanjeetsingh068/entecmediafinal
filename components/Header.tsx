@@ -213,6 +213,21 @@ export default function Header() {
         }
         if (resolved) {
           theme = resolved;
+          // Dark sections: the header takes the section's own solid colour, so it looks exactly like it
+          // does at the top of the page (same colour behind it, same dashed line) instead of a black bar.
+          if (resolved === "dark" && headerEl) {
+            let bgNode: HTMLElement | null = el as HTMLElement;
+            let bg = "";
+            while (bgNode && bgNode !== document.documentElement) {
+              const c = window.getComputedStyle(bgNode).backgroundColor.match(/[\d.]+/g);
+              if (c && c.length >= 3 && (c[3] === undefined || parseFloat(c[3]) > 0.9)) {
+                bg = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+                break;
+              }
+              bgNode = bgNode.parentElement;
+            }
+            if (bg) headerEl.style.setProperty("--hdr-dark-bg", bg);
+          }
           break;
         }
       }

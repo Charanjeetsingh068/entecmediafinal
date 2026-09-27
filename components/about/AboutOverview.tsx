@@ -1,20 +1,26 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import CountUp from "@/components/shared/CountUp";
 import Reveal from "@/components/shared/Reveal";
 import ScrollHighlightText from "@/components/shared/ScrollHighlightText";
 import KButton from "@/components/shared/KButton";
 
 const photo = (id: string, w: number) => `https://images.unsplash.com/photo-${id}?w=${w}&auto=format&fit=crop&q=72`;
-const MAIN = "1552664730-d307ca884978"; // team planning at a whiteboard
-const SIDE = "1531482615713-2afd69097998"; // two people working at a screen
 
-const stats = [
-  { value: 20, suffix: "+", label: "Years of experience" },
-  { value: 100, suffix: "+", label: "Projects delivered" },
-  { value: 98, suffix: "%", label: "Client retention" },
-  { value: 10, suffix: "+", label: "Digital services" },
+// Two columns of photos that glide past each other (one up, one down)
+const columns = [
+  [
+    { id: "1552664730-d307ca884978", alt: "A team planning a project around a whiteboard of sticky notes" },
+    { id: "1547658719-da2b51169166", alt: "A website design shown on a laptop, tablet and phone" },
+    { id: "1522542550221-31fd19575a2d", alt: "Designers sketching website layouts on paper" },
+    { id: "1551650975-87deedd944c3", alt: "A mobile app shown on a phone" },
+  ],
+  [
+    { id: "1531482615713-2afd69097998", alt: "Two colleagues reviewing work together on a screen" },
+    { id: "1461749280684-dccba630e2f6", alt: "Website code on a screen" },
+    { id: "1460925895917-afdab827c52f", alt: "A marketing analytics dashboard on a laptop" },
+    { id: "1498050108023-c5249f4df085", alt: "A developer's laptop with code on a desk" },
+  ],
 ];
 
 const icon = (d: ReactNode) => (
@@ -27,6 +33,7 @@ const pillars = [
   {
     title: "Design",
     desc: "UI/UX, websites, branding and creatives that make your business look as good as it is.",
+    tags: ["UI/UX", "Websites", "Branding"],
     icon: icon(
       <>
         <path d="M12 19l7-7 3 3-7 7-3-3z" />
@@ -38,11 +45,13 @@ const pillars = [
   {
     title: "Development",
     desc: "Fast, secure websites, web apps and mobile apps — easy for your team to manage.",
+    tags: ["Web apps", "Mobile apps", "CMS"],
     icon: icon(<path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />),
   },
   {
     title: "Marketing",
     desc: "SEO, Google Ads and Meta Ads that bring in quality leads and measurable growth.",
+    tags: ["SEO", "Google Ads", "Meta Ads"],
     icon: icon(
       <>
         <path d="M3 3v18h18" />
@@ -56,90 +65,144 @@ const story =
   "We started with a simple belief: a business deserves one partner who understands design, technology and marketing together. Today our team plans, builds and grows websites, apps and campaigns that work as one — clear, fast and measured by the results they bring.";
 
 /**
- * About overview ("Who we are") — light.
- * Desktop: a photo composition stays pinned on the left while the story scrolls past on the right. As the
- * section scrolls (--ovp): the main photo opens from a narrow window to its full frame and settles from a
- * zoom, a second photo rises over its corner faster than the page, and two small cards drift at their own
- * speeds. Right: label, title, the story lighting up word by word, and three pillars (Design, Development,
- * Marketing) whose rows draw in. Below, four counters sit on the guide-line columns.
- * Tablet/phone: the photo composition sits above the text and plays the same motion as it passes.
+ * About overview ("Who we are") — light, over a calm animated background: a dot grid whose dots twinkle
+ * softly, each on its own rhythm (dots near the mouse brighten a little), and two slow brand-blue blobs.
+ * Left: two columns of photos gliding past each other, one up and one down, faded at the top and bottom
+ * (they pause on hover) inside a rounded frame as tall as the content beside it. Right: label, title, the
+ * story lighting up word by word, the three pillars as bento cards (two side by side, the third full
+ * width) and a button.
  */
 export default function AboutOverview() {
   const sectionRef = useRef<HTMLElement>(null);
-  const artRef = useRef<HTMLDivElement>(null);
+  const dotsRef = useRef<HTMLCanvasElement>(null);
 
+  // Background dot grid. Kept faint so the content stays the focus; runs only while the section is on
+  // screen and the tab is open, capped at 30fps.
   useEffect(() => {
+    const canvas = dotsRef.current;
     const section = sectionRef.current;
-    const art = artRef.current;
-    if (!section || !art) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const vh = window.innerHeight;
-      const pinned = getComputedStyle(art).position === "sticky";
-      const split = section.querySelector<HTMLElement>(".ab-ov-split") ?? section;
-      const r = (pinned ? split : art).getBoundingClientRect();
-      // Pinned: progress through the split block; stacked: 0 as the art enters, 1 once it nears the top
-      const p = pinned ? (vh * 0.85 - r.top) / (r.height - vh * 0.3 || 1) : (vh - r.top) / (vh + r.height * 0.4 || 1);
-      art.style.setProperty("--ovp", Math.min(1, Math.max(0, p)).toFixed(4));
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !section || !ctx) return;
+
+    const MAX_A = 0.4;
+    const shades = Array.from({ length: 21 }, (_, i) => `rgba(42, 39, 216, ${((i / 20) * MAX_A).toFixed(3)})`);
+    const shade = (a: number) => shades[Math.max(0, Math.min(20, Math.round((a / MAX_A) * 20)))];
+
+    let w = 0, h = 0, gap = 28;
+    let raf = 0, last = 0, t = 0, inView = false;
+    let px = -9999, py = -9999;
+
+    const resize = () => {
+      const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      gap = w < 810 ? 24 : 28;
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+
+    const frame = (dt: number) => {
+      t += dt * 0.00045;
+      ctx.clearRect(0, 0, w, h);
+      for (let y = gap / 2; y < h; y += gap) {
+        for (let x = gap / 2; x < w; x += gap) {
+          // Each dot twinkles on its own slow rhythm (phase from its position); dots near the mouse brighten
+          const phase = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+          const tw = 0.5 + 0.5 * Math.sin(t * 3 + (phase - Math.floor(phase)) * Math.PI * 2);
+          const near = Math.max(0, 1 - Math.hypot(x - px, y - py) / 220);
+          ctx.fillStyle = shade(0.07 + tw * 0.14 + near * 0.16);
+          const size = 1.4 + tw * 0.7 + near * 0.9;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
     };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+
+    const draw = (time: number) => {
+      raf = requestAnimationFrame(draw);
+      const dt = time - last;
+      if (dt < 33) return;
+      last = time;
+      frame(Math.min(dt, 100));
+    };
+    const start = () => {
+      if (!raf && inView && !document.hidden) raf = requestAnimationFrame(draw);
+    };
+    const stop = () => {
       cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    resize();
+    frame(0);
+    const ro = new ResizeObserver(() => {
+      resize();
+      frame(0);
+    });
+    ro.observe(canvas);
+    const io = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      if (inView) start();
+      else stop();
+    });
+    io.observe(section);
+    const onVisibility = () => (document.hidden ? stop() : start());
+    const onMove = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      px = e.clientX - r.left;
+      py = e.clientY - r.top;
+    };
+    const onLeave = () => {
+      px = py = -9999;
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    section.addEventListener("pointermove", onMove);
+    section.addEventListener("pointerleave", onLeave);
+    return () => {
+      stop();
+      ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+      section.removeEventListener("pointermove", onMove);
+      section.removeEventListener("pointerleave", onLeave);
     };
   }, []);
 
   return (
     <section className="ab-ov" data-theme="light" ref={sectionRef}>
+      <div className="ab-ov-bg" aria-hidden="true">
+        <div className="ab-ov-bg-sticky">
+          <span className="ab-ov-blob ab-ov-blob-a" />
+          <span className="ab-ov-blob ab-ov-blob-b" />
+          <canvas className="ab-ov-dots" ref={dotsRef} />
+        </div>
+      </div>
+
       <div className="container">
         <div className="ab-ov-split">
-          <div className="ab-ov-art" ref={artRef}>
-            <div className="ab-ov-main">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo(MAIN, 1200)}
-                srcSet={`${photo(MAIN, 700)} 700w, ${photo(MAIN, 1200)} 1200w, ${photo(MAIN, 1600)} 1600w`}
-                sizes="(max-width: 1199px) 100vw, 50vw"
-                alt="A team planning a project around a whiteboard of sticky notes"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-
-            <div className="ab-ov-side">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo(SIDE, 700)}
-                srcSet={`${photo(SIDE, 450)} 450w, ${photo(SIDE, 700)} 700w`}
-                sizes="(max-width: 809px) 45vw, 20vw"
-                alt="Two colleagues reviewing work together on a screen"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-
-            <div className="ab-ov-float ab-ov-float-a">
-              <span className="ab-ov-float-dot" aria-hidden="true" />
-              One team · Design, development &amp; marketing
-            </div>
-
-            <div className="ab-ov-float ab-ov-float-b">
-              <span className="ab-ov-float-num">98%</span>
-              <span className="ab-ov-float-label">
-                Clients who stay,
-                <br />
-                project after project
-              </span>
-            </div>
+          {/* Left: gliding photo columns */}
+          <div className="ab-ov-gallery" data-kfx="y:80">
+            {columns.map((col, c) => (
+              <div key={c} className={`ab-ov-track ${c === 0 ? "is-up" : "is-down"}`}>
+                <div className="ab-ov-track-inner">
+                  {[...col, ...col].map((img, i) => (
+                    <figure key={i} className="ab-ov-shot" aria-hidden={i >= col.length || undefined}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo(img.id, 600)}
+                        srcSet={`${photo(img.id, 400)} 400w, ${photo(img.id, 600)} 600w, ${photo(img.id, 900)} 900w`}
+                        sizes="(max-width: 809px) 45vw, 22vw"
+                        alt={i >= col.length ? "" : img.alt}
+                        decoding="async"
+                      />
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
 
+          {/* Right: overview content */}
           <div className="ab-ov-copy">
             <span className="why-section-label" data-kfx="opacity:0;y:48">
               <span className="k-accent-dot" aria-hidden="true" /> OVERVIEW
@@ -149,17 +212,25 @@ export default function AboutOverview() {
             </h2>
             <ScrollHighlightText className="ab-ov-story-text" text={story} />
 
+
             <div className="ab-ov-pillars">
               {pillars.map((p, i) => (
-                <Reveal key={p.title} className="ab-ov-pillar" delay={i * 0.08}>
-                  <span className="ab-ov-pillar-num">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="ab-ov-pillar-icon" aria-hidden="true">
-                    {p.icon}
-                  </span>
-                  <div>
+                <Reveal key={p.title} className={`ab-ov-pillar ab-ov-pillar-${i + 1}`} delay={i * 0.08}>
+                  <div className="ab-ov-pillar-top">
+                    <span className="ab-ov-pillar-icon" aria-hidden="true">
+                      {p.icon}
+                    </span>
+                    <span className="ab-ov-pillar-num">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className="ab-ov-pillar-text">
                     <h3>{p.title}</h3>
                     <p>{p.desc}</p>
                   </div>
+                  <ul className="ab-ov-pillar-tags">
+                    {p.tags.map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
                 </Reveal>
               ))}
             </div>
@@ -168,18 +239,6 @@ export default function AboutOverview() {
               <KButton href="/services" label="Explore services" />
             </div>
           </div>
-        </div>
-
-        <div className="ab-ov-stats">
-          {stats.map((s, i) => (
-            <Reveal key={s.label} className="ab-ov-stat" delay={i * 0.08}>
-              <span className="ab-ov-stat-line" aria-hidden="true" />
-              <span className="ab-ov-stat-num">
-                <CountUp end={s.value} suffix={s.suffix} />
-              </span>
-              <span className="ab-ov-stat-label">{s.label}</span>
-            </Reveal>
-          ))}
         </div>
       </div>
     </section>

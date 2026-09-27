@@ -5,11 +5,6 @@ import Services from "@/components/home/Services";
 import Projects from "@/components/home/Projects";
 import Testimonials from "@/components/home/Testimonials";
 import BlogSection from "@/components/home/BlogSection";
-import AboutTeam from "@/components/about/AboutTeam";
-import AboutCTA from "@/components/about/AboutCTA";
-import FAQSection from "@/components/shared/FAQSection";
-import CTABand from "@/components/shared/CTABand";
-import { generalFaqs } from "@/lib/faqData";
 
 export default function Home() {
   return (
@@ -21,10 +16,6 @@ export default function Home() {
         <Services />
         <Projects />
         <Testimonials />
-        <AboutTeam />
-        <FAQSection groups={generalFaqs} />
-        <CTABand />
-        <AboutCTA source="home-page" />
         <BlogSection />
       </div>
     </div>

@@ -4,8 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import whiteLogoImg from "@/public/images/whitelogo.svg";
 import { siteConfig } from "@/lib/siteConfig";
-import SectionHeader from "@/components/shared/SectionHeader";
-import NewsletterForm from "@/components/forms/NewsletterForm";
 
 export default function Footer() {
   const scrollToTop = () => {
@@ -31,27 +29,6 @@ export default function Footer() {
 
   return (
     <>
-      {/* Newsletter (Kudos "Signals worth paying attention") */}
-      <section className="k-newsletter-section" data-theme="light">
-        <div className="container" data-kfx="y:-24">
-          <SectionHeader
-            label="+ NEWSLETTER"
-            title={
-              <>
-                <span className="k-muted">Signals</span> worth
-                <br />
-                paying attention
-              </>
-            }
-            desc="A monthly digest of practical tips on websites, apps, SEO and ads that help businesses grow online."
-          />
-          <div className="k-newsletter-row">
-            <p className="k-mono-small">No spam. Unsubscribe anytime.</p>
-            <NewsletterForm />
-          </div>
-        </div>
-      </section>
-
       <footer className="kudos-footer-container" data-theme="dark">
         {/* Giant watermark */}
         {/* eslint-disable-next-line @next/next/no-img-element */}

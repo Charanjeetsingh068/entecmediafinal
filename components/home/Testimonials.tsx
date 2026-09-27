@@ -1,155 +1,280 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import team1Img from "@/public/images/team1-avatar.webp";
 import team2Img from "@/public/images/team2-avatar.webp";
 import team3Img from "@/public/images/team3-avatar.webp";
 import team4Img from "@/public/images/team4-avatar.webp";
-import SectionHeader from "@/components/shared/SectionHeader";
-import Reveal from "@/components/shared/Reveal";
 
 // NOTE: Replace these with genuine client reviews (with the client's permission) before going live.
-interface FeaturedStory {
+interface Review {
   quote: string;
+  service: string;
   name: string;
   role: string;
   avatar: StaticImageData;
-  stats: { num: string; label: string }[];
 }
 
-const featuredStories: FeaturedStory[] = [
-  {
-    quote:
-      "Entec Media rebuilt our website and took over our Google and Meta Ads. The new site loads fast, looks premium, and our enquiries have grown every single month since launch.",
-    name: "Rohit Arora",
-    role: "Founder, Real Estate Consultancy",
-    avatar: team1Img,
-    stats: [
-      { num: "+28%", label: "Brand Awareness" },
-      { num: "+47%", label: "User Engagement" },
-      { num: "+52%", label: "Qualified Leads" },
-      { num: "+36%", label: "Growth Impact" },
-    ],
-  },
-  {
-    quote:
-      "Their Meta Ads campaigns brought us consistent, quality leads at a much lower cost per lead than we were paying before. Reporting is clear and every rupee is accounted for.",
-    name: "Amit Sharma",
-    role: "Director, Immigration Consultancy",
-    avatar: team2Img,
-    stats: [
-      { num: "-38%", label: "Cost per Lead" },
-      { num: "+64%", label: "Monthly Leads" },
-      { num: "3.1x", label: "Return on Ad Spend" },
-      { num: "+41%", label: "Conversion Rate" },
-    ],
-  },
-  {
-    quote:
-      "Within a few months of SEO work we started ranking on the first page of Google for our main services in Mohali and Chandigarh — calls from Google have never been higher.",
-    name: "Dr. Neha Gupta",
-    role: "Founder, Dental Clinic",
-    avatar: team4Img,
-    stats: [
-      { num: "+180%", label: "Organic Traffic" },
-      { num: "Top 3", label: "Local Rankings" },
-      { num: "+72%", label: "Calls from Google" },
-      { num: "+33%", label: "New Patients" },
-    ],
-  },
+const reviews: Review[] = [
+  { quote: "Entec Media rebuilt our website and took over our Google and Meta Ads. The new site loads fast, looks premium, and our enquiries have grown every single month since launch.", service: "Website + Ads", name: "Rohit Arora", role: "Founder, Real Estate Consultancy", avatar: team1Img },
+  { quote: "Our new website is fast, mobile-friendly and easy to update. The team understood exactly what our customers were looking for.", service: "Website", name: "Simran Kaur", role: "Owner, Boutique Clothing Brand", avatar: team1Img },
+  { quote: "From UI/UX design to the final Flutter app, Entec Media handled everything professionally and launched on both app stores on time.", service: "Mobile App", name: "Karan Mehta", role: "Co-Founder, Food Delivery Startup", avatar: team3Img },
+  { quote: "Their Meta Ads campaigns brought us consistent, quality leads at a much lower cost per lead than we were paying before. Reporting is clear and every rupee is accounted for.", service: "Meta Ads", name: "Amit Sharma", role: "Director, Immigration Consultancy", avatar: team2Img },
+  { quote: "Clear communication, transparent reporting and creative ideas every month. It feels like having an in-house marketing team.", service: "Digital Marketing", name: "Harpreet Singh", role: "Managing Partner, Hospitality Group", avatar: team1Img },
+  { quote: "The logo and brand identity they designed gave our business a completely professional look across print and social media.", service: "Branding", name: "Priya Malhotra", role: "Founder, Organic Skincare Brand", avatar: team2Img },
+  { quote: "Within a few months of SEO work we started ranking on the first page of Google for our main services in Mohali and Chandigarh — calls from Google have never been higher.", service: "SEO", name: "Dr. Neha Gupta", role: "Founder, Dental Clinic", avatar: team4Img },
+  { quote: "Our Google Ads account was wasting money. Entec Media restructured it and our cost per enquiry dropped significantly.", service: "Google Ads", name: "Vikram Bansal", role: "Owner, Interior Design Studio", avatar: team3Img },
+  { quote: "They built our WooCommerce store with smooth checkout and payment integration. Online orders have grown steadily ever since.", service: "E-commerce", name: "Ankit Jindal", role: "CEO, Home Decor E-Commerce Store", avatar: team4Img },
+  { quote: "The dashboard UI they designed for our SaaS product made onboarding so much simpler for our customers.", service: "UI/UX Design", name: "Rahul Verma", role: "Product Head, B2B SaaS Company", avatar: team2Img },
+  { quote: "Social media creatives, reels and ad campaigns — all handled on time and always on-brand. Highly recommended.", service: "Social Media", name: "Jasleen Kaur", role: "Marketing Manager, Education Institute", avatar: team1Img },
 ];
 
-const tickerStories = [
-  { quote: "Our new website is fast, mobile-friendly and easy to update. The team understood exactly what our customers were looking for.", name: "Simran Kaur", role: "Owner, Boutique Clothing Brand", avatar: team1Img },
-  { quote: "From UI/UX design to the final Flutter app, Entec Media handled everything professionally and launched on both app stores on time.", name: "Karan Mehta", role: "Co-Founder, Food Delivery Startup", avatar: team3Img },
-  { quote: "Clear communication, transparent reporting and creative ideas every month. It feels like having an in-house marketing team.", name: "Harpreet Singh", role: "Managing Partner, Hospitality Group", avatar: team1Img },
-  { quote: "The logo and brand identity they designed gave our business a completely professional look across print and social media.", name: "Priya Malhotra", role: "Founder, Organic Skincare Brand", avatar: team2Img },
-  { quote: "Our Google Ads account was wasting money. Entec Media restructured it and our cost per enquiry dropped significantly.", name: "Vikram Bansal", role: "Owner, Interior Design Studio", avatar: team3Img },
-  { quote: "They built our WooCommerce store with smooth checkout and payment integration. Online orders have grown steadily ever since.", name: "Ankit Jindal", role: "CEO, Home Decor E-Commerce Store", avatar: team4Img },
-  { quote: "The dashboard UI they designed for our SaaS product made onboarding so much simpler for our customers.", name: "Rahul Verma", role: "Product Head, B2B SaaS Company", avatar: team2Img },
-  { quote: "Social media creatives, reels and ad campaigns — all handled on time and always on-brand. Highly recommended.", name: "Jasleen Kaur", role: "Marketing Manager, Education Institute", avatar: team1Img },
-];
+// Two rows; each is doubled in the markup so the loop is seamless
+const rows = [reviews.slice(0, 6), reviews.slice(6)];
 
-/** Kudos "Social proof": arrow-driven featured story with four result stats, then an endless testimonial ticker. */
+// Phones: all reviews are slides, but there are only four dots; they cycle (slide 5 lights dot 1 again)
+const DOTS = 4;
+// The phone slider loops: three copies of the slides, the visitor always lands back in the middle one
+const COPIES = 3;
+const phoneSlides = Array.from({ length: COPIES }, (_, c) => reviews.map((item, k) => ({ item, k, c }))).flat();
+
+function ReviewCard({ item, brand, hidden }: { item: Review; brand: boolean; hidden?: boolean }) {
+  return (
+    <figure className={`sp-card ${brand ? "is-brand" : ""}`} aria-hidden={hidden ? true : undefined}>
+      <div className="sp-card-top">
+        <span className="sp-card-tag">{item.service}</span>
+        <svg className="sp-card-mark" viewBox="0 0 32 24" aria-hidden="true">
+          <path d="M0 24V14.4C0 6.4 4.3 1.6 12.3 0l1.4 3.4C9.4 4.8 7.3 7.4 7 11h6.3v13H0Zm18.3 0V14.4c0-8 4.3-12.8 12.3-14.4L32 3.4c-4.3 1.4-6.4 4-6.7 7.6h6.3v13H18.3Z" />
+        </svg>
+      </div>
+      <blockquote>{item.quote}</blockquote>
+      <figcaption className="sp-card-author">
+        <Image src={item.avatar} alt="" width={44} height={44} className="sp-card-avatar" draggable={false} />
+        <span>
+          <strong>{item.name}</strong>
+          <small>{item.role}</small>
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
+/**
+ * Home "Social proof" — a dark section with a two-row review slider.
+ * Behind it, "voice ribbons": thin brand-blue lines that rise and fall like speech, pinned to the screen
+ * while the section scrolls and stirred a little by the scroll.
+ * The top row glides left and the bottom row right, forever, at one steady speed. The motion is a CSS
+ * animation (runs on the compositor), so page scrolling and other scripts can never make it stutter;
+ * hovering a row pauses just that row. Every card has the same height.
+ * Phones (576px and below): one testimonial at a time instead, moved only by the visitor — swipe, or tap
+ * the dots under it (no autoplay). It loops endlessly both ways: once a swipe settles in the first or
+ * last copy of the slides, it is moved invisibly to the same slide in the middle copy. All reviews are slides; the four dots cycle with them (slides 1–4
+ * light dots 1–4, slide 5 lights dot 1 again, …).
+ */
 export default function Testimonials() {
-  const [index, setIndex] = useState(0);
-  const story = featuredStories[index];
-  const go = (dir: 1 | -1) => setIndex((i) => (i + dir + featuredStories.length) % featuredStories.length);
+  const sectionRef = useRef<HTMLElement>(null);
+  const voiceRef = useRef<HTMLCanvasElement>(null);
+  const slidesRef = useRef<HTMLDivElement>(null);
+  const [slide, setSlide] = useState(0);
+
+  // Phone slider: the active dot follows the swipe, and the loop is re-centred once a swipe settles
+  useEffect(() => {
+    const el = slidesRef.current;
+    if (!el) return;
+    const n = reviews.length;
+    const stepOf = () => {
+      const first = el.firstElementChild as HTMLElement | null;
+      return first ? first.offsetWidth + (parseFloat(getComputedStyle(el).columnGap) || 0) : 0;
+    };
+    const jumpTo = (index: number) => {
+      const step = stepOf();
+      if (step) el.scrollTo({ left: index * step, behavior: "instant" });
+    };
+    // Start on the first review of the middle copy (and stay there if the width changes)
+    let current = n;
+    jumpTo(current);
+
+    let raf = 0;
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    const recentre = () => {
+      const step = stepOf();
+      if (!step) return;
+      const i = Math.round(el.scrollLeft / step);
+      const k = ((i % n) + n) % n;
+      setSlide(k);
+      current = k + n;
+      if (i < n || i >= 2 * n) jumpTo(current);
+    };
+    const onScroll = () => {
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const step = stepOf();
+          if (!step) return;
+          current = Math.round(el.scrollLeft / step);
+          setSlide(((current % n) + n) % n);
+        });
+      }
+      // Fallback for browsers without "scrollend"
+      clearTimeout(settle);
+      settle = setTimeout(recentre, 160);
+    };
+    const onResize = () => jumpTo(current);
+    el.addEventListener("scroll", onScroll, { passive: true });
+    el.addEventListener("scrollend", recentre);
+    window.addEventListener("resize", onResize);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("scrollend", recentre);
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(raf);
+      clearTimeout(settle);
+    };
+  }, []);
+
+  // Four cycling dots: the active one is the slide's place in its group of four
+  const activeDot = slide % DOTS;
+  const groupStart = slide - activeDot;
+
+  // Tap a dot: glide to that place in the current group of four. The slider rests in the middle copy, so
+  // a spot past the last review is simply the start of the next copy (the loop re-centres after).
+  const showSlide = (dot: number) => {
+    const el = slidesRef.current;
+    const card = el?.children[reviews.length + groupStart + dot] as HTMLElement | undefined;
+    if (!el || !card) return;
+    el.scrollTo({ left: card.offsetLeft, behavior: "smooth" }); // .sp-slides is the cards' offset parent
+  };
+
+  // Background "voice ribbons": a few sine lines under a speech-like envelope, drawn only while in view
+  useEffect(() => {
+    const section = sectionRef.current;
+    const canvas = voiceRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!section || !canvas || !ctx) return;
+    let w = 0, h = 0, raf = 0, visible = false, lastY = window.scrollY, stir = 0;
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const ribbons = [
+      { f: 1.6, s: 0.55, ph: 0, a: 1, alpha: 0.34, lw: 1.6 },
+      { f: 2.3, s: -0.4, ph: 1.7, a: 0.8, alpha: 0.22, lw: 1.2 },
+      { f: 1.1, s: 0.3, ph: 3.1, a: 0.65, alpha: 0.18, lw: 1 },
+      { f: 3.2, s: 0.7, ph: 4.4, a: 0.45, alpha: 0.14, lw: 1 },
+    ];
+    const draw = (now: number) => {
+      const t = now / 1000;
+      const y = window.scrollY;
+      stir += (Math.min(40, Math.abs(y - lastY)) / 40 - stir) * 0.08; // 0…1, eases back when scrolling stops
+      lastY = y;
+      ctx.clearRect(0, 0, w, h);
+      const mid = h * 0.52;
+      const amp = h * 0.11 * (1 + stir * 0.8);
+      ribbons.forEach((rb, l) => {
+        // Speech envelope: phrases swell and settle at different times for each line
+        const speech = 0.45 + 0.55 * Math.abs(Math.sin(t * 0.7 + l * 0.9) * Math.sin(t * 1.9 + l));
+        const grad = ctx.createLinearGradient(0, 0, w, 0);
+        grad.addColorStop(0, "rgba(90, 110, 255, 0)");
+        grad.addColorStop(0.3, `rgba(90, 110, 255, ${rb.alpha})`);
+        grad.addColorStop(0.7, `rgba(60, 150, 255, ${rb.alpha})`);
+        grad.addColorStop(1, "rgba(60, 150, 255, 0)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = rb.lw;
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 6) {
+          const u = x / w;
+          const bell = Math.pow(Math.sin(Math.PI * u), 2);
+          const yy =
+            mid +
+            amp * rb.a * speech * bell *
+              (Math.sin(u * Math.PI * 2 * rb.f + t * rb.s * 2 + rb.ph) + 0.35 * Math.sin(u * Math.PI * 9 * rb.f + t * 1.3));
+          if (x === 0) ctx.moveTo(x, yy);
+          else ctx.lineTo(x, yy);
+        }
+        ctx.stroke();
+      });
+      raf = visible ? requestAnimationFrame(draw) : 0;
+    };
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !raf) raf = requestAnimationFrame(draw);
+    });
+    resize();
+    io.observe(section);
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    return () => {
+      io.disconnect();
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
-    <section id="testimonials" className="k-section k-social" data-theme="light">
-      <div className="container">
-        <SectionHeader
-          label="+ SOCIAL PROOF"
-          title={
-            <>
-              <span className="k-muted">Trusted</span> by
-              <br />
-              great teams
-            </>
-          }
-          desc="Startups and growing businesses trust us with their websites, apps and digital marketing."
-        />
+    <section id="testimonials" ref={sectionRef} className="k-section sp" data-theme="dark">
+      <div className="sp-bg" aria-hidden="true">
+        <div className="sp-bg-sticky">
+          <canvas className="sp-voice" ref={voiceRef} />
+        </div>
+      </div>
 
-        <Reveal className="k-story">
-          <div className="k-story-client">
-            <span className="k-quote-mark" aria-hidden="true">&ldquo;&ldquo;</span>
-            <div className="k-author" key={`a-${index}`}>
-              <Image src={story.avatar} alt="" width={40} height={40} className="k-author-avatar k-story-swap" />
-              <div className="k-story-swap">
-                <p className="k-author-name">{story.name}</p>
-                <p className="k-author-role">{story.role}</p>
-              </div>
-            </div>
-          </div>
+      <div className="container sp-head">
+        <div>
+          <p className="sp-label">
+            <span className="sp-dot" aria-hidden="true" />
+            Testimonials
+          </p>
+          <h2 className="sp-title">What our partners say</h2>
+        </div>
+        <p className="sp-sub">Websites, apps, branding and marketing — short notes from the teams behind the projects.</p>
+      </div>
 
-          <div className="k-story-main">
-            <p className="k-story-quote k-story-swap" key={`q-${index}`}>
-              {story.quote}
-            </p>
-            <div className="k-story-stats" key={`s-${index}`}>
-              {story.stats.map((s, i) => (
-                <div key={s.label} className="k-story-stat k-story-swap" style={{ animationDelay: `${i * 0.06}s` }}>
-                  <span className="k-story-stat-num">{s.num}</span>
-                  <span className="k-mono-label">{s.label}</span>
-                </div>
+      {/* Tablet and desktop: two rows gliding in opposite directions */}
+      <div className="sp-wall">
+        {rows.map((row, r) => (
+          <div
+            key={r}
+            className={`sp-row ${r === 1 ? "is-reverse" : ""}`}
+            aria-label={r === 0 ? "Client testimonials" : undefined}
+            // Same speed for both rows: the loop time grows with the number of cards
+            style={{ "--dur": `${row.length * 11}s` } as React.CSSProperties}
+          >
+            <div className="sp-row-track">
+              {[...row, ...row].map((item, i) => (
+                <ReviewCard key={i} item={item} brand={(i + r) % 3 === 1} hidden={i >= row.length} />
               ))}
             </div>
           </div>
-
-          <div className="k-story-nav">
-            <span className="k-mono-label">
-              {String(index + 1).padStart(2, "0")} / {String(featuredStories.length).padStart(2, "0")}
-            </span>
-            <div className="k-story-arrows">
-              <button type="button" className="k-arrow" onClick={() => go(-1)} aria-label="Previous testimonial">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M15 5l-7 7 7 7" /></svg>
-              </button>
-              <button type="button" className="k-arrow" onClick={() => go(1)} aria-label="Next testimonial">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
-        </Reveal>
-
-        <p className="k-mono-small k-ticker-label">Real stories from teams we&apos;ve partnered with:</p>
+        ))}
       </div>
 
-      <div className="k-ticker" aria-label="Client testimonials">
-        <div className="k-ticker-track">
-          {[...tickerStories, ...tickerStories].map((item, i) => (
-            <figure key={i} className="k-ticker-card" aria-hidden={i >= tickerStories.length}>
-              <blockquote>{item.quote}</blockquote>
-              <figcaption className="k-author">
-                <Image src={item.avatar} alt="" width={40} height={40} className="k-author-avatar" />
-                <div>
-                  <p className="k-author-name">{item.name}</p>
-                  <p className="k-author-role">{item.role}</p>
-                </div>
-              </figcaption>
-            </figure>
+      {/* Phones: one testimonial at a time, swipe or tap a dot */}
+      <div className="sp-mobile container">
+        <div className="sp-slides" ref={slidesRef} aria-label="Client testimonials">
+          {phoneSlides.map(({ item, k, c }) => (
+            <ReviewCard key={`${c}-${item.name}`} item={item} brand={k % 3 === 1} hidden={c !== 1} />
           ))}
+        </div>
+        <div className="sp-dots" role="tablist" aria-label="Choose a testimonial">
+          {Array.from({ length: DOTS }, (_, dot) => {
+            const target = (groupStart + dot) % reviews.length;
+            return (
+              <button
+                key={dot}
+                type="button"
+                role="tab"
+                className={`sp-dot-btn ${dot === activeDot ? "is-active" : ""}`}
+                aria-selected={dot === activeDot}
+                aria-label={`Show testimonial ${target + 1} of ${reviews.length}: ${reviews[target].name}`}
+                onClick={() => showSlide(dot)}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

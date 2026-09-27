@@ -9,6 +9,7 @@ import team4Img from "@/public/images/team4-avatar.webp";
 import CountUp from "@/components/shared/CountUp";
 import Reveal from "@/components/shared/Reveal";
 import ScrollHighlightText from "@/components/shared/ScrollHighlightText";
+import { bannerVideoSrc } from "@/lib/bannerVideo";
 
 const paragraphText =
   "At the end of the day, we’re here to help your business grow. That means combining smart design, solid technology and data-driven marketing into one strategy that supports your goals, your team and your future plans.";
@@ -71,7 +72,7 @@ export default function WhyChooseUs() {
       ([entry]) => {
         if (entry.isIntersecting) {
           if (!video.getAttribute("src")) {
-            video.src = "/images/homebanner.mp4";
+            video.src = bannerVideoSrc();
             video.load();
           }
           video.play().catch(() => {});

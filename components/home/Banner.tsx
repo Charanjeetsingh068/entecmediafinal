@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import KButton from "@/components/shared/KButton";
+import { bannerVideoSrc } from "@/lib/bannerVideo";
 import team1Img from "@/public/images/team1-avatar.webp";
 import team2Img from "@/public/images/team2-avatar.webp";
 import team3Img from "@/public/images/team3-avatar.webp";
@@ -52,6 +53,8 @@ export default function Banner() {
 
   // Load the background video only after the page has finished loading and the browser is idle,
   // so it never competes with fonts, CSS, JS or the poster image. Skipped on data-saver / 2G.
+  // Phones get the small portrait cut (lib/bannerVideo.ts). Once it is really playing, it fades in
+  // while the poster image fades out, so there is no jump.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -62,7 +65,7 @@ export default function Banner() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const start = () => {
       if (video.getAttribute("src")) return; // already started by the other trigger
-      video.src = "/images/homebanner.mp4";
+      video.src = bannerVideoSrc();
       video.load();
       if (window.scrollY < window.innerHeight) video.play().catch(() => {});
     };
@@ -74,6 +77,9 @@ export default function Banner() {
     if (document.readyState === "complete") schedule();
     else window.addEventListener("load", schedule, { once: true });
 
+    const onPlaying = () => video.classList.add("is-playing");
+    video.addEventListener("playing", onPlaying, { once: true });
+
     const onVisibility = () => {
       if (document.hidden) video.pause();
       else if (video.currentSrc && window.scrollY < window.innerHeight) video.play().catch(() => {});
@@ -83,6 +89,7 @@ export default function Banner() {
     return () => {
       window.removeEventListener("load", schedule);
       document.removeEventListener("visibilitychange", onVisibility);
+      video.removeEventListener("playing", onPlaying);
       if (idleId !== undefined) window.cancelIdleCallback(idleId);
       if (timer) clearTimeout(timer);
     };
@@ -90,17 +97,10 @@ export default function Banner() {
 
   return (
     <section className={`banner-section ${isSticky ? "sticky-fixed" : "static-absolute"}`}>
-      {/* Background Video - Preload set to none & dynamic source to prevent initial blocking */}
-      <video
-        ref={videoRef}
-        loop
-        muted
-        playsInline
-        poster="/images/bannerbac.webp"
-        className="banner-video-bg"
-        preload="none"
-        aria-hidden="true"
-      />
+      {/* Background video: no source and preload="none" in the HTML, so nothing downloads on load.
+          The poster is a separate layer so CSS can serve phones a smaller portrait image. */}
+      <video ref={videoRef} loop muted playsInline className="banner-video-bg" preload="none" aria-hidden="true" />
+      <div className="banner-poster" aria-hidden="true" />
       <div className="banner-video-overlay"></div>
 
       <div className="container banner-content" ref={contentRef}>
@@ -140,14 +140,7 @@ export default function Banner() {
           {/* Bottom Collaboration Box */}
           <div className="collab-wrapper">
             <p className="collab-label">Ready to start something great?</p>
-            <Link href="/contact" className="collab-box">
-              <span className="collab-text">Let&apos;s Collaborate</span>
-              <div className="collab-dots">
-                <span className="dot"></span>
-                <span className="dot"></span>
-                <span className="dot"></span>
-              </div>
-            </Link>
+            <KButton href="/contact" label="Let's Collaborate" variant="dark" />
           </div>
         </div>
       </div>

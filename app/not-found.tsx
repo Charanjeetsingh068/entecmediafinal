@@ -12,7 +12,7 @@ export default function NotFound() {
           doesn&apos;t exist
         </h1>
         <div className="k-404-actions">
-          <KButton href="/" label="Back to home" variant="dark" />
+          <KButton href="/" label="Back to home" variant="accent" />
           <KButton href="/contact" label="Contact us" />
         </div>
       </div>

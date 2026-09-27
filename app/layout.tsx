@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/shared/SmoothScroll";
 import AutoReveal from "@/components/shared/AutoReveal";
+import ButtonMagnet from "@/components/shared/ButtonMagnet";
 import { siteConfig } from "@/lib/siteConfig";
 
 // Inter with the optical-size axis renders large headings in the "Inter Display" cut used by Kudos.
@@ -134,6 +135,7 @@ export default function RootLayout({
 
         <SmoothScroll />
         <AutoReveal />
+        <ButtonMagnet />
         <Header />
         <main className="page-main">{children}</main>
         <Footer />

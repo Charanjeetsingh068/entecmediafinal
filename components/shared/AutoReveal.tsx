@@ -25,8 +25,6 @@ const SELECTORS = [
   ".k-process-expect > *",
   ".k-keep-exploring > *",
   ".k-newsletter-row > *",
-  ".kudos-footer-grid > *",
-  ".kudos-bottom-bar",
   ".k-detail-hero-side",
   ".k-detail-meta",
   ".k-detail-sidebar > *",

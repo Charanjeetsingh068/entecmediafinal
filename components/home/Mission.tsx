@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import KButton from "@/components/shared/KButton";
 
 function CountUp({ end, duration = 2000, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -206,14 +206,7 @@ export default function Mission() {
             {/* Overlay 4: Bottom Right Call to Action block */}
             <div className="mission-cta-card">
               <span className="mission-cta-label">MEET THE PEOPLE BEHIND THE WORK</span>
-              <Link href="/contact" className="mission-collab-box">
-                <span className="mission-collab-text">Let&apos;s Collaborate</span>
-                <div className="mission-collab-dots">
-                  <span className="mission-collab-dot"></span>
-                  <span className="mission-collab-dot"></span>
-                  <span className="mission-collab-dot"></span>
-                </div>
-              </Link>
+              <KButton href="/contact" label="Let's Collaborate" />
             </div>
           </div>
         </div>

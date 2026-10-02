@@ -3,7 +3,7 @@ import { MetadataRoute } from "next";
 export const dynamic = "force-static";
 import { getPublishedBlogs, getBlogCategories } from "@/lib/blogApi";
 import { servicesList } from "@/lib/servicesData";
-import { portfolioProjects } from "@/lib/portfolioData";
+import { getPortfolioItems } from "@/lib/portfolioApi";
 import { jobOpenings } from "@/lib/careersData";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -30,8 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const portfolioUrls: MetadataRoute.Sitemap = portfolioProjects.map((project) => ({
-    url: `${baseUrl}/portfolio/${project.slug}`,
+  // Every project page (case studies + all projects in lib/portfolioItems.ts)
+  const portfolioUrls: MetadataRoute.Sitemap = (await getPortfolioItems()).map((project) => ({
+    url: `${baseUrl}/portfolio/${project.id}`,
     lastModified: new Date(),
     changeFrequency: "monthly",
     priority: 0.6,

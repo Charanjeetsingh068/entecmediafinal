@@ -1,189 +1,117 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getServiceDetail, servicesList } from "@/lib/servicesData";
-import DetailHero from "@/components/shared/DetailHero";
-import ShareLinks from "@/components/shared/ShareLinks";
-import FAQSection from "@/components/shared/FAQSection";
-import SectionHeader from "@/components/shared/SectionHeader";
-import CTABand from "@/components/shared/CTABand";
-import AboutCTA from "@/components/about/AboutCTA";
+import ServiceHero from "@/components/services/detail/ServiceHero";
+import ServiceIntro from "@/components/services/detail/ServiceIntro";
+import ServiceFeatures from "@/components/services/detail/ServiceFeatures";
+import ServiceProjects from "@/components/services/detail/ServiceProjects";
+import QuoteCta from "@/components/shared/QuoteCta";
+import FaqShowcase from "@/components/shared/FaqShowcase";
+import { getService, getServiceProjects, getServices, getServiceSections } from "@/lib/servicesApi";
+import { siteConfig } from "@/lib/siteConfig";
 
 interface ServicePageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return servicesList.map(({ slug }) => ({ slug }));
+  return (await getServices()).map(({ slug }) => ({ slug }));
 }
 
 export const dynamicParams = false;
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const service = getServiceDetail(slug);
+  const service = await getService(slug);
   if (!service) return { title: "Service Not Found" };
 
+  const title = service.seo?.title || `${service.title} Services in Zirakpur, Punjab`;
+  const description = service.seo?.description || service.heroDesc;
+  const image = service.seo?.ogImage || service.image;
   return {
-    title: `${service.title} Services`,
-    description: service.heroDesc,
+    title,
+    description,
     alternates: { canonical: `/services/${service.slug}` },
     openGraph: {
-      title: `${service.title} Services | Entec Media`,
-      description: service.heroDesc,
-      images: [service.image],
+      title: `${title} | Entec Media`,
+      description,
+      url: `/services/${service.slug}`,
+      type: "website",
+      images: [image],
     },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
+/**
+ * Service detail page — dark and light sections alternate:
+ * hero + breadcrumb (dark, pinned) → overview (light) → what's included (dark) → featured projects for
+ * this service (light, same deck as the home page) → get a quote call-to-action (dark, button to /contact) →
+ * this service's FAQs (light) → footer.
+ * Content: lib/servicesApi.ts (service data + shared section copy, ready for an admin panel).
+ */
 export default async function ServiceDetailPage({ params }: ServicePageProps) {
   const { slug } = await params;
-  const service = getServiceDetail(slug);
+  const service = await getService(slug);
   if (!service) notFound();
 
-  const index = servicesList.findIndex((s) => s.slug === service.slug);
-  const otherServices = [1, 2, 3, 4].map((offset) => servicesList[(index + offset) % servicesList.length]);
+  const sections = await getServiceSections(service);
+  const projects = getServiceProjects(service);
+  const faqs = service.faqs.map((f) => ({ ...f, tag: service.title }));
+
+  const serviceLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    serviceType: service.title,
+    description: service.heroDesc,
+    image: service.image,
+    url: `${siteConfig.url}/services/${service.slug}/`,
+    category: service.category,
+    areaServed: [
+      { "@type": "Country", name: "India" },
+      { "@type": "AdministrativeArea", name: "Punjab" },
+    ],
+    provider: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+      email: siteConfig.contact.email,
+      telephone: siteConfig.contact.phone,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Zirakpur",
+        addressRegion: "Punjab",
+        addressCountry: "IN",
+      },
+    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: `${service.title} deliverables`,
+      itemListElement: service.deliverables.map((d) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: d.title, description: d.desc },
+      })),
+    },
+  };
 
   return (
-    <div className="k-page k-detail-page">
-      <DetailHero
-        backHref="/services"
-        backLabel="BACK TO SERVICES"
-        eyebrow={`${service.num} / ${service.category}`}
-        title={service.title}
-        subtitle={service.heroTagline}
-        meta={[
-          { label: "Category", value: service.category },
-          { label: "Process", value: `${service.process.length}-step delivery` },
-          { label: "Deliverables", value: `${service.deliverables.length} core outputs` },
-          { label: "Tools", value: service.tools.slice(0, 3).join(", ") },
-        ]}
-      />
-
-      <section className="k-detail-body" data-theme="light">
-        <div className="container k-detail-grid">
-          <aside className="k-detail-sidebar">
-            <div className="k-side-block">
-              <span className="k-mono-label">What&apos;s included:</span>
-              <ul className="k-side-list">
-                {service.highlights.map((h) => (
-                  <li key={h}>{h}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="k-side-block">
-              <span className="k-mono-label">Tools we use:</span>
-              <div className="k-chip-row">
-                {service.tools.map((tool) => (
-                  <span key={tool} className="k-chip">{tool}</span>
-                ))}
-              </div>
-            </div>
-            <ShareLinks title={`${service.title} — Entec Media`} />
-          </aside>
-
-          <article className="k-detail-content">
-            <div className="k-detail-media">
-              <Image src={service.image} alt={service.title} fill sizes="(max-width: 1199px) 100vw, 50vw" priority />
-            </div>
-
-            <p className="k-detail-lead">{service.heroDesc}</p>
-
-            <h2>{service.overviewTitle}</h2>
-            {service.overviewDesc.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-
-            <div className="k-detail-stats">
-              {service.stats.map((stat) => (
-                <div key={stat.label} className="k-detail-stat">
-                  <span className="k-detail-stat-value">{stat.value}</span>
-                  <span className="k-mono-label">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <h2>How we deliver</h2>
-            <ol className="k-step-list">
-              {service.process.map((step) => (
-                <li key={step.step}>
-                  <span className="k-step-num">{step.step}</span>
-                  <div>
-                    <h3>{step.title}</h3>
-                    <p>{step.desc}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            <h2>What you receive</h2>
-            <div className="k-deliverable-grid">
-              {service.deliverables.map((item) => (
-                <div key={item.title} className="k-deliverable">
-                  <span className="k-accent-dot" aria-hidden="true" />
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <FAQSection
-        groups={[{ group: service.title, items: service.faqs }]}
-        title={
-          <>
-            <span className="k-muted">{service.title}</span>
-            <br />
-            questions answered
-          </>
-        }
-        desc="Everything you need to know about working with Entec Media on this service."
-      />
-
-      <section className="k-section k-related-section" data-theme="light">
-        <div className="container">
-          <SectionHeader
-            label="+ OTHER SERVICES"
-            title={
-              <>
-                <span className="k-muted">Pairs well</span>
-                <br />
-                with these
-              </>
-            }
-            desc={`Combine ${service.title.toLowerCase()} with other services for a complete solution delivered by one team.`}
-          />
-          <div className="k-service-rows">
-            {otherServices.map((s) => (
-              <Link key={s.slug} href={`/services/${s.slug}`} className="k-service-row">
-                <span className="k-service-num">
-                  <span className="k-accent-dot" aria-hidden="true" />
-                  {s.num}
-                </span>
-                <span className="k-service-thumb">
-                  <img src={s.thumb} alt="" loading="lazy" />
-                </span>
-                <span className="k-service-title-wrap">
-                  <span className="k-service-cat">{s.category}</span>
-                  <span className="k-service-title">{s.title}</span>
-                </span>
-                <span className="k-service-desc">{s.shortDesc}</span>
-                <span className="k-service-arrow" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M5 12h14M13 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <CTABand />
-      <AboutCTA source={`service-${service.slug}`} defaultService={service.title} />
+    <div className="k-page ab-page sd-page">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }} />
+      <ServiceHero service={service} content={sections.hero} />
+      <div className="k-page-body ab-body">
+        <ServiceIntro service={service} content={sections.intro} />
+        <ServiceFeatures service={service} content={sections.features} />
+        {projects.length > 0 && <ServiceProjects projects={projects} content={sections.projects} />}
+        <QuoteCta content={sections.cta} />
+        <FaqShowcase
+          id="service-faq"
+          items={faqs}
+          label={sections.faq.label}
+          title={sections.faq.title}
+          desc={sections.faq.desc}
+          help={sections.faq.help}
+        />
+      </div>
     </div>
   );
 }

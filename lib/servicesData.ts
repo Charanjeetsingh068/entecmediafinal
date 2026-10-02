@@ -1,3 +1,5 @@
+import type { SeoMeta, ServiceDetailSections } from "@/lib/servicesContent";
+
 export type ServiceCategory = "Design" | "Development" | "Digital Marketing";
 
 export interface ServiceDetail {
@@ -13,6 +15,8 @@ export interface ServiceDetail {
   highlights: string[];
   image: string;
   thumb: string;
+  /** Second photo, shown beside the overview on the service detail page */
+  introImage: string;
   heroTagline: string;
   heroDesc: string;
   stats: { value: string; label: string }[];
@@ -22,6 +26,12 @@ export interface ServiceDetail {
   deliverables: { title: string; desc: string }[];
   tools: string[];
   faqs: { question: string; answer: string }[];
+  /** Portfolio projects shown in "Featured projects" (slugs, in order). Empty → matched automatically by category. */
+  projectSlugs?: string[];
+  /** Per-service overrides for any shared detail-page section — only the changed fields (see lib/servicesContent.ts) */
+  sections?: { [K in keyof ServiceDetailSections]?: Partial<ServiceDetailSections[K]> };
+  /** Custom SEO title / description / share image; falls back to the service title and heroDesc */
+  seo?: Partial<SeoMeta>;
 }
 
 const unsplash = (id: string, width: number) =>
@@ -41,6 +51,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Custom Layouts", "Responsive Design", "Landing Pages", "Website Redesign"],
     image: unsplash("1547658719-da2b51169166", 1600),
     thumb: unsplash("1547658719-da2b51169166", 200),
+    introImage: unsplash("1581291518857-4e27b48ff24e", 1400),
     heroTagline: "Websites that look premium, load fast and make visitors take action.",
     heroDesc:
       "Your website is often the first impression of your business. We design custom, mobile-friendly websites with a clear structure, strong visuals and persuasive calls-to-action so every visitor understands what you do and how to reach you.",
@@ -73,7 +84,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "How long does a website design take?", answer: "A typical business website design takes 2–4 weeks depending on the number of pages and revisions." },
       { question: "Can you redesign my existing website?", answer: "Yes. We audit your current site, keep what works and redesign it with a modern, faster and more user-friendly layout." },
       { question: "Will my website look good on mobile?", answer: "Absolutely. Every design is created mobile-first and tested for tablets and desktops as well." },
+      { question: "How much does a website design cost?", answer: "It depends on the number of pages and custom sections. After a short call you get a fixed quote — business website designs typically start from ₹25,000." },
+      { question: "Do you design landing pages for ads?", answer: "Yes. We design focused landing pages for Google Ads and Meta Ads campaigns, built around one clear call-to-action." },
+      { question: "Can I see the design before development starts?", answer: "Yes. You review a clickable prototype in Figma and request changes before a single line of code is written." },
     ],
+    projectSlugs: ["lumina-luxury", "apex-ecommerce", "nexatech-enterprise"],
   },
   {
     slug: "website-development",
@@ -86,6 +101,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["WordPress", "React.js / Next.js", "E-Commerce", "CMS Integration"],
     image: unsplash("1461749280684-dccba630e2f6", 1600),
     thumb: unsplash("1461749280684-dccba630e2f6", 200),
+    introImage: unsplash("1517694712202-14dd9538aa97", 1400),
     heroTagline: "Clean code, fast load times and websites your team can update easily.",
     heroDesc:
       "We turn designs into fully functional websites and web applications. From business websites on WordPress to custom React.js and Next.js platforms and e-commerce stores, we build for speed, security and search visibility.",
@@ -118,7 +134,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "Which platform is right for my website?", answer: "For most business sites we recommend WordPress for easy editing. For custom features or high performance we build with React.js / Next.js." },
       { question: "Will I be able to update the website myself?", answer: "Yes. We set up a CMS and give you a walkthrough so you can edit content, images and blog posts on your own." },
       { question: "Do you provide hosting and maintenance?", answer: "We can set up hosting, domain and SSL for you and offer monthly maintenance plans for updates, backups and support." },
+      { question: "How long does it take to build a website?", answer: "A business website usually takes 3–6 weeks; e-commerce and custom web applications take longer. You get a clear timeline in your proposal." },
+      { question: "Can you build an e-commerce store?", answer: "Yes. We build online stores on WooCommerce, Shopify or a custom Next.js setup, with payment gateways, shipping and order management." },
+      { question: "Will my website be fast and SEO-friendly?", answer: "Yes. We optimise images, code and hosting for speed and set up clean URLs, meta tags, sitemaps and schema markup from day one." },
     ],
+    projectSlugs: ["nexatech-enterprise", "apex-ecommerce", "hyperion-cloud"],
   },
   {
     slug: "mobile-app-design",
@@ -131,6 +151,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["iOS & Android UI", "User Flows", "App Prototypes", "Design Systems"],
     image: unsplash("1512941937669-90a1b58e7e9c", 1600),
     thumb: unsplash("1512941937669-90a1b58e7e9c", 200),
+    introImage: unsplash("1541462608143-67571c6738dd", 1400),
     heroTagline: "App screens that are simple to use and a pleasure to look at.",
     heroDesc:
       "We design mobile apps for startups and businesses — from onboarding and navigation to checkout and dashboards. Every screen follows iOS and Android guidelines while staying true to your brand.",
@@ -163,7 +184,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "Do you design for both iOS and Android?", answer: "Yes. We follow Apple Human Interface and Google Material guidelines and adapt designs for both platforms." },
       { question: "Can you redesign my existing app?", answer: "Yes. We audit the current app, identify pain points and deliver an improved, modern design." },
       { question: "Can you also develop the app?", answer: "Yes — our Mobile App Development team can build the app from the same designs." },
+      { question: "What do I receive at the end of the project?", answer: "Complete Figma files with every screen, a clickable prototype, a component library and exported assets ready for developers." },
+      { question: "How long does app design take?", answer: "Most app designs take 3–6 weeks depending on the number of screens, user flows and revision rounds." },
+      { question: "Do you test the designs with users?", answer: "Yes. We test the clickable prototype with real users where possible and refine the flows before development." },
     ],
+    projectSlugs: ["hyperion-cloud", "lumina-luxury", "nexatech-enterprise"],
   },
   {
     slug: "mobile-app-development",
@@ -176,6 +201,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Flutter", "React Native", "API Integration", "Play Store & App Store"],
     image: unsplash("1551650975-87deedd944c3", 1600),
     thumb: unsplash("1551650975-87deedd944c3", 200),
+    introImage: unsplash("1607252650355-f7fd0460ccdb", 1400),
     heroTagline: "Turn your idea into a fast, stable and scalable mobile app.",
     heroDesc:
       "We develop Android and iOS apps using Flutter, React Native and native technologies. From e-commerce and booking apps to business tools, we handle development, backend, testing and app store publishing.",
@@ -208,7 +234,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "How long does it take to build an app?", answer: "A basic app can take 6–8 weeks, while feature-rich apps take 3–6 months. We share a clear timeline after scoping." },
       { question: "Will I own the source code?", answer: "Yes. After final payment you receive full ownership of the source code and app store accounts." },
       { question: "Do you help publish the app?", answer: "Yes. We handle the complete Play Store and App Store submission process." },
+      { question: "Do you build for both Android and iOS?", answer: "Yes. We build cross-platform apps with Flutter or React Native, so one codebase runs on both Android and iOS." },
+      { question: "How much does an app cost?", answer: "It depends on the features, integrations and admin panel needed. After scoping we share a fixed, milestone-based quote." },
+      { question: "Do you provide support after launch?", answer: "Yes. We offer maintenance plans for bug fixes, OS updates, new features and performance monitoring." },
     ],
+    projectSlugs: ["hyperion-cloud", "nexatech-enterprise", "apex-ecommerce"],
   },
   {
     slug: "graphic-design",
@@ -221,6 +251,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Logo & Branding", "Social Media Creatives", "Brochures & Print", "Ad Creatives"],
     image: unsplash("1626785774573-4b799315345d", 1600),
     thumb: unsplash("1626785774573-4b799315345d", 200),
+    introImage: unsplash("1626785774625-ddcddc3445e9", 1400),
     heroTagline: "Consistent, eye-catching design for every touchpoint of your brand.",
     heroDesc:
       "From your logo and brand identity to social media posts, ad creatives, brochures and packaging, our designers create visuals that communicate clearly and leave a lasting impression.",
@@ -253,7 +284,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "How many logo concepts do you provide?", answer: "We usually present 2–3 logo concepts and refine the selected one with revisions." },
       { question: "Do you offer monthly social media design packages?", answer: "Yes. We offer monthly packages with a fixed number of posts, stories and ad creatives." },
       { question: "Will I get the source files?", answer: "Yes. You receive the final artwork in editable source formats along with PNG, JPG, SVG and PDF files." },
+      { question: "How long does a logo or brand identity take?", answer: "A logo usually takes 1–2 weeks; a complete brand identity with guidelines takes 3–4 weeks." },
+      { question: "Do you design print material as well?", answer: "Yes. We design brochures, flyers, business cards, packaging and banners, delivered print-ready." },
+      { question: "How many revisions are included?", answer: "Every package includes revision rounds, agreed upfront, so you get a final design you're happy with." },
     ],
+    projectSlugs: ["lumina-luxury", "velocity-ads", "apex-ecommerce"],
   },
   {
     slug: "ui-ux-design",
@@ -266,6 +301,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["UX Research", "Wireframes", "UI Design Systems", "Usability Testing"],
     image: unsplash("1561070791-2526d30994b5", 1600),
     thumb: unsplash("1561070791-2526d30994b5", 200),
+    introImage: unsplash("1586717791821-3f44a563fa4c", 1400),
     heroTagline: "Great products feel effortless — we design them that way.",
     heroDesc:
       "We combine user research, information architecture and visual design to create digital products that are simple to use. From SaaS dashboards to web portals, we design interfaces that reduce friction and improve conversions.",
@@ -298,7 +334,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "What is the difference between UI and UX?", answer: "UX is how the product works and feels for the user; UI is how it looks. We handle both together." },
       { question: "Do you work on existing products?", answer: "Yes. We regularly audit and redesign existing websites, dashboards and apps." },
       { question: "Can you work with our in-house developers?", answer: "Yes. We provide detailed Figma files and specs, and stay available during development." },
+      { question: "Do you do user research?", answer: "Yes. We start with user and competitor research, then map user journeys before designing any screens." },
+      { question: "Will I get a design system?", answer: "Yes. We build reusable components, colours and typography in Figma so your product stays consistent as it grows." },
+      { question: "How long does a UI/UX project take?", answer: "Smaller projects take 2–4 weeks; larger dashboards and SaaS products take 6–10 weeks, delivered in stages." },
     ],
+    projectSlugs: ["lumina-luxury", "hyperion-cloud", "nexatech-enterprise"],
   },
   {
     slug: "digital-marketing",
@@ -311,6 +351,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Social Media Marketing", "Content Marketing", "Lead Generation", "Analytics & Reporting"],
     image: unsplash("1460925895917-afdab827c52f", 1600),
     thumb: unsplash("1460925895917-afdab827c52f", 200),
+    introImage: unsplash("1533750349088-cd871a92f312", 1400),
     heroTagline: "Reach the right audience, generate quality leads and grow consistently.",
     heroDesc:
       "We plan and run end-to-end digital marketing for your business — social media management, content, paid campaigns, email marketing and conversion tracking — all connected to clear business goals.",
@@ -343,7 +384,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "Which platforms should my business be on?", answer: "It depends on your audience. We recommend the right mix after an initial audit — usually Instagram, Facebook, LinkedIn and Google." },
       { question: "How soon will I see results?", answer: "Paid campaigns can bring leads within days. Organic growth and SEO build momentum over 2–3 months." },
       { question: "Do you share reports?", answer: "Yes. You receive a monthly report and can ask for a review call anytime." },
+      { question: "What does a digital marketing plan include?", answer: "Social media management, paid ads, SEO and content — chosen to match your goals and budget after an audit." },
+      { question: "Is the ad budget part of your fee?", answer: "No. Ad spend is paid directly to Google or Meta; our management fee is separate and agreed upfront." },
+      { question: "Do you create the content and creatives?", answer: "Yes. Our design team creates posts, reels, carousels and ad creatives that match your brand." },
     ],
+    projectSlugs: ["velocity-ads", "cybershield-seo", "apex-ecommerce"],
   },
   {
     slug: "seo",
@@ -356,6 +401,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Technical SEO", "On-Page SEO", "Local SEO", "Link Building"],
     image: unsplash("1432888498266-38ffec3eaf0a", 1600),
     thumb: unsplash("1432888498266-38ffec3eaf0a", 200),
+    introImage: unsplash("1556155092-490a1ba16284", 1400),
     heroTagline: "Sustainable organic growth from people already searching for your services.",
     heroDesc:
       "Our SEO services cover technical fixes, keyword research, on-page optimisation, content, local SEO and quality link building — so your website ranks higher on Google and brings consistent, free traffic.",
@@ -388,7 +434,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "How long does SEO take to show results?", answer: "Most websites see noticeable improvement in 3–6 months, depending on competition and the website's current condition." },
       { question: "Do you guarantee #1 rankings?", answer: "No honest agency can guarantee rankings. We guarantee transparent work, best practices and steady improvement." },
       { question: "Do you do local SEO?", answer: "Yes. We optimise your Google Business Profile and local listings so you appear in map results near you." },
+      { question: "What is included in your SEO service?", answer: "Technical SEO, keyword research, on-page optimisation, content, link building and monthly ranking and traffic reports." },
+      { question: "Will you fix technical issues on my website?", answer: "Yes. We fix speed, indexing, broken links, schema and mobile issues that hold your rankings back." },
+      { question: "Do you write SEO content?", answer: "Yes. We plan and write blog posts and service pages around the keywords your customers actually search for." },
     ],
+    projectSlugs: ["cybershield-seo", "nexatech-enterprise", "apex-ecommerce"],
   },
   {
     slug: "google-ads",
@@ -401,6 +451,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Search Ads", "Performance Max", "YouTube Ads", "Conversion Tracking"],
     image: unsplash("1573804633927-bfcbcd909acd", 1600),
     thumb: unsplash("1573804633927-bfcbcd909acd", 200),
+    introImage: unsplash("1563986768609-322da13575f3", 1400),
     heroTagline: "Show up at the exact moment customers search for what you offer.",
     heroDesc:
       "We plan, launch and manage Google Ads campaigns — Search, Display, Shopping, YouTube and Performance Max — with proper conversion tracking, so every rupee of ad spend is measured and optimised.",
@@ -433,7 +484,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "What budget do I need for Google Ads?", answer: "It depends on your industry and location. We recommend a budget after keyword research so you can get meaningful results." },
       { question: "Is the ad budget included in your fee?", answer: "No. The ad budget is paid directly to Google; our management fee is separate." },
       { question: "How quickly will I get leads?", answer: "Search campaigns usually start generating enquiries within the first few days of going live." },
+      { question: "Which Google Ads campaigns do you run?", answer: "Search, Performance Max, Display, Shopping and YouTube campaigns — chosen to suit your business goal." },
+      { question: "How do you track results?", answer: "We set up conversion tracking for calls, forms and purchases, so every rupee spent is tied to real enquiries or sales." },
+      { question: "Do you also create the landing pages?", answer: "Yes. Our design team builds fast, focused landing pages that turn ad clicks into enquiries." },
     ],
+    projectSlugs: ["velocity-ads", "cybershield-seo", "apex-ecommerce"],
   },
   {
     slug: "meta-ads",
@@ -446,6 +501,7 @@ export const servicesList: ServiceDetail[] = [
     highlights: ["Facebook Ads", "Instagram Ads", "Lead Form Campaigns", "Retargeting"],
     image: unsplash("1611162617213-7d7a39e9b1d7", 1600),
     thumb: unsplash("1611162617213-7d7a39e9b1d7", 200),
+    introImage: unsplash("1611926653458-09294b3142bf", 1400),
     heroTagline: "Reach your ideal customers on Facebook and Instagram — and turn them into leads.",
     heroDesc:
       "We create and manage Meta Ads campaigns for lead generation, sales and brand awareness. From audience research and ad creatives to Pixel and Conversions API setup, we handle everything.",
@@ -478,7 +534,11 @@ export const servicesList: ServiceDetail[] = [
       { question: "Are Meta Ads good for lead generation?", answer: "Yes. Facebook and Instagram lead ads are one of the most cost-effective ways to generate enquiries for local and service businesses." },
       { question: "Do you create the ad creatives?", answer: "Yes. Our design team creates images, carousels and short video ads for your campaigns." },
       { question: "Can leads come directly to my CRM or WhatsApp?", answer: "Yes. We can connect lead forms to your CRM, Google Sheets, email or WhatsApp." },
+      { question: "What budget do I need for Meta Ads?", answer: "You can start with a modest daily budget. We recommend an amount after understanding your audience, location and goals." },
+      { question: "Do you run retargeting campaigns?", answer: "Yes. We set up the Meta Pixel and Conversions API and retarget visitors who showed interest but didn't convert." },
+      { question: "How do you report results?", answer: "You get a monthly report covering spend, leads, cost per lead and what we're improving next." },
     ],
+    projectSlugs: ["velocity-ads", "lumina-luxury", "apex-ecommerce"],
   },
 ];
 

@@ -107,7 +107,7 @@ const sections: LegalSection[] = [
         For more details about how we handle your information, please read our{" "}
         <Link href="/privacy-policy">Privacy Policy</Link> or contact us at{" "}
         <a href="mailto:info@entecmedia.com">info@entecmedia.com</a> /{" "}
-        <a href="tel:+919812388888">+91-9812388888</a>.
+        <a href="tel:+919996550841">+91-9996550841</a>.
       </p>
     ),
   },

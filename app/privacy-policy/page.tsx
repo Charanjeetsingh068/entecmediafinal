@@ -190,7 +190,7 @@ const sections: LegalSection[] = [
         <br />
         Email: <a href="mailto:info@entecmedia.com">info@entecmedia.com</a>
         <br />
-        Phone: <a href="tel:+919812388888">+91-9812388888</a>
+        Phone: <a href="tel:+919996550841">+91-9996550841</a>
       </p>
     ),
   },

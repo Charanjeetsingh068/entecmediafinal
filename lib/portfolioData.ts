@@ -14,6 +14,8 @@ export interface PortfolioProjectDetail {
   /** Optional full-length screenshot of the project's home page (tall image). When set, the home page
    *  "Featured projects" laptop scrolls through it; otherwise heroImage is panned. */
   fullPageImage?: string;
+  /** Optional link to the live website, shown as "Visit website" on the service pages. */
+  liveUrl?: string;
   /** Short card description used on listing pages */
   summary: string;
   metric: string;

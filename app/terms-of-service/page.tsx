@@ -83,7 +83,7 @@ const sections: LegalSection[] = [
         is owned by or licensed to Entec Media and protected by intellectual property
         laws. Ownership of final project deliverables transfers to the client upon full
         payment, unless the project agreement states otherwise. We may showcase
-        completed work in our portfolio unless you ask us not to in writing.
+        completed work in the Our Projects section of our website unless you ask us not to in writing.
       </p>
     ),
   },
@@ -154,7 +154,7 @@ const sections: LegalSection[] = [
       <p>
         Questions about these Terms? Email us at{" "}
         <a href="mailto:info@entecmedia.com">info@entecmedia.com</a> or call{" "}
-        <a href="tel:+919812388888">+91-9812388888</a>.
+        <a href="tel:+919996550841">+91-9996550841</a>.
       </p>
     ),
   },

@@ -1,104 +1,93 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPortfolioProjectDetail, portfolioProjects } from "@/lib/portfolioData";
-import PortfolioHero from "@/components/portfolio/PortfolioHero";
-import PortfolioOverview from "@/components/portfolio/PortfolioOverview";
-import PortfolioShowcase from "@/components/portfolio/PortfolioShowcase";
-import SectionHeader from "@/components/shared/SectionHeader";
-import KButton from "@/components/shared/KButton";
-import AboutCTA from "@/components/about/AboutCTA";
+import ProjectHero from "@/components/portfolio/project/ProjectHero";
+import ProjectOverview from "@/components/portfolio/project/ProjectOverview";
+import ServiceFeatures from "@/components/services/detail/ServiceFeatures";
+import ServiceProjects from "@/components/services/detail/ServiceProjects";
+import QuoteCta from "@/components/shared/QuoteCta";
+import FaqShowcase from "@/components/shared/FaqShowcase";
+import { getPortfolioItems, getPortfolioPageContent, getProjectPage } from "@/lib/portfolioApi";
+import { siteConfig } from "@/lib/siteConfig";
 
-interface PortfolioPageProps {
+interface ProjectPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return portfolioProjects.map(({ slug }) => ({ slug }));
+  return (await getPortfolioItems()).map(({ id }) => ({ slug: id }));
 }
 
-export async function generateMetadata({ params }: PortfolioPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const project = getPortfolioProjectDetail(slug);
-  if (!project) return { title: "Project Not Found" };
-
+  const page = await getProjectPage(slug);
+  if (!page) return { title: "Project Not Found" };
+  const { project } = page;
+  const title = `${project.title} — ${project.category} Case Study`;
   return {
-    title: `${project.title} – Case Study`,
-    description: project.summary,
-    alternates: { canonical: `/portfolio/${project.slug}` },
-    openGraph: { title: project.title, description: project.summary, images: [project.heroImage] },
+    title,
+    description: project.description,
+    alternates: { canonical: `/portfolio/${project.id}` },
+    openGraph: {
+      title: `${title} | Entec Media`,
+      description: project.description,
+      url: `/portfolio/${project.id}`,
+      type: "article",
+      images: [project.image],
+    },
+    twitter: { card: "summary_large_image", title, description: project.description, images: [project.image] },
   };
 }
 
-export default async function PortfolioDetailPage({ params }: PortfolioPageProps) {
+/**
+ * Project page (one for every project in lib/portfolioItems.ts + the case studies) — dark and light
+ * sections alternate: hero with the device composition (dark, pinned) → overview: screenshot + details +
+ * get a quote (light) → what we delivered (dark, the service pages' "What's included" section) →
+ * related projects (light, the Featured projects deck) → get a quote (dark) → project FAQs (light) → footer.
+ * Content: lib/portfolioApi.ts → getProjectPage (project data + category defaults + shared copy).
+ */
+export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const { slug } = await params;
-  const project = getPortfolioProjectDetail(slug);
-  if (!project) notFound();
+  const [page, listing] = await Promise.all([getProjectPage(slug), getPortfolioPageContent()]);
+  if (!page) notFound();
+  const { project, content, features, faqs, related } = page;
 
-  const others = portfolioProjects.filter((p) => p.slug !== project.slug);
-  const featuredOthers = others.slice(0, 3);
-  const moreOthers = others.slice(3);
+  const projectLd = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    image: project.image,
+    url: `${siteConfig.url}/portfolio/${project.id}/`,
+    genre: project.category,
+    ...(project.year ? { dateCreated: project.year } : {}),
+    keywords: project.tech.join(", "),
+    creator: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+    ...(project.client ? { sourceOrganization: { "@type": "Organization", name: project.client } } : {}),
+  };
 
   return (
-    <div className="k-page k-detail-page portfolio-detail-page-wrapper">
-      <PortfolioHero project={project} />
-      <PortfolioOverview project={project} />
-
-      <section className="k-section k-related-section" data-theme="light">
-        <div className="container">
-          <SectionHeader
-            label="+ OTHER PROJECTS"
-            title={
-              <>
-                <span className="k-muted">More ideas</span>
-                <br />
-                turned real
-              </>
-            }
-            desc="Real projects, real challenges and real results, crafted with clarity, creativity and purpose."
-          />
-          <PortfolioShowcase
-            projects={featuredOthers}
-            intro={
-              <p className="k-showcase-intro-text">
-                A curated selection of work shaped by <strong>strategy, creativity and thoughtful execution</strong>,
-                crafted to help brands stand out and grow with confidence.
-              </p>
-            }
-          />
-
-          <div className="k-keep-exploring">
-            <span className="why-section-label">+ OTHER PROJECTS</span>
-            <div className="k-keep-exploring-links">
-              <span className="k-mono-label">Keep exploring our work</span>
-              <div className="k-keep-exploring-row">
-                {moreOthers.map((p) => (
-                  <Link key={p.slug} href={`/portfolio/${p.slug}`} className="k-keep-link">
-                  <span className="k-keep-link-main">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.heroImage.replace("w=1600", "w=120")} alt="" className="k-keep-thumb" loading="lazy" />
-                    <span className="k-keep-name">{p.client}</span>
-                  </span>
-                  <span className="cta-dots-vertical" aria-hidden="true">
-                    <span className="dot" />
-                    <span className="dot" />
-                    <span className="dot" />
-                  </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="k-keep-exploring-cta">
-              <span className="k-mono-label">See what else we&apos;ve built</span>
-              <KButton href="/portfolio" label="All case studies" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <AboutCTA source={`portfolio-${project.slug}`} />
+    <div className="k-page ab-page sd-page pd-page">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(projectLd) }} />
+      <ProjectHero page={page} listLabel={listing.name} />
+      <div className="k-page-body ab-body">
+        <ProjectOverview page={page} />
+        <ServiceFeatures
+          service={{ title: project.title, image: project.image, deliverables: features, tools: project.tech }}
+          content={content.features}
+        />
+        {related.length > 0 && <ServiceProjects projects={related} content={content.related} />}
+        <QuoteCta content={content.cta} />
+        <FaqShowcase
+          id="project-faq"
+          items={faqs}
+          label={content.faq.label}
+          title={content.faq.title}
+          desc={content.faq.desc}
+          help={content.faq.help}
+        />
+      </div>
     </div>
   );
 }

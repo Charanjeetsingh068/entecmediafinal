@@ -336,8 +336,19 @@ export default function Header() {
               />
 
               <ul className="nav-services-tags">
-                {["Website Design", "Development", "Mobile Apps", "UI/UX Design", "SEO", "Google & Meta Ads"].map((tag) => (
-                  <li key={tag}>{tag}</li>
+                {[
+                  { label: "Website Design", href: "/services/website-design" },
+                  { label: "Development", href: "/services/website-development" },
+                  { label: "Mobile Apps", href: "/services/mobile-app-development" },
+                  { label: "UI/UX Design", href: "/services/ui-ux-design" },
+                  { label: "SEO", href: "/services/seo" },
+                  { label: "Google & Meta Ads", href: "/services/google-ads" },
+                ].map((tag) => (
+                  <li key={tag.href}>
+                    <Link href={tag.href} onClick={() => setMenuOpen(false)} tabIndex={menuOpen ? 0 : -1}>
+                      {tag.label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
 

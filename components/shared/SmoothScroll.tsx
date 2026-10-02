@@ -26,6 +26,8 @@ export default function SmoothScroll() {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       autoRaf: true,
+      // In-page links (href="#quote", "#projects"…) glide to their section; native jumps don't move Lenis
+      anchors: true,
     });
     window.__lenis = lenis;
 

@@ -1,43 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image, { type StaticImageData } from "next/image";
-import team1Img from "@/public/images/team1-avatar.webp";
-import team2Img from "@/public/images/team2-avatar.webp";
-import team3Img from "@/public/images/team3-avatar.webp";
-import team4Img from "@/public/images/team4-avatar.webp";
-
-// NOTE: Replace these with genuine client reviews (with the client's permission) before going live.
-interface Review {
-  quote: string;
-  service: string;
-  name: string;
-  role: string;
-  avatar: StaticImageData;
-}
-
-const reviews: Review[] = [
-  { quote: "Entec Media rebuilt our website and took over our Google and Meta Ads. The new site loads fast, looks premium, and our enquiries have grown every single month since launch.", service: "Website + Ads", name: "Rohit Arora", role: "Founder, Real Estate Consultancy", avatar: team1Img },
-  { quote: "Our new website is fast, mobile-friendly and easy to update. The team understood exactly what our customers were looking for.", service: "Website", name: "Simran Kaur", role: "Owner, Boutique Clothing Brand", avatar: team1Img },
-  { quote: "From UI/UX design to the final Flutter app, Entec Media handled everything professionally and launched on both app stores on time.", service: "Mobile App", name: "Karan Mehta", role: "Co-Founder, Food Delivery Startup", avatar: team3Img },
-  { quote: "Their Meta Ads campaigns brought us consistent, quality leads at a much lower cost per lead than we were paying before. Reporting is clear and every rupee is accounted for.", service: "Meta Ads", name: "Amit Sharma", role: "Director, Immigration Consultancy", avatar: team2Img },
-  { quote: "Clear communication, transparent reporting and creative ideas every month. It feels like having an in-house marketing team.", service: "Digital Marketing", name: "Harpreet Singh", role: "Managing Partner, Hospitality Group", avatar: team1Img },
-  { quote: "The logo and brand identity they designed gave our business a completely professional look across print and social media.", service: "Branding", name: "Priya Malhotra", role: "Founder, Organic Skincare Brand", avatar: team2Img },
-  { quote: "Within a few months of SEO work we started ranking on the first page of Google for our main services in Mohali and Chandigarh — calls from Google have never been higher.", service: "SEO", name: "Dr. Neha Gupta", role: "Founder, Dental Clinic", avatar: team4Img },
-  { quote: "Our Google Ads account was wasting money. Entec Media restructured it and our cost per enquiry dropped significantly.", service: "Google Ads", name: "Vikram Bansal", role: "Owner, Interior Design Studio", avatar: team3Img },
-  { quote: "They built our WooCommerce store with smooth checkout and payment integration. Online orders have grown steadily ever since.", service: "E-commerce", name: "Ankit Jindal", role: "CEO, Home Decor E-Commerce Store", avatar: team4Img },
-  { quote: "The dashboard UI they designed for our SaaS product made onboarding so much simpler for our customers.", service: "UI/UX Design", name: "Rahul Verma", role: "Product Head, B2B SaaS Company", avatar: team2Img },
-  { quote: "Social media creatives, reels and ad campaigns — all handled on time and always on-brand. Highly recommended.", service: "Social Media", name: "Jasleen Kaur", role: "Marketing Manager, Education Institute", avatar: team1Img },
-];
-
-// Two rows; each is doubled in the markup so the loop is seamless
-const rows = [reviews.slice(0, 6), reviews.slice(6)];
+import Image from "next/image";
+import { testimonials, type Review } from "@/lib/testimonialsData";
 
 // Phones: all reviews are slides, but there are only four dots; they cycle (slide 5 lights dot 1 again)
 const DOTS = 4;
 // The phone slider loops: three copies of the slides, the visitor always lands back in the middle one
 const COPIES = 3;
-const phoneSlides = Array.from({ length: COPIES }, (_, c) => reviews.map((item, k) => ({ item, k, c }))).flat();
 
 function ReviewCard({ item, brand, hidden }: { item: Review; brand: boolean; hidden?: boolean }) {
   return (
@@ -72,7 +42,12 @@ function ReviewCard({ item, brand, hidden }: { item: Review; brand: boolean; hid
  * last copy of the slides, it is moved invisibly to the same slide in the middle copy. All reviews are slides; the four dots cycle with them (slides 1–4
  * light dots 1–4, slide 5 lights dot 1 again, …).
  */
-export default function Testimonials() {
+export default function Testimonials({ reviews = testimonials }: { reviews?: Review[] }) {
+  // Two rows; each is doubled in the markup so the loop is seamless
+  const half = Math.ceil(reviews.length / 2);
+  const rows = [reviews.slice(0, half), reviews.slice(half)];
+  const phoneSlides = Array.from({ length: COPIES }, (_, c) => reviews.map((item, k) => ({ item, k, c }))).flat();
+
   const sectionRef = useRef<HTMLElement>(null);
   const voiceRef = useRef<HTMLCanvasElement>(null);
   const slidesRef = useRef<HTMLDivElement>(null);
@@ -131,7 +106,7 @@ export default function Testimonials() {
       cancelAnimationFrame(raf);
       clearTimeout(settle);
     };
-  }, []);
+  }, [reviews.length]);
 
   // Four cycling dots: the active one is the slide's place in its group of four
   const activeDot = slide % DOTS;

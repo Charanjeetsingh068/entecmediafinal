@@ -7,7 +7,7 @@ import { mapEmbedUrl } from "@/lib/siteConfig";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with Entec Media for website design & development, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads. Call +91-9812388888 or email info@entecmedia.com.",
+    "Get in touch with Entec Media for website design & development, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads. Call +91-9996550841 or email info@entecmedia.com.",
   alternates: { canonical: "/contact" },
 };
 

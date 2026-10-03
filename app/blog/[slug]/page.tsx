@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBlogBySlug, getPublishedBlogs } from "@/lib/blogApi";
-import ShareLinks from "@/components/shared/ShareLinks";
+import BlogDetailHero from "@/components/blog/detail/BlogDetailHero";
+import BlogArticleIntro from "@/components/blog/detail/BlogArticleIntro";
+import BlogArticleBody from "@/components/blog/detail/BlogArticleBody";
 import BlogSection from "@/components/home/BlogSection";
-import AboutCTA from "@/components/about/AboutCTA";
+import {
+  getBlogBySlug,
+  getBlogCategories,
+  getBlogDetailContent,
+  getBlogPageContent,
+  getBlogTags,
+  getPublishedBlogs,
+  prepareArticle,
+  readingMinutes,
+} from "@/lib/blogApi";
 import { siteConfig } from "@/lib/siteConfig";
 
 interface BlogDetailPageProps {
@@ -35,22 +43,47 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
     openGraph: {
       title,
       description,
+      url: `/blog/${blog.slug}`,
       type: "article",
       publishedTime: blog.published_at || blog.created_at,
+      modifiedTime: blog.updated_at || undefined,
       authors: [blog.author_name],
+      section: blog.category_name,
+      tags: blog.tags?.map((t) => t.name),
       images: imageUrl ? [{ url: imageUrl, alt: blog.featured_image_alt || blog.title }] : undefined,
     },
     twitter: { card: "summary_large_image", title, description, images: imageUrl ? [imageUrl] : undefined },
   };
 }
 
+/**
+ * Article page: hero + breadcrumb with the editorial cover (dark, pinned — the body slides over it) →
+ * intro: featured image beside the title, lead, facts and share (light) → the article with its
+ * sidebar: search, categories, recent posts, tags, sticky help card (white) → recent posts in
+ * the home page Insights panels (light) → footer.
+ * Content: the article from the Blog CMS (lib/blogApi.ts), shared copy from lib/blogContent.ts.
+ */
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
-  const { blog, relatedBlogs } = await getBlogBySlug(slug);
+  const [{ blog, relatedBlogs }, { blogs }, categories, content, pageContent] = await Promise.all([
+    getBlogBySlug(slug),
+    getPublishedBlogs({ limit: 1000 }),
+    getBlogCategories(),
+    getBlogDetailContent(),
+    getBlogPageContent(),
+  ]);
   if (!blog) notFound();
 
-  const wordCount = (blog.content || "").replace(/<[^>]+>/g, "").split(/\s+/).length;
-  const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
+  const tags = await getBlogTags(blog.tags ?? []);
+  const { html } = prepareArticle(blog.content || "");
+  const minutes = readingMinutes(blog);
+  const index = blogs.findIndex((b) => b.slug === blog.slug);
+  // The list is newest first: "previous" is the older article, "next" the newer one
+  const prev = index >= 0 ? blogs[index + 1] : undefined;
+  const next = index > 0 ? blogs[index - 1] : undefined;
+  const others = blogs.filter((b) => b.slug !== blog.slug);
+  // Recent posts panels: related articles first, topped up with the newest ones
+  const recentPanels = [...relatedBlogs, ...others].filter((b, i, arr) => b.slug !== blog.slug && arr.findIndex((x) => x.slug === b.slug) === i).slice(0, 5);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -60,83 +93,42 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     image: blog.featured_image_url ? [blog.featured_image_url] : [],
     datePublished: blog.published_at || blog.created_at,
     dateModified: blog.updated_at || blog.published_at || blog.created_at,
+    articleSection: blog.category_name,
+    keywords: blog.tags?.map((t) => t.name).join(", "),
+    wordCount: (blog.content || "").replace(/<[^>]+>/g, " ").trim().split(/\s+/).length,
+    timeRequired: `PT${minutes}M`,
     author: { "@type": "Person", name: blog.author_name },
     publisher: {
       "@type": "Organization",
       name: siteConfig.name,
       logo: { "@type": "ImageObject", url: `${siteConfig.url}/images/darklogo.svg` },
     },
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${siteConfig.url}/blog/${blog.slug}` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${siteConfig.url}/blog/${blog.slug}/` },
   };
 
   return (
-    <div className="k-page k-detail-page blog-detail-wrapper">
+    <div className="k-page ab-page bd-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-
-      <section className="k-detail-hero k-article-hero" data-theme="light">
-        <div className="container k-detail-hero-grid">
-          <div className="k-detail-hero-side">
-            <Link href="/blog" className="k-back-link">
-              <span aria-hidden="true">←</span> BACK TO ARTICLES
-            </Link>
-            <span className="k-mono-label">{blog.formatted_date}</span>
-            <span className="k-mono-label">{readingMinutes} min read</span>
-          </div>
-          <div className="k-detail-hero-main">
-            <h1 className="k-detail-title k-article-title">{blog.title}</h1>
-          </div>
-        </div>
-      </section>
-
-      <section className="k-detail-body" data-theme="light">
-        <div className="container k-detail-grid">
-          <aside className="k-detail-sidebar">
-            {blog.category_name && (
-              <div className="k-side-block">
-                <span className="k-mono-label">Categories:</span>
-                <ul className="k-side-list">
-                  <li>
-                    <Link href={`/blog/category/${blog.category_slug}`}>{blog.category_name}</Link>
-                  </li>
-                  {blog.tags?.map((tag) => (
-                    <li key={tag.id}>#{tag.name}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="k-side-block">
-              <span className="k-mono-label">An article by</span>
-              <div className="k-author">
-                <span className="k-author-initial">{blog.author_name.charAt(0)}</span>
-                <div>
-                  <p className="k-author-name">{blog.author_name}</p>
-                  <p className="k-author-role">Entec Media</p>
-                </div>
-              </div>
-            </div>
-            <ShareLinks title={blog.title} />
-          </aside>
-
-          <article className="k-detail-content">
-            {blog.featured_image_url && (
-              <div className="k-detail-media k-article-media">
-                <Image
-                  src={blog.featured_image_url}
-                  alt={blog.featured_image_alt || blog.title}
-                  fill
-                  sizes="(max-width: 1199px) 100vw, 50vw"
-                  priority
-                />
-              </div>
-            )}
-            <p className="k-detail-lead">{blog.excerpt}</p>
-            <div className="blog-content-body" dangerouslySetInnerHTML={{ __html: blog.content || "" }} />
-          </article>
-        </div>
-      </section>
-
-      <BlogSection posts={relatedBlogs.slice(0, 4)} />
-      <AboutCTA source={`blog-${blog.slug}`} />
+      <BlogDetailHero
+        blog={blog}
+        content={content.hero}
+        name={pageContent.name}
+        minutes={minutes}
+      />
+      <div className="k-page-body ab-body">
+        <BlogArticleIntro blog={blog} content={content.intro} minutes={minutes} minRead={content.hero.minRead} />
+        <BlogArticleBody
+          blog={blog}
+          html={html}
+          content={content}
+          categories={categories}
+          recent={others.slice(0, 3)}
+          tags={tags.slice(0, 8)}
+          prev={prev}
+          next={next}
+        />
+        {recentPanels.length > 0 && <BlogSection posts={recentPanels} content={content.recent} />}
+      </div>
     </div>
   );
 }

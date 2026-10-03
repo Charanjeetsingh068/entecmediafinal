@@ -80,32 +80,41 @@ const DEFAULT_CATEGORIES: BlogCategory[] = Array.from(new Set(blogsData.map((b) 
   })
 );
 
-// Helper for fallback blogs
+// Fallback tags derived from the fallback posts (ids follow first appearance)
+const DEFAULT_TAGS: BlogTag[] = Array.from(new Set(blogsData.flatMap((b) => b.tags))).map((name, idx) => ({
+  id: idx + 1,
+  name,
+  slug: toSlug(name),
+}));
+
+// Helper for fallback blogs (newest first, like the API)
 function getFallbackBlogs(): BlogPost[] {
-  return blogsData.map((b) => {
-    const category = DEFAULT_CATEGORIES.find((c) => c.name === b.category);
-    return {
-      id: b.id,
-      category_id: category?.id ?? null,
-      title: b.title,
-      slug: b.slug,
-      excerpt: b.description,
-      content: b.content,
-      featured_image: null,
-      featured_image_alt: b.title,
-      featured_image_url: b.image,
-      author_name: "Entec Media Team",
-      status: "published",
-      meta_title: b.title,
-      meta_description: b.description,
-      published_at: b.date,
-      created_at: b.date,
-      category_name: b.category,
-      category_slug: toSlug(b.category),
-      formatted_date: formatDate(b.date),
-      tags: [],
-    };
-  });
+  return [...blogsData]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((b) => {
+      const category = DEFAULT_CATEGORIES.find((c) => c.name === b.category);
+      return {
+        id: b.id,
+        category_id: category?.id ?? null,
+        title: b.title,
+        slug: b.slug,
+        excerpt: b.description,
+        content: b.content,
+        featured_image: null,
+        featured_image_alt: b.title,
+        featured_image_url: b.image,
+        author_name: b.author || "Entec Media Team",
+        status: "published",
+        meta_title: b.title,
+        meta_description: b.description,
+        published_at: b.date,
+        created_at: b.date,
+        category_name: b.category,
+        category_slug: toSlug(b.category),
+        formatted_date: formatDate(b.date),
+        tags: DEFAULT_TAGS.filter((t) => b.tags.includes(t.name)),
+      };
+    });
 }
 
 /**
@@ -153,6 +162,9 @@ export async function getPublishedBlogs(params: FetchBlogsParams = {}): Promise<
   let fallback = getFallbackBlogs();
   if (params.category) {
     fallback = fallback.filter((b) => b.category_slug === params.category);
+  }
+  if (params.tag) {
+    fallback = fallback.filter((b) => b.tags?.some((t) => t.slug === params.tag));
   }
   if (params.search) {
     const q = params.search.toLowerCase();
@@ -205,7 +217,16 @@ export async function getBlogBySlug(slug: string): Promise<{
   const found = fallbackList.find((b) => b.slug === slug);
 
   if (found) {
-    const related = fallbackList.filter((b) => b.slug !== slug).slice(0, 3);
+    // Same category first, then shared tags, then the newest of the rest
+    const score = (b: BlogPost) =>
+      (b.category_slug === found.category_slug ? 10 : 0) +
+      (b.tags ?? []).filter((t) => found.tags?.some((f) => f.slug === t.slug)).length;
+    const related = fallbackList
+      .filter((b) => b.slug !== slug)
+      .map((b, i) => ({ b, i, s: score(b) }))
+      .sort((x, y) => y.s - x.s || x.i - y.i)
+      .map(({ b }) => b)
+      .slice(0, 4);
     return { blog: found, relatedBlogs: related };
   }
 
@@ -234,4 +255,73 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
   }
 
   return DEFAULT_CATEGORIES;
+}
+
+/**
+ * Every tag used by the published articles, most used first. The list API does not include tags, so
+ * with a live CMS this falls back to the tags of the articles that carry them (e.g. the current one).
+ */
+export async function getBlogTags(extra: BlogTag[] = []): Promise<(BlogTag & { count: number })[]> {
+  const { blogs } = await getPublishedBlogs({ limit: 1000 });
+  const map = new Map<string, BlogTag & { count: number }>();
+  for (const t of [...blogs.flatMap((b) => b.tags ?? []), ...extra]) {
+    const hit = map.get(t.slug);
+    if (hit) hit.count += 1;
+    else map.set(t.slug, { ...t, count: 1 });
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/* --------------------------------------------------------------------------
+   Page copy (lib/blogContent.ts now, admin API later):
+     GET {base}/public/blog-page.php    → { data: BlogPageContent }
+     GET {base}/public/blog-detail.php  → { data: BlogDetailContent }
+   Loaded with dynamic imports so the client components that use this file stay light.
+   -------------------------------------------------------------------------- */
+export async function getBlogPageContent() {
+  const [{ fromApi, isObject }, { blogPageContent }] = await Promise.all([import("@/lib/servicesApi"), import("@/lib/blogContent")]);
+  return fromApi("/public/blog-page.php", blogPageContent, isObject);
+}
+
+export async function getBlogDetailContent() {
+  const [{ fromApi, isObject }, { blogDetailContent }] = await Promise.all([import("@/lib/servicesApi"), import("@/lib/blogContent")]);
+  return fromApi("/public/blog-detail.php", blogDetailContent, isObject);
+}
+
+/* --------------------------------------------------------------------------
+   Helpers shared by the blog pages
+   -------------------------------------------------------------------------- */
+
+/** Reading time at ≈200 words a minute (at least 1). */
+export function readingMinutes(post: Pick<BlogPost, "content" | "excerpt">): number {
+  const text = (post.content || post.excerpt || "").replace(/<[^>]+>/g, " ").trim();
+  return Math.max(1, Math.round(text.split(/\s+/).filter(Boolean).length / 200));
+}
+
+export interface ArticleHeading {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+/**
+ * Gives every h2 / h3 of an article body an id (kept when it already has one) so the table of contents
+ * can link to it, and returns the list of headings.
+ */
+export function prepareArticle(html: string): { html: string; headings: ArticleHeading[] } {
+  const headings: ArticleHeading[] = [];
+  const used = new Set<string>();
+  const out = html.replace(/<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi, (_m, lvl: string, attrs: string, inner: string) => {
+    const text = inner.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&nbsp;/g, " ").trim();
+    const existing = attrs.match(/\sid=["']([^"']+)["']/i)?.[1];
+    let id = existing || toSlug(text.replace(/^\d+[.)]\s*/, "")) || `section-${headings.length + 1}`;
+    if (!existing) {
+      const base = id;
+      for (let n = 2; used.has(id); n++) id = `${base}-${n}`;
+    }
+    used.add(id);
+    headings.push({ id, text, level: Number(lvl) as 2 | 3 });
+    return `<h${lvl}${existing ? attrs : `${attrs} id="${id}"`}>${inner}</h${lvl}>`;
+  });
+  return { html: out, headings };
 }

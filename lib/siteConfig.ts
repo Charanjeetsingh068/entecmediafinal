@@ -30,7 +30,6 @@ export const siteConfig = {
   legalLinks: [
     { label: "Privacy Policy", href: "/privacy-policy" },
     { label: "Terms of Service", href: "/terms-of-service" },
-    { label: "User Data Deletion", href: "/data-deletion" },
   ],
   // TODO: replace with Entec Media's actual profile URLs.
   socialLinks: [

@@ -53,7 +53,7 @@ export default function ProjectHero({ page, listLabel }: { page: ProjectPage; li
 
           <div className="ab-hero-actions">
             <KButton href={hero.primaryCta.href} label={hero.primaryCta.label} variant="dark" />
-            {liveLink ? (
+            {liveLink && project.url ? (
               <a {...liveLinkProps(project.url)} className="ab-hero-link">
                 {liveLink.label}
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

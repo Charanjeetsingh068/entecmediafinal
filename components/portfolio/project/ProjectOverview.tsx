@@ -16,12 +16,14 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * the project number sits on the frame's corner.
  * Right: label, project name, the write-up, a facts grid (client, year, timeline, service), the
  * technology chips, what we did, and the actions: the category's "Go to website" / "Go to mobile app"
- * button (live link in a new tab, "#" until the project's url is added; none for design, logo, SEO and
+ * button (live link in a new tab, shown once the project's url is added; none for design, logo, SEO and
  * ads projects) and Get a quote. A smaller copy of that button sits on the screenshot itself too.
  * ≤1199px: image on top, details below.
  */
 export default function ProjectOverview({ page }: { page: ProjectPage }) {
-  const { project, content, overview, services, number, liveLink } = page;
+  const { project, content, overview, services, number } = page;
+  // The "Go to website / app" button only shows once the project's live URL is known
+  const liveLink = project.url ? page.liveLink : null;
   const c = content.overview;
   const rootRef = useRef<HTMLElement>(null);
   useHoverScroll(rootRef, [project.id], true);

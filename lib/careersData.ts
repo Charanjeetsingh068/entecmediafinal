@@ -18,9 +18,9 @@ export interface JobOpening {
   responsibilities: string[];
   requirements: string[];
   niceToHave: string[];
+  /** The open "send us your CV" application: has its own page but is not listed with the openings */
+  general?: boolean;
 }
-
-export const jobTypeFilters: JobType[] = ["Full-time", "Internship", "Remote", "Hybrid", "On-site", "Freelance"];
 
 export const jobOpenings: JobOpening[] = [
   {
@@ -233,6 +233,30 @@ export const jobOpenings: JobOpening[] = [
       "Willingness to learn fast",
     ],
     niceToHave: ["Google Digital Garage or similar certification", "Personal social or blog projects"],
+  },
+  {
+    slug: "general-application",
+    title: "General Application",
+    department: "Operations",
+    types: ["Full-time", "Part-time", "Internship", "Freelance"],
+    location: "Zirakpur, Punjab / Remote",
+    experience: "Any level",
+    salary: [{ amount: "As per experience", period: "" }],
+    summary:
+      "Don't see a role that fits? Send us your CV — we're always happy to meet talented designers, developers and marketers, and we'll reach out when the right opening comes up.",
+    requirementsSummary: "Passion for great work, eagerness to learn and a portfolio or experience you're proud of.",
+    responsibilities: [
+      "Tell us what you do best and the kind of role you're looking for",
+      "Share your portfolio, GitHub or examples of your work",
+      "We'll keep your CV on file and contact you when a matching role opens",
+    ],
+    requirements: [
+      "Skills in design, development, marketing or operations",
+      "Good communication and a team-player attitude",
+      "Willingness to learn and take ownership",
+    ],
+    niceToHave: ["Experience working with agencies or clients", "Side projects or freelance work"],
+    general: true,
   },
 ];
 

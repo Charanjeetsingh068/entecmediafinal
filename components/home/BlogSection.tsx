@@ -10,7 +10,22 @@ interface BlogSectionProps {
   /** Posts to show instead of the five latest (e.g. related articles) */
   posts?: BlogPost[];
   excludeSlug?: string;
+  /** Heading copy (defaults to the home page "Insights" heading), e.g. "Recent posts" under an article */
+  content?: {
+    label: string;
+    /** "after" follows the highlighted words on the first line ("Ideas" + " that") */
+    title: { soft: string; strong: string; after?: string };
+    desc: string;
+    cta: { label: string; href: string };
+  };
 }
+
+const DEFAULT_CONTENT: NonNullable<BlogSectionProps["content"]> = {
+  label: "+ INSIGHTS",
+  title: { soft: "Ideas", after: " that", strong: "move brands" },
+  desc: "Practical guides on websites, apps, SEO, Google Ads and Meta Ads to help your business grow online.",
+  cta: { label: "Read more insights", href: "/blog" },
+};
 
 /** Rough reading time from the article body (≈200 words a minute); null when there is no body. */
 function readMinutes(post: BlogPost) {
@@ -32,7 +47,7 @@ function readMinutes(post: BlogPost) {
  * pulses on the threads, hub sonar rings, a web around the pointer and a shockwave on click or tap.
  * Used on the home page, the About page and under a blog post (related articles).
  */
-export default function BlogSection({ posts, excludeSlug }: BlogSectionProps) {
+export default function BlogSection({ posts, excludeSlug, content = DEFAULT_CONTENT }: BlogSectionProps) {
   const [blogs, setBlogs] = useState<BlogPost[]>(posts ?? []);
   const [open, setOpen] = useState(0);
   const panelsRef = useRef<HTMLDivElement>(null);
@@ -385,21 +400,20 @@ export default function BlogSection({ posts, excludeSlug }: BlogSectionProps) {
       <div className="container">
         <div className="why-top-layout k-section-head" style={{ marginBottom: "clamp(36px, 4.5vw, 64px)" }}>
           <div className="why-col-left">
-            <span className="why-section-label">+ INSIGHTS</span>
+            <span className="why-section-label">{content.label}</span>
           </div>
           <div className="why-col-center">
             <h2 className="why-main-title">
-              <span className="text-gradient">Ideas</span> that
+              <span className="text-gradient">{content.title.soft}</span>
+              {content.title.after}
               <br />
-              move brands
+              {content.title.strong}
             </h2>
           </div>
           <div className="why-col-right">
-            <p className="why-header-desc">
-              Practical guides on websites, apps, SEO, Google Ads and Meta Ads to help your business grow online.
-            </p>
+            <p className="why-header-desc">{content.desc}</p>
             <div style={{ marginTop: "20px" }}>
-              <KButton href="/blog" label="Read more insights" />
+              <KButton href={content.cta.href} label={content.cta.label} />
             </div>
           </div>
         </div>

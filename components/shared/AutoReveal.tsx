@@ -41,7 +41,6 @@ const SELECTORS = [
   ".k-map-frame",
   ".k-contact-info > *",
   ".mission-stat-card",
-  ".legal-content > *",
 ].join(",");
 
 export default function AutoReveal() {

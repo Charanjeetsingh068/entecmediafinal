@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getJobBySlug, jobOpenings } from "@/lib/careersData";
-import CareerApplicationForm from "@/components/forms/CareerApplicationForm";
-import SectionHeader from "@/components/shared/SectionHeader";
-import KButton from "@/components/shared/KButton";
+import JobHero from "@/components/careers/job/JobHero";
+import JobDetails from "@/components/careers/job/JobDetails";
+import JobApply from "@/components/careers/job/JobApply";
+import JobOthers from "@/components/careers/job/JobOthers";
+import { getCareersPageContent, getJob, getJobPageContent, getJobs } from "@/lib/careersApi";
+import { siteConfig } from "@/lib/siteConfig";
 
 interface JobPageProps {
   params: Promise<{ slug: string }>;
@@ -13,157 +14,77 @@ interface JobPageProps {
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return jobOpenings.map(({ slug }) => ({ slug }));
+  return (await getJobs()).map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: JobPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const job = getJobBySlug(slug);
+  const job = await getJob(slug);
   if (!job) return { title: "Job Not Found" };
+  const title = job.general ? "Send Your CV — Careers at Entec Media" : `${job.title} Job in ${job.location.split("/")[0].trim()}`;
   return {
-    title: `${job.title} – Careers`,
+    title,
     description: job.summary,
     alternates: { canonical: `/careers/${job.slug}` },
+    openGraph: { title: `${title} | Entec Media`, description: job.summary, url: `/careers/${job.slug}`, type: "website" },
+    twitter: { card: "summary_large_image", title, description: job.summary },
   };
 }
 
+/**
+ * Job page: hero with breadcrumb and the job-ticket art (dark, pinned — the body slides over it) →
+ * role details with a sticky summary card (light) → apply form with CV upload (light, #apply) →
+ * other open roles → footer. Content: lib/careersApi.ts.
+ */
 export default async function JobDetailPage({ params }: JobPageProps) {
   const { slug } = await params;
-  const job = getJobBySlug(slug);
+  const [job, jobs, content, careers] = await Promise.all([getJob(slug), getJobs(), getJobPageContent(), getCareersPageContent()]);
   if (!job) notFound();
 
-  const otherJobs = jobOpenings.filter((j) => j.slug !== job.slug).slice(0, 3);
+  const others = jobs.filter((j) => j.slug !== job.slug && !j.general);
+  const sameTeam = others.filter((j) => j.department === job.department);
+  const related = [...sameTeam, ...others.filter((j) => j.department !== job.department)].slice(0, 3);
+
+  // Google for Jobs structured data (not for the open "send your CV" page)
+  const salary = job.salary[0]?.amount.match(/₹?([\d.]+)L\s*–\s*₹?([\d.]+)L/);
+  const jobLd = job.general
+    ? null
+    : {
+        "@context": "https://schema.org",
+        "@type": "JobPosting",
+        title: job.title,
+        description: `<p>${job.summary}</p><p>${job.requirementsSummary}</p><ul>${job.responsibilities.map((r) => `<li>${r}</li>`).join("")}</ul>`,
+        datePosted: "2026-10-01",
+        validThrough: "2027-03-31",
+        employmentType: job.types
+          .map((t) => ({ "Full-time": "FULL_TIME", "Part-time": "PART_TIME", Internship: "INTERN", Freelance: "CONTRACTOR" })[t as string])
+          .filter(Boolean),
+        hiringOrganization: { "@type": "Organization", name: siteConfig.name, sameAs: siteConfig.url, logo: `${siteConfig.url}/images/darklogo.svg` },
+        jobLocation: {
+          "@type": "Place",
+          address: { "@type": "PostalAddress", addressLocality: "Zirakpur", addressRegion: "Punjab", addressCountry: "IN" },
+        },
+        ...(job.types.includes("Remote") ? { jobLocationType: "TELECOMMUTE" } : {}),
+        ...(salary
+          ? {
+              baseSalary: {
+                "@type": "MonetaryAmount",
+                currency: "INR",
+                value: { "@type": "QuantitativeValue", minValue: Number(salary[1]) * 100000, maxValue: Number(salary[2]) * 100000, unitText: "YEAR" },
+              },
+            }
+          : {}),
+      };
 
   return (
-    <div className="k-page k-detail-page">
-      <section className="k-detail-hero" data-theme="light">
-        <div className="container k-detail-hero-grid">
-          <div className="k-detail-hero-side">
-            <Link href="/careers" className="k-back-link">
-              <span aria-hidden="true">←</span> BACK TO CAREERS
-            </Link>
-          </div>
-          <div className="k-detail-hero-main">
-            <span className="k-mono-label k-detail-eyebrow">Apply for</span>
-            <h1 className="k-detail-title">{job.title}</h1>
-            <p className="k-job-types">
-              {job.types.map((t, i) => (
-                <span key={t}>
-                  {i > 0 && <span className="k-job-sep">|</span>}
-                  {t}
-                </span>
-              ))}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="k-detail-body" data-theme="light">
-        <div className="container k-detail-grid k-apply-grid">
-          <aside className="k-detail-sidebar">
-            <div className="k-side-block">
-              <span className="k-mono-label">Salary:</span>
-              {job.salary.map((s) => (
-                <p key={s.period} className="k-job-salary">
-                  {s.amount} <span>({s.period})</span>
-                </p>
-              ))}
-            </div>
-            <div className="k-side-block">
-              <span className="k-mono-label">Location &amp; experience:</span>
-              <p>{job.location}<br />{job.experience}</p>
-            </div>
-            <div className="k-side-block">
-              <span className="k-mono-label">Job description:</span>
-              <p>{job.summary}</p>
-            </div>
-            <div className="k-side-block">
-              <span className="k-mono-label">Requirements:</span>
-              <p>{job.requirementsSummary}</p>
-            </div>
-          </aside>
-
-          <div className="k-apply-form">
-            <CareerApplicationForm jobTitle={job.title} jobTypes={job.types} />
-          </div>
-        </div>
-      </section>
-
-      <section className="k-section k-role-section" data-theme="light">
-        <div className="container">
-          <SectionHeader
-            label="+ ABOUT THE ROLE"
-            title={
-              <>
-                <span className="k-muted">What you&apos;ll</span>
-                <br />
-                do &amp; bring
-              </>
-            }
-            desc={`Everything you need to know about the ${job.title} position at Entec Media.`}
-          />
-          <div className="k-role-grid">
-            <div className="k-role-col">
-              <h3>Responsibilities</h3>
-              <ul>
-                {job.responsibilities.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="k-role-col">
-              <h3>Requirements</h3>
-              <ul>
-                {job.requirements.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="k-role-col">
-              <h3>Nice to have</h3>
-              <ul>
-                {job.niceToHave.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="k-section k-related-section" data-theme="light">
-        <div className="container">
-          <SectionHeader
-            label="+ MORE OPENINGS"
-            title={
-              <>
-                <span className="k-muted">Other roles</span>
-                <br />
-                you might like
-              </>
-            }
-          />
-          <div className="k-job-list">
-            {otherJobs.map((j) => (
-              <article key={j.slug} className="k-job-row k-job-row-compact">
-                <div className="k-job-head">
-                  <h3 className="k-job-title">
-                    <Link href={`/careers/${j.slug}`}>{j.title}</Link>
-                  </h3>
-                  <p className="k-job-types">{j.types.join(" | ")}</p>
-                </div>
-                <div className="k-job-col">
-                  <span className="k-mono-label">Job description:</span>
-                  <p>{j.summary}</p>
-                </div>
-                <div className="k-job-col k-job-col-action">
-                  <KButton href={`/careers/${j.slug}`} label="View role" />
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="k-page ab-page jb-page">
+      {jobLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jobLd) }} />}
+      <JobHero job={job} content={content.hero} name={careers.name} />
+      <div className="k-page-body ab-body">
+        <JobDetails job={job} content={content} process={careers.process} />
+        <JobApply job={job} content={content.form} />
+        <JobOthers jobs={related} content={content.others} viewLabel={careers.openings.viewLabel} />
+      </div>
     </div>
   );
 }

@@ -12,6 +12,8 @@ RewriteRule ^projects/?$ /portfolio/ [L,R=301]
 RewriteRule ^projects/(.+?)/?$ /portfolio/$1/ [L,R=301]
 RewriteRule ^about-us/?$ /about/ [L,R=301]
 RewriteRule ^contact-us/?$ /contact/ [L,R=301]
+# The data deletion steps now live in the Privacy Policy
+RewriteRule ^data-deletion/?$ /privacy-policy/#delete-your-data [L,R=301,NE]
 RewriteRule ^services/branding/?$ /services/graphic-design/ [L,R=301]
 RewriteRule ^services/brand-identity/?$ /services/graphic-design/ [L,R=301]
 RewriteRule ^services/web-engineering/?$ /services/website-development/ [L,R=301]

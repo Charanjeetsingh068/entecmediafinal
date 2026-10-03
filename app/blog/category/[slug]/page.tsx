@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPublishedBlogs, getBlogCategories } from "@/lib/blogApi";
-import BlogListingView from "@/components/blog/BlogListingView";
-import PageHero from "@/components/shared/PageHero";
-import AboutCTA from "@/components/about/AboutCTA";
+import BlogListingPage from "@/components/blog/BlogListingPage";
+import { getBlogCategories } from "@/lib/blogApi";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -18,40 +16,23 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const categories = await getBlogCategories();
-  const cat = categories.find((c) => c.slug === slug);
+  const cat = (await getBlogCategories()).find((c) => c.slug === slug);
   if (!cat) return { title: "Category Not Found" };
 
+  const title = cat.meta_title || `${cat.name} Articles & Guides`;
+  const description = cat.meta_description || cat.description || `Practical ${cat.name} articles and guides from the Entec Media team.`;
   return {
-    title: cat.meta_title || `${cat.name} Articles`,
-    description: cat.meta_description || cat.description || `Explore the latest ${cat.name} articles from Entec Media.`,
+    title,
+    description,
     alternates: { canonical: `/blog/category/${cat.slug}` },
+    openGraph: { title: `${title} | Entec Media`, description, url: `/blog/category/${cat.slug}`, type: "website" },
   };
 }
 
+/** A blog category: the Blog page layout with the grid opened on this category. */
 export default async function CategoryArchivePage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const [categories, { blogs }] = await Promise.all([getBlogCategories(), getPublishedBlogs({ limit: 1000 })]);
-  const currentCategory = categories.find((c) => c.slug === slug);
-  if (!currentCategory) notFound();
-
-  return (
-    <div className="k-page blog-page-wrapper">
-      <PageHero
-        label="+ CATEGORY"
-        title={
-          <>
-            <span className="k-muted">{currentCategory.name}</span>
-            <br />
-            articles &amp; guides
-          </>
-        }
-        desc={currentCategory.description || `Articles and practical guides about ${currentCategory.name} from the Entec Media team.`}
-      />
-      <div className="k-page-body">
-        <BlogListingView allBlogs={blogs} categories={categories} category={slug} search="" syncUrl={false} />
-        <AboutCTA source={`blog-category-${slug}`} />
-      </div>
-    </div>
-  );
+  const category = (await getBlogCategories()).find((c) => c.slug === slug);
+  if (!category) notFound();
+  return <BlogListingPage category={category} />;
 }

@@ -371,7 +371,7 @@ export default function PortfolioProjects({ items, categories, content }: Portfo
                           <path d="M5 12h14M13 6l6 6-6 6" />
                         </svg>
                       </Link>
-                      {content.liveLinks?.[p.category] && (
+                      {content.liveLinks?.[p.category] && p.url && (
                         <a {...liveLinkProps(p.url)} className="pj-live">
                           {content.liveLinks[p.category].label}
                           <span className="sr-only">: {p.title}{p.url ? " (opens in a new tab)" : ""}</span>

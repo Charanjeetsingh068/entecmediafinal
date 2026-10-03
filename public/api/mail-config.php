@@ -15,7 +15,7 @@ defined('ENTEC_MAIL') or exit;
 
 return [
     // Where form submissions are delivered. Add more addresses to the array if needed.
-    'recipients' => ['charanjeet.s7730@gmail.com'],
+    'recipients' => ['info@entecmedia.com', 'charanjeetsingh068@gmail.com'],
 
     // "From" identity used on outgoing mails. With SMTP this must usually match the SMTP username.
     'from_email' => 'no-reply@entecmedia.com',

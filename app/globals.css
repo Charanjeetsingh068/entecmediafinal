@@ -801,9 +801,11 @@ textarea {
 }
 
 /* --- PREMIUM STAGGERED REVEAL ANIMATIONS --- */
+/* Hero fade-ins start at opacity 0.01 rather than 0: invisible to the eye, but browsers then count the
+   text as painted on the first frame (Largest Contentful Paint), instead of after the fade-in delay. */
 @keyframes titleReveal {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(30px);
   }
 
@@ -815,7 +817,7 @@ textarea {
 
 @keyframes fadeInUp {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(20px);
   }
 
@@ -847,9 +849,9 @@ textarea {
   letter-spacing: -0.02em;
   color: var(--c-white);
   margin: 0;
-  opacity: 0;
+  opacity: 0.01;
   animation: titleReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.15s;
+  animation-delay: 0.08s;
 }
 
 .banner-title .purple-text {
@@ -871,9 +873,9 @@ textarea {
   color: var(--k-ink-3);
   max-width: 704px;
   margin: 0;
-  opacity: 0;
+  opacity: 0.01;
   animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.35s;
+  animation-delay: 0.18s;
 }
 
 /* Right Column */
@@ -890,9 +892,9 @@ textarea {
   align-items: center;
   gap: 16px;
   background-color: transparent;
-  opacity: 0;
+  opacity: 0.01;
   animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.55s;
+  animation-delay: 0.28s;
 }
 
 .avatar-group {
@@ -956,9 +958,9 @@ textarea {
   align-items: flex-start;
   gap: 12px;
   text-align: left;
-  opacity: 0;
+  opacity: 0.01;
   animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: 0.75s;
+  animation-delay: 0.38s;
 }
 
 .collab-label {
@@ -4912,7 +4914,7 @@ body {
 
 @keyframes k-rise {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(28px);
   }
 
@@ -6089,7 +6091,7 @@ body {
 
 @keyframes k-fade {
   from {
-    opacity: 0;
+    opacity: 0.01;
   }
 
   to {
@@ -7053,7 +7055,7 @@ body {
   column-gap: var(--k-gap);
   row-gap: 32px;
   margin-top: 72px;
-  animation: k-rise 1s 0.2s var(--k-ease) both;
+  animation: k-rise 1s 0.1s var(--k-ease) both;
 }
 
 .k-contact-col {
@@ -8532,7 +8534,7 @@ body {
 
 @keyframes svd-pop {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: scale(1.25);
   }
 
@@ -8544,7 +8546,7 @@ body {
 
 @keyframes svd-rise {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(12px);
   }
 
@@ -8697,7 +8699,7 @@ body {
 
 @keyframes svd-fade {
   from {
-    opacity: 0;
+    opacity: 0.01;
   }
 
   to {
@@ -12740,7 +12742,7 @@ body {
 .ab-hero-label {
   color: var(--ab-ink-d);
   margin-bottom: 28px;
-  animation: k-rise 0.9s var(--k-ease) 0.05s both;
+  animation: k-rise 0.9s var(--k-ease) 0.03s both;
 }
 
 .ab-hero-title {
@@ -12790,7 +12792,7 @@ body {
   font-size: 19px;
   line-height: 1.55;
   color: var(--ab-ink-d2);
-  animation: k-rise 1s var(--k-ease) 0.35s both;
+  animation: k-rise 1s var(--k-ease) 0.18s both;
 }
 
 .ab-hero-actions {
@@ -12799,7 +12801,7 @@ body {
   align-items: center;
   gap: 20px 28px;
   margin-top: 36px;
-  animation: k-rise 1s var(--k-ease) 0.45s both;
+  animation: k-rise 1s var(--k-ease) 0.23s both;
 }
 
 .ab-hero-link {
@@ -12836,7 +12838,7 @@ body {
   margin-top: 40px;
   font-size: 15px;
   color: var(--ab-ink-d2);
-  animation: k-rise 1s var(--k-ease) 0.55s both;
+  animation: k-rise 1s var(--k-ease) 0.28s both;
 }
 
 .ab-hero-trust strong {
@@ -14349,7 +14351,7 @@ body {
 
 @keyframes ab-pp-pop {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: scale(1.25);
   }
 
@@ -14491,7 +14493,7 @@ body {
 
 @keyframes ab-pp-fade {
   from {
-    opacity: 0;
+    opacity: 0.01;
   }
 }
 
@@ -14653,7 +14655,7 @@ body {
 
 @keyframes ab-pp-rise {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(12px);
   }
 }
@@ -15533,7 +15535,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   margin: 40px 0 0;
-  animation: k-rise 1s var(--k-ease) 0.55s both;
+  animation: k-rise 1s var(--k-ease) 0.28s both;
 }
 
 .sv-hero-stats > div {
@@ -15570,7 +15572,7 @@ body {
   gap: 44px;
   /* Photo height as before; the extra 22px is the wider gap above the tabs */
   height: calc(clamp(480px, 66vh, 660px) + 22px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 .sv-deck {
@@ -15848,7 +15850,7 @@ body {
   backdrop-filter: blur(10px);
   font-size: var(--fs-sm);
   color: var(--ab-ink-d);
-  animation: k-rise 1s var(--k-ease) 0.9s both, sd-float 7s ease-in-out 2s infinite alternate;
+  animation: k-rise 1s var(--k-ease) 0.45s both, sd-float 7s ease-in-out 2s infinite alternate;
 }
 
 .sv-hero-chip-dot {
@@ -15883,7 +15885,7 @@ body {
   font-weight: 600;
   line-height: 1.4;
   color: var(--ab-ink-d);
-  animation: k-rise 1s var(--k-ease) 0.3s both;
+  animation: k-rise 1s var(--k-ease) 0.15s both;
 }
 
 .sd-hero .ab-hero-desc {
@@ -15894,7 +15896,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   margin: 36px 0 0;
-  animation: k-rise 1s var(--k-ease) 0.55s both;
+  animation: k-rise 1s var(--k-ease) 0.28s both;
 }
 
 .sd-hero-facts > div {
@@ -16799,7 +16801,7 @@ body {
 
 @keyframes sg-in {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(28px);
   }
 
@@ -17236,7 +17238,7 @@ body {
 
 @keyframes fq-flip {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(40%) rotateX(60deg);
   }
 
@@ -17931,7 +17933,7 @@ body {
 
 @keyframes sd-grow {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: scale(0.82);
   }
 
@@ -18002,14 +18004,14 @@ body {
   pointer-events: none;
   translate: calc(var(--mx) * -6px) calc(var(--my) * -6px);
   animation:
-    k-fade 1.2s ease 0.9s both,
+    k-fade 1.2s ease 0.45s both,
     sd-morph 20s ease-in-out -7s infinite alternate-reverse,
     sd-spin 70s linear infinite;
 }
 
 @keyframes k-fade {
   from {
-    opacity: 0;
+    opacity: 0.01;
   }
 
   to {
@@ -18036,7 +18038,7 @@ body {
   pointer-events: none;
   translate: calc(var(--mx) * 8px) calc(var(--my) * 8px);
   animation:
-    k-fade 1.2s ease 0.5s both,
+    k-fade 1.2s ease 0.25s both,
     sd-dots-drift 14s linear infinite;
 }
 
@@ -18084,7 +18086,7 @@ body {
   border: 1.5px dashed rgba(154, 171, 255, 0.45);
   border-radius: 50%;
   animation:
-    k-fade 1s ease 1.1s both,
+    k-fade 1s ease 0.55s both,
     sd-spin 30s linear infinite;
 }
 
@@ -18128,7 +18130,7 @@ body {
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
   translate: calc(var(--mx) * 10px) calc(var(--my) * 10px);
   animation:
-    k-rise 1s var(--k-ease) 1s both,
+    k-rise 1s var(--k-ease) 0.5s both,
     sd-float 6s ease-in-out 2.4s infinite alternate;
 }
 
@@ -18137,15 +18139,15 @@ body {
 }
 
 .sd-fact li:nth-child(1) {
-  animation-delay: 1.35s;
+  animation-delay: 0.68s;
 }
 
 .sd-fact li:nth-child(2) {
-  animation-delay: 1.5s;
+  animation-delay: 0.75s;
 }
 
 .sd-fact li:nth-child(3) {
-  animation-delay: 1.65s;
+  animation-delay: 0.83s;
 }
 
 .sd-fact-top {
@@ -19039,7 +19041,7 @@ body {
 @keyframes sdh-pop {
   from {
     scale: 0.5;
-    opacity: 0;
+    opacity: 0.01;
   }
 
   to {
@@ -19229,7 +19231,7 @@ body {
   grid-column: 3 / span 2;
   position: relative;
   height: clamp(500px, 70vh, 680px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 .pf-wall {
@@ -19675,7 +19677,7 @@ body {
 
 @keyframes pj-in {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(40px);
   }
 }
@@ -20057,7 +20059,7 @@ body {
   left: 0;
   width: 84%;
   transform: translate3d(calc(var(--mx) * -14px), calc(var(--my) * -10px), 0);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 /* Second window behind it, smaller and tilted */
@@ -20069,7 +20071,7 @@ body {
   opacity: 0.6;
   rotate: 4deg;
   translate: calc(var(--mx) * 16px) calc(var(--my) * 12px);
-  animation: k-rise 1.1s var(--k-ease) 0.45s both;
+  animation: k-rise 1.1s var(--k-ease) 0.23s both;
 }
 
 .pd-win-bar {
@@ -20159,7 +20161,7 @@ body {
   stroke-linejoin: round;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
   animation:
-    k-rise 0.8s var(--k-ease) 1.2s both,
+    k-rise 0.8s var(--k-ease) 0.6s both,
     pd-cursor 12s ease-in-out 2s infinite;
 }
 
@@ -20215,7 +20217,7 @@ body {
   border-radius: 20px;
   background: rgba(14, 16, 40, 0.72);
   backdrop-filter: blur(12px);
-  animation: k-rise 1s var(--k-ease) 0.75s both;
+  animation: k-rise 1s var(--k-ease) 0.38s both;
 }
 
 .pd-stack-label {
@@ -20262,7 +20264,7 @@ body {
   backdrop-filter: blur(10px);
   font-size: var(--fs-sm);
   color: var(--ab-ink-d);
-  animation: k-rise 1s var(--k-ease) 0.9s both;
+  animation: k-rise 1s var(--k-ease) 0.45s both;
 }
 
 .pd-live i {
@@ -20926,7 +20928,7 @@ a.pd-ov-live:focus-visible {
   grid-column: 3 / span 2;
   position: relative;
   height: clamp(500px, 70vh, 680px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 .bh-stage {
@@ -21084,7 +21086,7 @@ a.pd-ov-live:focus-visible {
 }
 
 .bh-cover.is-active .bh-cover-cap > * {
-  animation: k-rise 0.9s var(--k-ease) 0.25s both;
+  animation: k-rise 0.9s var(--k-ease) 0.13s both;
 }
 
 .bh-cover.is-active .bh-cover-text {
@@ -21135,7 +21137,7 @@ a.pd-ov-live:focus-visible {
   backdrop-filter: blur(14px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   transform: translateY(-62%);
-  animation: k-fade 1s ease 0.8s both;
+  animation: k-fade 1s ease 0.4s both;
 }
 
 .bh-thumb {
@@ -21392,7 +21394,7 @@ a.pd-ov-live:focus-visible {
   -webkit-mask-image: radial-gradient(circle at 70% 70%, #000 30%, transparent 72%);
   mask-image: radial-gradient(circle at 70% 70%, #000 30%, transparent 72%);
   pointer-events: none;
-  animation: k-fade 1.2s ease 0.5s both, sd-dots-drift 14s linear infinite;
+  animation: k-fade 1.2s ease 0.25s both, sd-dots-drift 14s linear infinite;
 }
 
 .bd-cover-wrap {
@@ -21406,7 +21408,7 @@ a.pd-ov-live:focus-visible {
 
 @keyframes bd-cover-in {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translate3d(0, 60px, 0) rotate(4deg);
   }
 
@@ -21503,7 +21505,7 @@ a.pd-ov-live:focus-visible {
   background: var(--k-accent);
   color: #fff;
   box-shadow: 0 18px 40px rgba(20, 18, 120, 0.4);
-  animation: k-rise 1s var(--k-ease) 0.9s both;
+  animation: k-rise 1s var(--k-ease) 0.45s both;
   transition: background-color 0.3s ease, scale 0.4s var(--k-ease);
 }
 
@@ -22691,7 +22693,7 @@ a.pd-ov-live:focus-visible {
   grid-column: 3 / span 2;
   position: relative;
   height: clamp(520px, 72vh, 700px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 /* Dashed orbit rings turning slowly behind everything */
@@ -22828,7 +22830,7 @@ a.pd-ov-live:focus-visible {
   width: 190px;
   height: 190px;
   margin: 0;
-  animation: k-rise 1s var(--k-ease) 0.9s both, sd-float 8s ease-in-out 2s infinite alternate;
+  animation: k-rise 1s var(--k-ease) 0.45s both, sd-float 8s ease-in-out 2s infinite alternate;
 }
 
 .ch-photo2 img {
@@ -22934,7 +22936,7 @@ a.pd-ov-live:focus-visible {
   background: var(--k-accent);
   color: #fff;
   box-shadow: 0 18px 40px rgba(20, 18, 120, 0.4);
-  animation: k-rise 1s var(--k-ease) 1.1s both;
+  animation: k-rise 1s var(--k-ease) 0.55s both;
   transition: background-color 0.3s ease, scale 0.4s var(--k-ease);
 }
 
@@ -23939,7 +23941,7 @@ a.pd-ov-live:focus-visible {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--k-ink);
-  animation: k-rise 0.8s var(--k-ease) 0.9s both;
+  animation: k-rise 0.8s var(--k-ease) 0.45s both;
 }
 
 .cf-done p {
@@ -23948,7 +23950,7 @@ a.pd-ov-live:focus-visible {
   font-size: var(--fs-base);
   line-height: 1.6;
   color: var(--k-ink-2);
-  animation: k-rise 0.8s var(--k-ease) 1s both;
+  animation: k-rise 0.8s var(--k-ease) 0.5s both;
 }
 
 .cf-again {
@@ -23959,7 +23961,7 @@ a.pd-ov-live:focus-visible {
   font: 600 15px / 1 var(--font-sans);
   color: var(--k-ink);
   cursor: pointer;
-  animation: k-rise 0.8s var(--k-ease) 1.1s both;
+  animation: k-rise 0.8s var(--k-ease) 0.55s both;
   transition: border-color 0.3s ease, color 0.3s ease;
 }
 
@@ -24040,7 +24042,7 @@ a.pd-ov-live:focus-visible {
 
 @keyframes cf-pop {
   from {
-    opacity: 0;
+    opacity: 0.01;
     transform: translateY(-8px) scale(0.98);
   }
 
@@ -24404,7 +24406,7 @@ a.pd-ov-live:focus-visible {
   grid-column: 3 / span 2;
   position: relative;
   height: clamp(520px, 72vh, 680px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 .lg-orbit {
@@ -24653,7 +24655,7 @@ a.pd-ov-live:focus-visible {
   background: var(--k-accent);
   color: #fff;
   box-shadow: 0 18px 40px rgba(20, 18, 120, 0.45);
-  animation: k-rise 1s var(--k-ease) 1.1s both;
+  animation: k-rise 1s var(--k-ease) 0.55s both;
 }
 
 .lg-seal-ring {
@@ -25342,7 +25344,7 @@ a.pd-ov-live:focus-visible {
   grid-column: 3 / span 2;
   position: relative;
   height: clamp(520px, 72vh, 690px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 .cr-orbit {
@@ -25419,7 +25421,7 @@ a.pd-ov-live:focus-visible {
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  animation: k-rise 0.9s var(--k-ease) 1.2s both;
+  animation: k-rise 0.9s var(--k-ease) 0.6s both;
 }
 
 .cr-team-faces {
@@ -25451,7 +25453,7 @@ a.pd-ov-live:focus-visible {
   background: rgba(20, 22, 54, 0.88);
   backdrop-filter: blur(16px);
   box-shadow: 0 24px 56px rgba(0, 0, 0, 0.45);
-  animation: k-rise 1s var(--k-ease) 0.7s both, sd-float 8s ease-in-out 2s infinite alternate;
+  animation: k-rise 1s var(--k-ease) 0.35s both, sd-float 8s ease-in-out 2s infinite alternate;
 }
 
 .cr-growth-title {
@@ -25648,7 +25650,7 @@ a.pd-ov-live:focus-visible {
   color: #fff;
   text-decoration: none;
   box-shadow: 0 18px 40px rgba(20, 18, 120, 0.45);
-  animation: k-rise 1s var(--k-ease) 1.1s both;
+  animation: k-rise 1s var(--k-ease) 0.55s both;
   transition: background-color 0.3s ease, scale 0.4s var(--k-ease);
 }
 
@@ -26389,7 +26391,7 @@ a.pd-ov-live:focus-visible {
   grid-column: 3 / span 2;
   position: relative;
   height: clamp(500px, 70vh, 660px);
-  animation: k-rise 1.1s var(--k-ease) 0.2s both;
+  animation: k-rise 1.1s var(--k-ease) 0.1s both;
 }
 
 .jb-orbit {
@@ -27582,4 +27584,9 @@ a.pd-ov-live:focus-visible {
 [data-off] *::before,
 [data-off] *::after {
   animation-play-state: paused !important;
+}
+
+/* Mission photo: <picture> only swaps the source on phones; it must not add a layout box */
+.mission-visual-card picture {
+  display: contents;
 }

@@ -6,7 +6,7 @@ import KButton from "@/components/shared/KButton";
 import DateTile from "@/components/blog/DateTile";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
 import HeroBackdrop from "@/components/shared/HeroBackdrop";
-import { sizedImage } from "@/lib/servicesContent";
+import { sizedImage, sizedSrcSet } from "@/lib/servicesContent";
 import type { BlogPageContent } from "@/lib/blogContent";
 import type { BlogPost } from "@/lib/blogApi";
 
@@ -40,6 +40,15 @@ export default function BlogPageHero({ content, name, posts, minRead, crumb, tit
   const [paused, setPaused] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const heading = title ?? content.title;
+
+  // Covers after the first: fetched once the page has loaded (they only show from the first rotation on)
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const go = () => setReady(true);
+    if (document.readyState === "complete") go();
+    else window.addEventListener("load", go, { once: true });
+    return () => window.removeEventListener("load", go);
+  }, []);
 
   useEffect(() => {
     if (paused || n < 2) return;
@@ -123,12 +132,18 @@ export default function BlogPageHero({ content, name, posts, minRead, crumb, tit
                   >
                     <span className="bh-cover-media">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={sizedImage(p.featured_image_url || "/images/aboutimg.webp", 1200)}
-                        alt={p.featured_image_alt || p.title}
-                        decoding="async"
-                        fetchPriority={i === 0 ? "high" : "low"}
-                      />
+                      {/* The first cover loads with the page; the others only after it (they rotate in
+                          from 4s on), so they don't compete with the first one on load */}
+                      {(i === 0 || ready) && (
+                        <img
+                          src={sizedImage(p.featured_image_url || "/images/aboutimg.webp", 1200)}
+                          srcSet={sizedSrcSet(p.featured_image_url || "/images/aboutimg.webp", [600, 900, 1200, 1600])}
+                          sizes="(max-width: 991px) 92vw, 50vw"
+                          alt={p.featured_image_alt || p.title}
+                          decoding="async"
+                          fetchPriority={i === 0 ? "high" : "low"}
+                        />
+                      )}
                     </span>
                     <span className="bh-cover-cap">
                       <DateTile date={p.published_at || p.created_at} className="bh-cover-date" />

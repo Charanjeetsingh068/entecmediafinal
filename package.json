@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postbuild": "node scripts/critical-css.mjs",
+    "postbuild": "node scripts/critical-css.mjs && node scripts/fix-rsc-segments.mjs",
     "optimize-images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {

@@ -1,6 +1,7 @@
 import SectionHeader from "@/components/shared/SectionHeader";
 import DotBackdrop from "@/components/shared/DotBackdrop";
 import ContactForm from "@/components/contact/ContactForm";
+import LazyMap from "@/components/contact/LazyMap";
 import ContactIcon, { socialIcon, type ContactIconName } from "@/components/contact/ContactIcon";
 import { mapEmbedUrl, siteConfig } from "@/lib/siteConfig";
 import type { ContactPageContent } from "@/lib/contactContent";
@@ -78,7 +79,7 @@ export default function ContactMain({ content, services }: ContactMainProps) {
 
           <div className="ct-side">
             <div className="ct-map" data-kfx="y:80;opacity:0">
-              <iframe src={mapEmbedUrl} title="Entec Media office on Google Maps" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+              <LazyMap src={mapEmbedUrl} title="Entec Media office on Google Maps" />
               <div className="ct-map-card">
                 <span className="ct-map-pin" aria-hidden="true">
                   <ContactIcon name="pin" />

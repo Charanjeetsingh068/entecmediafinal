@@ -65,6 +65,13 @@ export interface FetchBlogsParams {
 const BLOG_API_BASE_URL =
   process.env.NEXT_PUBLIC_BLOG_API_URL || 'http://localhost/blog-cms/api';
 
+// A localhost API can only answer on the developer's own machine. On the live site the browser would
+// just fail to connect (a console error in PageSpeed), so it goes straight to the fallback posts.
+const apiReachable = () =>
+  typeof window === 'undefined' ||
+  !/^https?:\/\/(localhost|127\.0\.0\.1)\b/.test(BLOG_API_BASE_URL) ||
+  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+
 const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 const formatDate = (iso: string) =>
@@ -133,6 +140,7 @@ export async function getPublishedBlogs(params: FetchBlogsParams = {}): Promise<
     if (params.search) queryParams.set('search', params.search);
 
     const url = `${BLOG_API_BASE_URL}/public/blogs.php?${queryParams.toString()}`;
+    if (!apiReachable()) throw new Error('Blog API not reachable from this site');
     const res = await fetch(url, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(1500),
@@ -195,6 +203,7 @@ export async function getBlogBySlug(slug: string): Promise<{
 }> {
   try {
     const url = `${BLOG_API_BASE_URL}/public/blog.php?slug=${encodeURIComponent(slug)}`;
+    if (!apiReachable()) throw new Error('Blog API not reachable from this site');
     const res = await fetch(url, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(1500),
@@ -239,6 +248,7 @@ export async function getBlogBySlug(slug: string): Promise<{
 export async function getBlogCategories(): Promise<BlogCategory[]> {
   try {
     const url = `${BLOG_API_BASE_URL}/public/categories.php`;
+    if (!apiReachable()) throw new Error('Blog API not reachable from this site');
     const res = await fetch(url, {
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(1500),

@@ -156,13 +156,16 @@ export default function Mission() {
               </p>
             </div>
 
-            {/* Phones crop it to a square (globals.css), which shows it ~4.7× larger than its width */}
-            <RImg
-              src="/images/aboutimg.webp"
-              alt="Our Mission Visual"
-              className="mission-visual-img"
-              sizes="(max-width: 809px) 473vw, (max-width: 1750px) 100vw, 1710px"
-            />
+            {/* Phones crop it to a centred square (globals.css), so they get just that square */}
+            <picture>
+              <source media="(max-width: 809px)" srcSet="/images/r/aboutimg-square.webp" />
+              <RImg
+                src="/images/aboutimg.webp"
+                alt="Our Mission Visual"
+                className="mission-visual-img"
+                sizes="(max-width: 1750px) 100vw, 1710px"
+              />
+            </picture>
 
             {/* Overlay 3: Bottom Left Quote block with Slider */}
             <div className="mission-quote-card">

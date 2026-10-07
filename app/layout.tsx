@@ -84,6 +84,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${interSans.variable} ${intelMono.variable}`} suppressHydrationWarning>
       <head>
+        {/* Hero photos on most inner pages come from Unsplash: open that connection right away */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
         {/* Google Tag Manager, Google Tag (gtag.js) and Meta Pixel.
             The queues (dataLayer, gtag, fbq) are set up — and the page view recorded — right away, but
             the three vendor scripts (~550 KB, ~1 s of main-thread work on a phone) are only downloaded

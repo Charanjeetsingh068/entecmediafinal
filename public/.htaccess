@@ -51,6 +51,7 @@ ErrorDocument 404 /404.html
   ExpiresByType text/css "access plus 1 year"
   ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType text/javascript "access plus 1 year"
+  ExpiresByType application/x-javascript "access plus 1 year"
   ExpiresByType image/webp "access plus 1 month"
   ExpiresByType image/avif "access plus 1 month"
   ExpiresByType image/png "access plus 1 month"
@@ -73,5 +74,5 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript application/json image/svg+xml text/xml text/plain font/ttf
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/x-javascript text/javascript application/json image/svg+xml text/xml text/plain font/ttf
 </IfModule>

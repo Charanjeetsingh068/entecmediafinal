@@ -91,7 +91,7 @@ export default function PortfolioPageHero({ content, name, projects }: Portfolio
                     {[...col, ...col].map((p, i) => (
                       <figure key={`${p.id}-${i}`} className="pf-tile">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={sizedImage(p.image, 520)} alt="" loading={i < 2 ? "eager" : "lazy"} decoding="async" />
+                        <img src={sizedImage(p.image, 520)} alt="" loading={i < 3 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : undefined} decoding="async" />
                         <figcaption>
                           <small>{p.category}</small>
                           <strong>{p.title}</strong>

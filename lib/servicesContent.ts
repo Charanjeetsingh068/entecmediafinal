@@ -295,3 +295,11 @@ export function sizedImage(url: string, width: number): string {
   if (m) return `${m.base}-${m.widths.find((w) => w >= width) ?? m.width}.webp`;
   return url;
 }
+
+/** srcset for an image that can be resized (Unsplash URLs, local images with responsive copies), else undefined */
+export function sizedSrcSet(url: string, widths: number[]): string | undefined {
+  if (/[?&]w=\d+/.test(url)) return widths.map((w) => `${sizedImage(url, w)} ${w}w`).join(", ");
+  const m = imageManifest[url];
+  if (m) return m.widths.map((w) => `${m.base}-${w}.webp ${w}w`).join(", ");
+  return undefined;
+}

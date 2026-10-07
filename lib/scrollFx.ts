@@ -28,6 +28,11 @@ interface Item {
   opacity: Channel;
   /** Class added once the element has started to come into view (for CSS-driven child animations) */
   inClass?: string;
+  /** Last values written to the element, so unchanged styles are never re-written */
+  lastTransform: string;
+  lastOpacity: string;
+  /** Measured at least once (registration measures in one batch on the next frame) */
+  measured: boolean;
 }
 
 const STIFFNESS = 200;
@@ -35,10 +40,20 @@ const DAMPING = 60;
 const MASS = 1;
 const STEP = 1 / 240; // fixed sub-step keeps the stiff spring stable at any frame rate
 
+/*
+ * Performance: only elements near the viewport (tracked by an IntersectionObserver) are measured and
+ * animated on scroll. Elements far away are left alone — when one leaves the screen it is snapped to
+ * its end state for that side (above → in place, below → start values). Styles are only written when
+ * they actually change. Before this, every scroll frame measured and re-wrote every registered element
+ * on the page, which forced full style recalcs and made scrolling stutter on long pages.
+ */
 const items = new Map<HTMLElement, Item>();
+const near = new Set<Item>();
+const pending = new Set<Item>();
 let frame = 0;
 let lastTime = 0;
 let listening = false;
+let io: IntersectionObserver | null = null;
 
 const channel = (from: number, rest: number): Channel => ({ from, rest, value: from, velocity: 0 });
 
@@ -61,6 +76,14 @@ function progressOf(item: Item, vh: number) {
   return Math.min(1, Math.max(0, (vh - top) / height));
 }
 
+function snap(item: Item, p: number) {
+  for (const c of [item.x, item.y, item.opacity]) {
+    c.value = c.from + (c.rest - c.from) * p;
+    c.velocity = 0;
+  }
+  if (item.inClass && p > 0) item.el.classList.add(item.inClass);
+}
+
 function stepChannel(c: Channel, target: number, dt: number) {
   let t = dt;
   while (t > 0) {
@@ -80,8 +103,16 @@ function stepChannel(c: Channel, target: number, dt: number) {
 
 function apply(item: Item) {
   const { el, x, y, opacity } = item;
-  el.style.transform = x.value || y.value ? `translate3d(${x.value.toFixed(2)}px, ${y.value.toFixed(2)}px, 0)` : "";
-  el.style.opacity = opacity.value === 1 ? "" : opacity.value.toFixed(3);
+  const t = x.value || y.value ? `translate3d(${x.value.toFixed(2)}px, ${y.value.toFixed(2)}px, 0)` : "";
+  const o = opacity.value === 1 ? "" : opacity.value.toFixed(3);
+  if (t !== item.lastTransform) {
+    el.style.transform = t;
+    item.lastTransform = t;
+  }
+  if (o !== item.lastOpacity) {
+    el.style.opacity = o;
+    item.lastOpacity = o;
+  }
 }
 
 function tick(time: number) {
@@ -90,8 +121,20 @@ function tick(time: number) {
   lastTime = time;
   const vh = window.innerHeight;
 
+  // Newly registered elements: measure them all first, then write (one layout for the whole batch),
+  // starting each at the value for the current scroll position (no jump on load)
+  if (pending.size) {
+    const batch = Array.from(pending, (item) => ({ item, p: progressOf(item, vh) }));
+    pending.clear();
+    for (const { item, p } of batch) {
+      item.measured = true;
+      snap(item, p);
+      apply(item);
+    }
+  }
+
   // Read all layout first, then write, so the browser never has to re-layout mid-loop
-  const targets = Array.from(items.values(), (item) => ({ item, p: progressOf(item, vh) }));
+  const targets = Array.from(near, (item) => ({ item, p: progressOf(item, vh) }));
 
   let moving = false;
   for (const { item, p } of targets) {
@@ -114,6 +157,31 @@ function schedule() {
   if (!frame) frame = requestAnimationFrame(tick);
 }
 
+function observer() {
+  if (io) return io;
+  io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        const item = items.get(e.target as HTMLElement);
+        if (!item) continue;
+        if (e.isIntersecting) {
+          near.add(item);
+        } else {
+          near.delete(item);
+          // Off screen: settle at the end state for that side (above the viewport → in place)
+          if (item.measured) {
+            snap(item, e.boundingClientRect.top < 0 ? 1 : 0);
+            apply(item);
+          }
+        }
+      }
+      schedule();
+    },
+    { rootMargin: "25% 0px 25% 0px" },
+  );
+  return io;
+}
+
 function listen() {
   if (listening) return;
   listening = true;
@@ -129,6 +197,8 @@ function unlisten() {
   cancelAnimationFrame(frame);
   frame = 0;
   lastTime = 0;
+  io?.disconnect();
+  io = null;
 }
 
 /** Registers an element. Returns a cleanup that restores its inline styles. */
@@ -140,18 +210,24 @@ export function registerFx(el: HTMLElement, from: FxFrom, inClass?: string): () 
     y: channel(from.y ?? 0, 0),
     opacity: channel(from.opacity ?? 1, 1),
     inClass,
+    lastTransform: el.style.transform,
+    lastOpacity: el.style.opacity,
+    measured: false,
   };
+  // Untouched until measured on the next frame (progressOf subtracts our own translate)
+  item.x.value = 0;
+  item.y.value = 0;
+  item.opacity.value = 1;
   items.set(el, item);
-
-  // Start already at the value for the current scroll position (no jump on load)
-  const p = progressOf(item, window.innerHeight);
-  for (const c of [item.x, item.y, item.opacity]) c.value = c.from + (c.rest - c.from) * p;
-  apply(item);
-  if (inClass && p > 0) el.classList.add(inClass);
+  pending.add(item);
+  observer().observe(el);
   schedule();
 
   return () => {
     items.delete(el);
+    near.delete(item);
+    pending.delete(item);
+    io?.unobserve(el);
     el.style.transform = "";
     el.style.opacity = "";
     unlisten();

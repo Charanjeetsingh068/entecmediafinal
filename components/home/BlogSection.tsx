@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import RImg from "@/components/shared/RImg";
 import Link from "next/link";
 import { getPublishedBlogs, type BlogPost } from "@/lib/blogApi";
 import KButton from "@/components/shared/KButton";
@@ -440,11 +440,11 @@ export default function BlogSection({ posts, excludeSlug, content = DEFAULT_CONT
                     }
                   }}
                 >
-                  <Image
+                  <RImg
                     src={post.featured_image_url || "/images/aboutimg.webp"}
                     alt={post.featured_image_alt || post.title}
-                    fill
                     className="ins-panel-img"
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
                     sizes="(max-width: 991px) 100vw, 60vw"
                   />
                   <span className="ins-panel-shade" aria-hidden="true" />

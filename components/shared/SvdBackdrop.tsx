@@ -138,18 +138,24 @@ export default function SvdBackdrop() {
       raf = 0;
     };
 
-    resize();
-    frame(0);
+    // Nothing is measured or drawn until the section first comes near the screen (keeps page load light)
     const ro = new ResizeObserver(() => {
       resize();
       frame(0);
     });
-    ro.observe(canvas);
-    const io = new IntersectionObserver(([entry]) => {
-      inView = entry.isIntersecting;
-      if (inView) start();
-      else stop();
-    });
+    let observing = false;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView && !observing) {
+          observing = true;
+          ro.observe(canvas); // fires once right away: sizes the canvas and draws the first frame
+        }
+        if (inView) start();
+        else stop();
+      },
+      { rootMargin: "300px 0px" },
+    );
     io.observe(section);
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);

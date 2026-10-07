@@ -48,10 +48,21 @@ export default function Footer() {
   const [copied, setCopied] = useState(false);
   const [ending, setEnding] = useState(0);
 
-  // Closing line: turn to the next ending every few seconds
+  // Closing line: turn to the next ending every few seconds — only while the footer is on screen,
+  // so it doesn't re-render and restyle the page in the background
   useEffect(() => {
-    const id = setInterval(() => setEnding((e) => (e + 1) % ENDINGS.length), 2800);
-    return () => clearInterval(id);
+    const foot = footRef.current;
+    if (!foot) return;
+    let id: ReturnType<typeof setInterval> | undefined;
+    const io = new IntersectionObserver(([entry]) => {
+      clearInterval(id);
+      id = entry.isIntersecting ? setInterval(() => setEnding((e) => (e + 1) % ENDINGS.length), 2800) : undefined;
+    });
+    io.observe(foot);
+    return () => {
+      io.disconnect();
+      clearInterval(id);
+    };
   }, []);
 
   // Background: the site's dotted language (as in the Services section) but its own scene, covering
@@ -237,18 +248,25 @@ export default function Footer() {
       raf = 0;
     };
 
-    resize();
-    frame(0);
+    // Nothing is measured or drawn until the footer first comes near the screen, so the page load
+    // doesn't pay for layout reads and ~3,000 dots nobody can see yet
     const ro = new ResizeObserver(() => {
       resize();
       frame(0);
     });
-    ro.observe(canvas);
-    const io = new IntersectionObserver(([entry]) => {
-      inView = entry.isIntersecting;
-      if (inView) start();
-      else stop();
-    });
+    let observing = false;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView && !observing) {
+          observing = true;
+          ro.observe(canvas); // fires once right away: sizes the canvas and draws the first frame
+        }
+        if (inView) start();
+        else stop();
+      },
+      { rootMargin: "300px 0px" },
+    );
     io.observe(foot);
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
@@ -305,20 +323,35 @@ export default function Footer() {
     const btn = topRef.current;
     if (!btn) return;
     let raf = 0;
+    let last = "";
+    // The page height is cached (re-read only when the page resizes): reading it on every scroll frame
+    // forced a full layout each time
+    let max = 0;
+    const measure = () => {
+      max = document.documentElement.scrollHeight - window.innerHeight;
+    };
     const update = () => {
       raf = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      btn.style.setProperty("--p", max > 0 ? Math.min(1, window.scrollY / max).toFixed(3) : "0");
+      const p = max > 0 ? Math.min(1, window.scrollY / max).toFixed(3) : "0";
+      if (p !== last) btn.style.setProperty("--p", (last = p));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
+    const ro = new ResizeObserver(onResize);
+    ro.observe(document.body);
+    measure();
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onResize);
     return () => {
+      ro.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       cancelAnimationFrame(raf);
     };
   }, []);

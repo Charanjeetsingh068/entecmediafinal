@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import KButton from "@/components/shared/KButton";
+import RImg from "@/components/shared/RImg";
+import { onScrollNear } from "@/lib/scrollNear";
 
 function CountUp({ end, duration = 2000, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -96,9 +98,7 @@ export default function Mission() {
   // Once the panel edge has passed the banner logo, the wordmark locks to the top of the panel
   // with a little breathing room. Works for every screen size because it uses live measurements.
   useEffect(() => {
-    let raf = 0;
     const update = () => {
-      raf = 0;
       const sec = sectionRef.current;
       const logo = logoRef.current;
       const bannerLogo = document.querySelector<HTMLElement>(".giant-logo-img");
@@ -110,17 +110,8 @@ export default function Mission() {
       const shift = Math.min(0, bannerTop - (panelTop + logo.offsetTop));
       logo.style.transform = `translate3d(0, ${shift}px, 0)`;
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
+    // Only while the section is on or near the screen (lib/scrollNear.ts)
+    return onScrollNear(sectionRef.current, update);
   }, []);
 
   useEffect(() => {
@@ -137,13 +128,11 @@ export default function Mission() {
 
         {/* Giant ENTEC Text Visual */}
         <div className="mission-giant-title" ref={logoRef}>
-          <Image
+          <RImg
             src="/images/entec-about.webp"
             alt="ENTEC"
-            width={3430}
-            height={640}
             className="mission-giant-img"
-            priority
+            sizes="(max-width: 1750px) 102vw, 1785px"
           />
         </div>
 
@@ -167,13 +156,12 @@ export default function Mission() {
               </p>
             </div>
 
-            <Image
+            {/* Phones crop it to a square (globals.css), which shows it ~4.7× larger than its width */}
+            <RImg
               src="/images/aboutimg.webp"
               alt="Our Mission Visual"
-              width={3440}
-              height={726}
               className="mission-visual-img"
-              priority
+              sizes="(max-width: 809px) 473vw, (max-width: 1750px) 100vw, 1710px"
             />
 
             {/* Overlay 3: Bottom Left Quote block with Slider */}

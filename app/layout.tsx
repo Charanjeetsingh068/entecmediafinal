@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/shared/SmoothScroll";
 import AutoReveal from "@/components/shared/AutoReveal";
 import ButtonMagnet from "@/components/shared/ButtonMagnet";
+import OffscreenAnimations from "@/components/shared/OffscreenAnimations";
 import { siteConfig } from "@/lib/siteConfig";
 
 // Fonts are self-hosted from app/fonts so builds never depend on downloading from Google Fonts.
@@ -28,6 +29,8 @@ const intelMono = localFont({
   ],
   variable: "--font-intel-mono",
   display: "swap",
+  // Only used for small labels: not preloaded, so the three files don't compete with the hero image
+  preload: false,
   adjustFontFallback: false,
   fallback: ["ui-monospace", "SFMono-Regular", "Consolas", "monospace"],
 });
@@ -81,42 +84,36 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${interSans.variable} ${intelMono.variable}`} suppressHydrationWarning>
       <head>
-        {/* Google Tag Manager */}
-        <Script id="google-tag-manager" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-5BHVGV9');`}
-        </Script>
-
-        {/* Google Tag (gtag.js) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-R44TE77NBN"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-R44TE77NBN');
-          `}
-        </Script>
-
-        {/* Meta Pixel Code */}
-        <Script id="meta-pixel" strategy="afterInteractive">
-          {`!function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window, document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '978296769438064');
-          fbq('track', 'PageView');`}
+        {/* Google Tag Manager, Google Tag (gtag.js) and Meta Pixel.
+            The queues (dataLayer, gtag, fbq) are set up — and the page view recorded — right away, but
+            the three vendor scripts (~550 KB, ~1 s of main-thread work on a phone) are only downloaded
+            on the visitor's first interaction, or 6 s after the page has loaded, whichever comes first.
+            Everything queued before that is sent as soon as they arrive, so no hits are lost; the page
+            just isn't competing with them while it loads. */}
+        <Script id="third-party-tags" strategy="afterInteractive">
+          {`(function(w,d){
+            w.dataLayer=w.dataLayer||[];
+            w.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+            w.gtag=function(){w.dataLayer.push(arguments);};
+            w.gtag('js',new Date());
+            w.gtag('config','G-R44TE77NBN');
+            if(!w.fbq){var n=w.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!w._fbq)w._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];}
+            w.fbq('init','978296769438064');
+            w.fbq('track','PageView');
+            var done=false,ev=['pointerdown','keydown','touchstart','scroll','mousemove','wheel'];
+            function add(src){var s=d.createElement('script');s.async=true;s.src=src;d.head.appendChild(s);}
+            function load(){
+              if(done)return;done=true;
+              ev.forEach(function(e){w.removeEventListener(e,load,{passive:true});});
+              add('https://www.googletagmanager.com/gtm.js?id=GTM-5BHVGV9');
+              add('https://www.googletagmanager.com/gtag/js?id=G-R44TE77NBN');
+              add('https://connect.facebook.net/en_US/fbevents.js');
+            }
+            ev.forEach(function(e){w.addEventListener(e,load,{passive:true});});
+            function later(){setTimeout(load,6000);}
+            if(d.readyState==='complete')later();else w.addEventListener('load',later,{once:true});
+          })(window,document);`}
         </Script>
       </head>
       <body className="site-body">
@@ -144,6 +141,7 @@ export default function RootLayout({
         <SmoothScroll />
         <AutoReveal />
         <ButtonMagnet />
+        <OffscreenAnimations />
         <Header />
         <main className="page-main">{children}</main>
         <Footer />

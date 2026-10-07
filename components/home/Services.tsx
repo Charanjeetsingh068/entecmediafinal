@@ -6,6 +6,7 @@ import { servicesList as servicesData } from "@/lib/servicesData";
 import Reveal from "@/components/shared/Reveal";
 import KButton from "@/components/shared/KButton";
 import SvdBackdrop from "@/components/shared/SvdBackdrop";
+import { onScrollNear } from "@/lib/scrollNear";
 
 const count = servicesData.length;
 const total = String(count).padStart(2, "0");
@@ -23,15 +24,13 @@ const previewSrc = (url: string) => url.replace("w=1600", "w=900");
 export default function Services() {
   const listRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLSpanElement>(null);
-  const deckRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
 
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    let raf = 0;
     const update = () => {
-      raf = 0;
       const rows = listRef.current?.querySelectorAll<HTMLElement>(".svd-row");
       if (!rows?.length) return;
       const mid = window.innerHeight * 0.5;
@@ -43,20 +42,13 @@ export default function Services() {
       const last = rows[rows.length - 1].getBoundingClientRect();
       const p = Math.min(1, Math.max(0, (mid - first.top) / (last.bottom - first.top || 1)));
       if (lineRef.current) lineRef.current.style.transform = `scaleY(${p})`;
-      if (deckRef.current) deckRef.current.style.setProperty("--drift", `${(p - 0.5) * -40}px`);
+      // Parallax drift on one wrapper (not a CSS variable read by every photo, which restarted
+      // a dozen transitions on every scroll frame)
+      if (trackRef.current) trackRef.current.style.transform = `translate3d(0, ${((p - 0.5) * -40).toFixed(1)}px, 0)`;
       setActive((prev) => (prev === idx ? prev : idx));
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
+    // Only while the section is on or near the screen (lib/scrollNear.ts)
+    return onScrollNear(listRef.current?.closest("section"), update);
   }, []);
 
   // "View" cursor that trails the pointer over the list (desktop mouse only)
@@ -109,7 +101,7 @@ export default function Services() {
             <span className="svd-title-soft">Our</span>
             <span className="svd-title-pill" aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img key={current.slug} src={current.thumb} alt="" />
+              <img key={current.slug} src={current.thumb} alt="" loading="lazy" decoding="async" />
             </span>
             focus
           </h2>
@@ -148,7 +140,7 @@ export default function Services() {
               ))}
             </div>
 
-            <div className="svd-deck" ref={deckRef}>
+            <div className="svd-deck">
               {/* Neighbouring services peek out behind the main photo */}
               <div className="svd-peek svd-peek-back">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -160,17 +152,19 @@ export default function Services() {
               </div>
 
               <div className="svd-media">
-                {servicesData.map((s, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={s.slug}
-                    src={previewSrc(s.image)}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className={i === active ? "is-active" : ""}
-                  />
-                ))}
+                <div className="svd-media-track" ref={trackRef}>
+                  {servicesData.map((s, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={s.slug}
+                      src={previewSrc(s.image)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className={i === active ? "is-active" : ""}
+                    />
+                  ))}
+                </div>
                 <div className="svd-media-top">
                   <span key={current.num} className="svd-media-num">
                     {current.num}

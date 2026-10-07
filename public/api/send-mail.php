@@ -94,11 +94,19 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 $rows = [];
 $attachments = [];
+$formBadge = 'Website Form';
+
 switch ($type) {
     case 'newsletter':
-        $subject = 'New newsletter subscriber: ' . $email;
-        $heading = 'New newsletter subscription';
-        $rows = ['Email' => $email];
+        $formName = 'Newsletter Subscription (Footer)';
+        $formBadge = 'NEWSLETTER';
+        $subject = '[Newsletter] New Subscriber: ' . $email;
+        $heading = 'New Newsletter Subscription';
+        $rows = [
+            'Form Name'    => $formName,
+            'Subscriber'   => $email,
+            'Source'       => $source ?: 'Footer Newsletter Form',
+        ];
         $thanks = 'Thanks for subscribing! You will hear from us soon.';
         break;
 
@@ -107,8 +115,10 @@ switch ($type) {
             respond(false, 'Please enter your name.', 422);
         }
         $job = $oneLine($clean($input['job_title'] ?? '', 150));
-        $subject = 'Job application: ' . ($job ?: 'General') . ' — ' . $name;
-        $heading = 'New job application';
+        $formName = 'Job Application Form (' . ($job ?: 'General Application') . ')';
+        $formBadge = 'CAREER / JOB APPLICATION';
+        $subject = '[Job Application: ' . ($job ?: 'General') . '] ' . $name . ' (' . $email . ')';
+        $heading = 'New Job Application: ' . ($job ?: 'General');
 
         // The CV arrives as an uploaded file (attached to the email) or, from older forms, as a link
         $resumeLink = $clean($input['resume'] ?? '', 250);
@@ -123,20 +133,21 @@ switch ($type) {
         }
 
         $rows = [
-            'Position'         => $job,
-            'Name'             => $name,
-            'Email'            => $email,
-            'Phone'            => $clean($input['phone'] ?? '', 40),
-            'Phone country'    => $clean($input['phone_country'] ?? '', 80),
-            'Current city'     => $clean($input['city'] ?? '', 100),
-            'Experience'       => $clean($input['experience'] ?? '', 60),
-            'Preferred job type' => $clean($input['job_type'] ?? '', 60),
-            'Notice period'    => $clean($input['notice'] ?? '', 60),
-            'Expected salary'  => $clean($input['salary'] ?? '', 80),
-            'Portfolio / Website' => $clean($input['portfolio'] ?? '', 250),
-            'LinkedIn'         => $clean($input['linkedin'] ?? '', 250),
-            'CV'               => isset($cv) && is_array($cv) ? $cv['name'] . ' (' . format_bytes($cv['size']) . ', attached)' : $resumeLink,
-            'Why join us'      => $clean($input['letter'] ?? '', 5000),
+            'Form Name'          => $formName,
+            'Applicant Name'     => $name,
+            'Email'              => $email,
+            'Phone'              => $clean($input['phone'] ?? '', 40),
+            'Phone Country'      => $clean($input['phone_country'] ?? '', 80),
+            'Position Applied'   => $job,
+            'Current City'       => $clean($input['city'] ?? '', 100),
+            'Experience'         => $clean($input['experience'] ?? '', 60),
+            'Preferred Job Type' => $clean($input['job_type'] ?? '', 60),
+            'Notice Period'      => $clean($input['notice'] ?? '', 60),
+            'Expected Salary'    => $clean($input['salary'] ?? '', 80),
+            'Portfolio / Website'=> $clean($input['portfolio'] ?? '', 250),
+            'LinkedIn Profile'   => $clean($input['linkedin'] ?? '', 250),
+            'CV Attachment'      => isset($cv) && is_array($cv) ? $cv['name'] . ' (' . format_bytes($cv['size']) . ', attached)' : $resumeLink,
+            'Cover Letter / Note'=> $clean($input['letter'] ?? '', 5000),
         ];
         $rows = array_filter($rows, static fn($v) => $v !== '');
         $thanks = 'Thank you for applying! Our team will review your application and get back to you within 5 working days.';
@@ -151,76 +162,102 @@ switch ($type) {
             static fn($s) => is_string($s) ? trim(strip_tags($s)) : '',
             is_array($input['services'] ?? null) ? $input['services'] : []
         )), 0, 20);
-        $subject = 'New website enquiry from ' . $name;
-        $heading = 'New project enquiry';
+
+        $isContactPage = ($source === 'contact-page' || stripos($source, 'contact') !== false);
+        $formName = $isContactPage ? 'Contact Us Page Form' : 'Work With Us / Project Enquiry Form (' . ($source ?: 'Website') . ')';
+        $formBadge = $isContactPage ? 'CONTACT US FORM' : 'PROJECT ENQUIRY';
+        
+        $company = $clean($input['company'] ?? '', 150);
+        $subjectPrefix = $isContactPage ? '[Contact Form]' : '[Work Enquiry]';
+        $subject = $subjectPrefix . ' ' . $name . ($company ? ' from ' . $company : '') . ' (' . $email . ')';
+        $heading = $isContactPage ? 'New Contact Form Submission' : 'New Project Enquiry';
+
         $rows = [
-            'Name'            => $name,
+            'Form Name'       => $formName,
+            'Client Name'     => $name,
             'Email'           => $email,
             'Phone'           => $clean($input['phone'] ?? '', 40),
-            'Phone country'   => $clean($input['phone_country'] ?? '', 80),
-            'Company'         => $clean($input['company'] ?? '', 150),
+            'Phone Country'   => $clean($input['phone_country'] ?? '', 80),
+            'Company'         => $company,
             'Website'         => $clean($input['website'] ?? '', 200),
-            'Services'        => implode(', ', $services),
+            'Services Needed' => implode(', ', $services),
             'Budget'          => $clean($input['budget'] ?? '', 60),
-            'Heard about us'  => $clean($input['heard_from'] ?? '', 80),
-            'Project details' => $clean($input['details'] ?? '', 5000),
+            'Heard About Us'  => $clean($input['heard_from'] ?? '', 80),
+            'Project Details' => $clean($input['details'] ?? '', 5000),
         ];
-        // Leave out optional fields the form didn't send (e.g. the contact page has no budget)
+        // Leave out optional fields the form didn't send
         $rows = array_filter($rows, static fn($v) => $v !== '');
         $thanks = 'Thank you! Your enquiry has been received. Our team will contact you within 24 hours.';
 }
 
-$rows['Submitted from'] = $source;
-$rows['Submitted at']   = date('d M Y, h:i A T');
+$rows['Submitted From Page'] = $source ?: 'Website';
+$rows['Submission Date & Time'] = date('d M Y, h:i A T');
 
-// Visitor details: the IP address with its approximate location (looked up here, on the server),
-// plus what the browser reported about the page, device and time zone.
-$rows['IP address'] = $ip;
+// Visitor details
+$rows['IP Address'] = $ip;
 $geo = ip_location($ip);
 if ($geo) {
-    $rows['Location']      = $geo['location'];
-    $rows['ISP / network'] = $geo['isp'];
-    $rows['IP time zone']  = $geo['timezone'];
-    $rows['Map']           = $geo['map'];
+    $rows['Visitor Location'] = $geo['location'];
+    $rows['ISP / Network']    = $geo['isp'];
 }
-$rows['Page']             = $oneLine($clean($input['page_url'] ?? '', 300));
-$rows['Came from']        = $oneLine($clean($input['referrer'] ?? '', 300));
-$rows['Browser time zone'] = $oneLine($clean($input['timezone'] ?? '', 60));
-$rows['Browser language'] = $oneLine($clean($input['language'] ?? '', 20));
-$rows['Screen']           = $oneLine($clean($input['screen'] ?? '', 20));
-$rows['Device / browser'] = $oneLine($clean($_SERVER['HTTP_USER_AGENT'] ?? '', 300));
+$rows['Page URL']    = $oneLine($clean($input['page_url'] ?? '', 300));
+$rows['Referrer']    = $oneLine($clean($input['referrer'] ?? '', 300));
 
 // ---------------------------------------------------------------------------
 // Build the message (plain text + HTML)
 // ---------------------------------------------------------------------------
-$text = $heading . "\n\n";
+$text = "=== " . $heading . " ===\n";
+$text .= "Form: " . $formName . "\n";
+$text .= "From: " . $name . " <" . $email . ">\n\n";
+
 $htmlRows = '';
 foreach ($rows as $label => $value) {
     if ($value === '' || $value === null) {
         continue;
     }
     $text .= $label . ': ' . $value . "\n";
-    $htmlRows .= '<tr><td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font:600 13px Arial,sans-serif;vertical-align:top;white-space:nowrap">'
-        . htmlspecialchars($label) . '</td><td style="padding:10px 14px;border-bottom:1px solid #eee;color:#111;font:14px/1.5 Arial,sans-serif">'
+    $isHighlight = in_array($label, ['Form Name', 'Client Name', 'Applicant Name', 'Subscriber', 'Position Applied', 'Services Needed', 'Project Details', 'Cover Letter / Note'], true);
+    $bgStyle = $isHighlight ? 'background:#fafbfc;' : '';
+    $htmlRows .= '<tr style="' . $bgStyle . '"><td style="padding:10px 14px;border-bottom:1px solid #eef0f2;color:#555;font:600 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;vertical-align:top;width:32%;white-space:nowrap">'
+        . htmlspecialchars($label) . '</td><td style="padding:10px 14px;border-bottom:1px solid #eef0f2;color:#111;font:14px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif">'
         . nl2br(htmlspecialchars((string) $value)) . '</td></tr>';
 }
-$html = '<div style="background:#f5f5f5;padding:24px"><table cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden">'
-    . '<tr><td colspan="2" style="background:#050505;color:#fff;padding:18px 14px;font:700 18px Arial,sans-serif">' . htmlspecialchars($heading) . '</td></tr>'
-    . $htmlRows . '</table></div>';
+
+$html = '<div style="background:#f0f2f5;padding:30px 15px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">'
+    . '<table cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;margin:0 auto;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.06);border:1px solid #e2e8f0">'
+    . '<tr><td colspan="2" style="background:#0a0a0a;color:#ffffff;padding:22px 20px;border-bottom:3px solid #3b82f6">'
+    . '<div style="display:inline-block;background:#3b82f6;color:#ffffff;font-size:11px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:4px;margin-bottom:8px;text-transform:uppercase">' . htmlspecialchars($formBadge) . '</div>'
+    . '<h2 style="margin:0;font-size:20px;font-weight:700;color:#ffffff;line-height:1.3">' . htmlspecialchars($heading) . '</h2>'
+    . '<p style="margin:6px 0 0;font-size:13px;color:#94a3b8">Submitted via Entec Media Website</p>'
+    . '</td></tr>'
+    . $htmlRows 
+    . '<tr><td colspan="2" style="background:#f8fafc;padding:14px 20px;text-align:center;color:#64748b;font-size:12px;border-top:1px solid #e2e8f0">'
+    . 'Entec Media Notification System • Click "Reply" to reply directly to ' . htmlspecialchars($email)
+    . '</td></tr>'
+    . '</table></div>';
 
 $subject = $oneLine($subject);
 
 try {
-    $sent = !empty($config['smtp']['enabled'])
-        ? smtp_send($config, $subject, $text, $html, $email, $name, $attachments)
-        : php_mail_send($config, $subject, $text, $html, $email, $name, $attachments);
-} catch (Throwable $e) {
-    error_log('[entec-mail] ' . $e->getMessage());
     $sent = false;
+    if (!empty($config['smtp']['enabled']) && !empty($config['smtp']['password'])) {
+        $sent = smtp_send($config, $subject, $text, $html, $email, $name, $attachments);
+    } else {
+        $sent = php_mail_send($config, $subject, $text, $html, $email, $name, $attachments);
+    }
+} catch (Throwable $e) {
+    error_log('[entec-mail-smtp-error] ' . $e->getMessage());
+    // Fallback to PHP built-in mail() if SMTP encounters an issue
+    try {
+        $sent = php_mail_send($config, $subject, $text, $html, $email, $name, $attachments);
+    } catch (Throwable $fallbackErr) {
+        error_log('[entec-mail-fallback-error] ' . $fallbackErr->getMessage());
+        $sent = false;
+    }
 }
 
 if (!$sent) {
-    respond(false, 'We could not send your message right now.', 500);
+    respond(false, 'We could not send your message right now. Please email us directly at ' . $config['from_email'], 500);
 }
 
 $hits[] = $now;
@@ -461,7 +498,9 @@ function smtp_send(array $config, string $subject, string $text, string $html, s
         return $reply;
     };
 
-    $serverName = $_SERVER['SERVER_NAME'] ?? 'localhost';
+    $serverName = !empty($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] !== 'localhost' && $_SERVER['SERVER_NAME'] !== '127.0.0.1' 
+        ? $_SERVER['SERVER_NAME'] 
+        : 'entecmedia.com';
     $cmd('', [220]);
     $cmd('EHLO ' . $serverName, [250]);
     if ($smtp['encryption'] === 'tls') {

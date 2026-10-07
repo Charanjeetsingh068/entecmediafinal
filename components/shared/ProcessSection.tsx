@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import SectionHeader from "./SectionHeader";
+import { onScrollNear } from "@/lib/scrollNear";
 
 export interface ProcessStep {
   title: string;
@@ -47,9 +48,7 @@ export default function ProcessSection({ steps = defaultSteps }: ProcessSectionP
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let raf = 0;
     const update = () => {
-      raf = 0;
       const rows = listRef.current?.querySelectorAll<HTMLElement>(".k-process-row");
       if (!rows) return;
       const vh = window.innerHeight;
@@ -60,17 +59,8 @@ export default function ProcessSection({ steps = defaultSteps }: ProcessSectionP
         if (bar) bar.style.width = `${25 + p * (35 + i * 13.3)}%`;
       });
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
+    // Only while the section is on or near the screen (lib/scrollNear.ts)
+    return onScrollNear(listRef.current, update);
   }, []);
 
   return (

@@ -6,6 +6,7 @@ import SectionHeader from "@/components/shared/SectionHeader";
 import CountUp from "@/components/shared/CountUp";
 import KButton from "@/components/shared/KButton";
 import type { WorkProject } from "@/lib/servicesApi";
+import { onScrollNear } from "@/lib/scrollNear";
 
 export interface FeaturedProjectsProps {
   projects: WorkProject[];
@@ -89,14 +90,15 @@ export default function FeaturedProjects({ projects: featured, id = "projects", 
       inside = false;
       cursor.classList.remove("is-on");
     };
-    // Wheel-scrolling moves cards under a still pointer without any pointer event
+    // Wheel-scrolling moves cards under a still pointer without any pointer event. The hit test forces a
+    // layout, so it runs at most every 120ms instead of on every scroll frame (keeps scrolling smooth)
     const onScroll = () => {
       if (!inside || sraf) return;
-      sraf = requestAnimationFrame(() => {
+      sraf = window.setTimeout(() => {
         sraf = 0;
         const el = document.elementFromPoint(tx, ty);
         cursor.classList.toggle("is-on", !!el?.closest(".fp-stage"));
-      });
+      }, 120);
     };
     list.addEventListener("pointermove", onMove);
     list.addEventListener("pointerleave", onLeave);
@@ -106,7 +108,7 @@ export default function FeaturedProjects({ projects: featured, id = "projects", 
       list.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
-      cancelAnimationFrame(sraf);
+      clearTimeout(sraf);
     };
   }, []);
 
@@ -172,10 +174,10 @@ export default function FeaturedProjects({ projects: featured, id = "projects", 
       };
       const onScroll = () => {
         if (px < 0 || sraf) return;
-        sraf = requestAnimationFrame(() => {
+        sraf = window.setTimeout(() => {
           sraf = 0;
           setHovered(document.elementFromPoint(px, py)?.closest(".fp-stage") ?? null);
-        });
+        }, 120);
       };
       window.addEventListener("pointermove", onMove, { passive: true });
       document.addEventListener("pointerout", onOut);
@@ -184,7 +186,7 @@ export default function FeaturedProjects({ projects: featured, id = "projects", 
         window.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerout", onOut);
         window.removeEventListener("scroll", onScroll);
-        cancelAnimationFrame(sraf);
+        clearTimeout(sraf);
       });
     }
 
@@ -201,9 +203,7 @@ export default function FeaturedProjects({ projects: featured, id = "projects", 
     // Details start hidden only once JS runs, so they never vanish without it
     sectionRef.current?.setAttribute("data-ready", "");
     const touchScroll = !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    let raf = 0;
     const update = () => {
-      raf = 0;
       const list = listRef.current;
       if (!list) return;
       const rows = Array.from(list.querySelectorAll<HTMLElement>(".fp-row"));
@@ -278,17 +278,8 @@ export default function FeaturedProjects({ projects: featured, id = "projects", 
 
       setActive((prev) => (prev === idx ? prev : idx));
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
+    // Only while the section is on or near the screen (lib/scrollNear.ts)
+    return onScrollNear(sectionRef.current, update);
   }, []);
 
   // Slide the ink behind the active tab

@@ -8,7 +8,7 @@ import team1Img from "@/public/images/team1-avatar.webp";
 import team2Img from "@/public/images/team2-avatar.webp";
 import team3Img from "@/public/images/team3-avatar.webp";
 import team4Img from "@/public/images/team4-avatar.webp";
-import entecLogoImg from "@/public/images/ENTEC.png";
+import RImg from "@/components/shared/RImg";
 
 export default function Banner() {
   const [isSticky, setIsSticky] = useState(true);
@@ -120,10 +120,10 @@ export default function Banner() {
           {/* Top Rating Card */}
           <div className="rating-container">
             <div className="avatar-group">
-              <Image src={team1Img} alt="Team member 1" className="avatar-bubble" priority />
-              <Image src={team2Img} alt="Team member 2" className="avatar-bubble" priority />
-              <Image src={team3Img} alt="Team member 3" className="avatar-bubble" priority />
-              <Image src={team4Img} alt="Team member 4" className="avatar-bubble" priority />
+              <Image src={team1Img} alt="Team member 1" className="avatar-bubble" />
+              <Image src={team2Img} alt="Team member 2" className="avatar-bubble" />
+              <Image src={team3Img} alt="Team member 3" className="avatar-bubble" />
+              <Image src={team4Img} alt="Team member 4" className="avatar-bubble" />
             </div>
             <div className="rating-info">
               <div className="rating-stars-row">
@@ -147,7 +147,7 @@ export default function Banner() {
 
       {/* Giant Bottom Text Logo ENTEC - Priority load for LCP optimization */}
       <div className="giant-logo-text-wrapper" ref={logoRef}>
-        <Image src={entecLogoImg} alt="ENTEC" className="giant-logo-img" priority />
+        <RImg src="/images/ENTEC.png" alt="ENTEC" className="giant-logo-img" sizes="(max-width: 1750px) 100vw, 1750px" priority />
       </div>
     </section>
   );

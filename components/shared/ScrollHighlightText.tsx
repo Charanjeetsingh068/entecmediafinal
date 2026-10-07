@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { onScrollNear } from "@/lib/scrollNear";
 
 interface ScrollHighlightTextProps {
   text: string;
@@ -17,10 +18,8 @@ export default function ScrollHighlightText({ text, className = "" }: ScrollHigh
   const [lit, setLit] = useState(0);
 
   useEffect(() => {
-    let raf = 0;
     const total = text.split(" ").length;
     const update = () => {
-      raf = 0;
       const el = ref.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -31,17 +30,8 @@ export default function ScrollHighlightText({ text, className = "" }: ScrollHigh
       const next = Math.round(progress * total);
       setLit((prev) => (prev === next ? prev : next));
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
+    // Only while the section is on or near the screen (lib/scrollNear.ts)
+    return onScrollNear(ref.current, update);
   }, [text]);
 
   return (

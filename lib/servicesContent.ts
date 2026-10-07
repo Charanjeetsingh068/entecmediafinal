@@ -1,3 +1,4 @@
+import { imageManifest } from "@/lib/imageManifest";
 /**
  * Editable content for the Services listing page and the shared sections of every service detail page.
  * Everything here is plain JSON (strings, numbers, arrays) — the same shape an admin panel / CMS API
@@ -288,5 +289,9 @@ export function fillService(text: string, serviceTitle: string): string {
 
 /** Resizes an Unsplash-style URL (one with a w= parameter); other URLs are returned unchanged. */
 export function sizedImage(url: string, width: number): string {
-  return /[?&]w=\d+/.test(url) ? url.replace(/([?&]w=)\d+/, `$1${width}`) : url;
+  if (/[?&]w=\d+/.test(url)) return url.replace(/([?&]w=)\d+/, `$1${width}`);
+  // Local images with responsive copies (scripts/optimize-images.mjs): the smallest copy at least that wide
+  const m = imageManifest[url];
+  if (m) return `${m.base}-${m.widths.find((w) => w >= width) ?? m.width}.webp`;
+  return url;
 }

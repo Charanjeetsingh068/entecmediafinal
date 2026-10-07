@@ -1775,7 +1775,7 @@ body.menu-open-scroll-lock {
 /* --- MISSION SECTION (WHITE SECTION AFTER BANNER) --- */
 .mission-section {
   background-color: var(--c-white);
-  background-image: url("/images/aboutbac.webp");
+  background-image: url("/images/r/aboutbac.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -8715,6 +8715,13 @@ body {
   box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
 }
 
+.svd-media-track {
+  position: absolute;
+  inset: 0;
+  transition: transform 1.2s var(--k-ease);
+  will-change: transform;
+}
+
 .svd-media img {
   position: absolute;
   top: -30px;
@@ -8723,7 +8730,7 @@ body {
   height: calc(100% + 60px);
   object-fit: cover;
   clip-path: inset(100% 0 0 0);
-  transform: translate3d(0, var(--drift), 0) scale(1.08);
+  transform: scale(1.08);
   /* the outgoing photo stays until the new one has fully covered it */
   transition: clip-path 0s linear 0.9s, transform 1.2s var(--k-ease);
 }
@@ -8731,7 +8738,7 @@ body {
 .svd-media img.is-active {
   z-index: 1;
   clip-path: inset(0 0 0 0);
-  transform: translate3d(0, var(--drift), 0) scale(1);
+  transform: scale(1);
   transition: clip-path 0.9s var(--k-ease), transform 1.2s var(--k-ease);
 }
 
@@ -10459,8 +10466,9 @@ body {
   width: 104px;
   height: 104px;
   border-radius: 50%;
-  background: rgba(12, 12, 16, 0.55);
-  backdrop-filter: blur(8px);
+  /* Solid tint instead of backdrop-filter: a blur behind a constantly spinning ring had to be
+     recomputed every frame and made the section stutter while scrolling */
+  background: rgba(12, 12, 16, 0.74);
   color: #ffffff;
   transition: background-color 0.4s ease, color 0.4s ease;
 }
@@ -27566,4 +27574,12 @@ a.pd-ov-live:focus-visible {
   .jb-ticket-rows li:nth-child(n + 3) {
     display: none;
   }
+}
+
+/* Off-screen sections keep their looping animations paused (components/shared/OffscreenAnimations.tsx) */
+[data-off],
+[data-off] *,
+[data-off] *::before,
+[data-off] *::after {
+  animation-play-state: paused !important;
 }

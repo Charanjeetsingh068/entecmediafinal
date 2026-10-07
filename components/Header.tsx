@@ -171,6 +171,10 @@ export default function Header() {
     let ticking = false;
     let lastScrollY = window.scrollY;
     let hidden = false;
+    let theme = pathname === "/" ? "dark" : "light";
+    let overBanner = false;
+    let lastProbe = 0;
+    let probeTimer: ReturnType<typeof setTimeout> | undefined;
 
     const updateHeaderTheme = () => {
       const currentScrollY = window.scrollY;
@@ -187,9 +191,35 @@ export default function Header() {
       if (Math.abs(delta) > 6 || !isSticky) lastScrollY = currentScrollY;
       const isVisible = !hidden;
 
-      // 3. Theme of whatever is actually painted under the header's centre line.
-      //    elementsFromPoint respects stacking, so sticky/pinned sections underneath are ignored.
-      let theme = pathname === "/" ? "dark" : "light";
+      // 3. Theme + "over the banner" need a hit test and computed styles, which force a full layout.
+      //    Doing that on every scroll frame made scrolling stutter, so it runs at most every 100ms
+      //    (and once more when scrolling stops), and not at all while the header is hidden.
+      const now = performance.now();
+      clearTimeout(probeTimer);
+      if (isVisible && now - lastProbe > 100) probe();
+      else probeTimer = setTimeout(() => {
+        probe();
+        commit(isVisible, isSticky);
+      }, 120);
+      commit(isVisible, isSticky);
+      ticking = false;
+    };
+
+    const commit = (isVisible: boolean, isSticky: boolean) => {
+      // Only re-render when something actually changed (this runs on every scroll frame)
+      setScrollState((prev) =>
+        prev.visible === isVisible && prev.sticky === isSticky && prev.theme === theme && prev.overBanner === overBanner
+          ? prev
+          : { visible: isVisible, sticky: isSticky, theme, overBanner }
+      );
+    };
+
+    const probe = () => {
+      lastProbe = performance.now();
+      const currentScrollY = window.scrollY;
+      // Theme of whatever is actually painted under the header's centre line.
+      // elementsFromPoint respects stacking, so sticky/pinned sections underneath are ignored.
+      theme = pathname === "/" ? "dark" : "light";
       const headerEl = document.querySelector<HTMLElement>(".header-main");
       const probeY = Math.max(40, (headerEl?.offsetHeight ?? 88) - 8); // section under the header's bottom edge
       const stack = document.elementsFromPoint(Math.min(24, window.innerWidth * 0.02), probeY);
@@ -235,18 +265,9 @@ export default function Header() {
       // Transparent while the header sits over the top hero banner/section
       const heroEl = document.querySelector(".banner-section, .ab-hero, .k-page-hero, .legal-page-section");
       const heroHeight = heroEl ? (heroEl as HTMLElement).offsetHeight : window.innerHeight;
-      const overBanner =
+      overBanner =
         !!heroEl && currentScrollY < heroHeight - 88 &&
         !stack.some((el) => el.closest(".main-content-wrapper, .k-page-body, .legal-content"));
-
-      // Only re-render when something actually changed (this runs on every scroll frame)
-      setScrollState((prev) =>
-        prev.visible === isVisible && prev.sticky === isSticky && prev.theme === theme && prev.overBanner === overBanner
-          ? prev
-          : { visible: isVisible, sticky: isSticky, theme, overBanner }
-      );
-
-      ticking = false;
     };
 
     const handleScroll = () => {
@@ -260,6 +281,7 @@ export default function Header() {
     updateHeaderTheme(); // Run once initially
 
     return () => {
+      clearTimeout(probeTimer);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [pathname]);
@@ -292,7 +314,8 @@ export default function Header() {
               src={isLightMode ? darkLogoImg : whiteLogoImg} 
               alt="Entec Media Logo" 
               className="logo-img" 
-              priority 
+              loading="eager"
+              fetchPriority="high"
             />
           </Link>
           <button className="menu-toggle" onClick={openMenu} aria-label="Open Menu">

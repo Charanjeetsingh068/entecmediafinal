@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import KButton from "@/components/shared/KButton";
+import { onScrollNear } from "@/lib/scrollNear";
 
 const photo = (id: string, w: number) => `https://images.unsplash.com/photo-${id}?w=${w}&auto=format&fit=crop&q=72`;
 
@@ -156,9 +157,7 @@ export default function AboutPurpose() {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    let raf = 0;
     const update = () => {
-      raf = 0;
       const rows = listRef.current?.querySelectorAll<HTMLElement>(".ab-pp-item");
       if (!rows?.length) return;
       const mid = window.innerHeight * 0.55;
@@ -172,17 +171,8 @@ export default function AboutPurpose() {
       if (deckRef.current) deckRef.current.style.setProperty("--drift", `${(p - 0.5) * -40}px`);
       setActive((prev) => (prev === idx ? prev : idx));
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(raf);
-    };
+    // Only while the section is on or near the screen (lib/scrollNear.ts)
+    return onScrollNear(listRef.current, update);
   }, []);
 
   // Rail: scroll the chosen card to the middle of the screen

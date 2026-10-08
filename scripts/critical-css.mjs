@@ -61,7 +61,7 @@ const walk = (dir) => {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) {
-      if (e.name === "_next" || e.name === "api" || e.name === "blog-cms" || e.name === "images") continue;
+      if (e.name === "_next" || e.name === "api" || e.name === "admin" || e.name === "uploads" || e.name === "blog-cms" || e.name === "images") continue;
       walk(p);
     } else if (e.name.endsWith(".html") && !e.name.startsWith("__")) pages.push(p);
   }

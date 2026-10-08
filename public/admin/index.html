@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Entec Media</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Rich Text Editor (EasyMDE) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" data-beasties-skip>
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <link rel="stylesheet" href="admin.css" data-beasties-skip>
+</head>
+<body class="theme-dark">
+
+  <!-- ==================== LOGIN VIEW ==================== -->
+  <div id="login-view" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">ENTEC<span>MEDIA</span></div>
+        <h2>Admin Portal</h2>
+        <p>Sign in to manage blogs, careers, projects and leads</p>
+      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <div class="input-icon-wrap">
+            <i data-lucide="mail"></i>
+            <input type="email" id="login-email" required placeholder="admin@entecmedia.com" autocomplete="email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <div class="input-icon-wrap">
+            <i data-lucide="lock"></i>
+            <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+          </div>
+        </div>
+        <button type="submit" id="login-btn" class="btn btn-primary btn-block">
+          <span>Sign In to Dashboard</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD VIEW ==================== -->
+  <div id="app-view" class="app-container" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">ENTEC<span>MEDIA</span></div>
+        <span class="badge badge-accent">Admin CMS</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" onclick="switchSection('dashboard')">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Overview</span>
+        </a>
+        <a href="#blogs" class="nav-item" onclick="switchSection('blogs')">
+          <i data-lucide="file-text"></i>
+          <span>Blogs & Articles</span>
+        </a>
+        <a href="#projects" class="nav-item" onclick="switchSection('projects')">
+          <i data-lucide="briefcase"></i>
+          <span>Projects & Works</span>
+        </a>
+        <a href="#services" class="nav-item" onclick="switchSection('services')">
+          <i data-lucide="sparkles"></i>
+          <span>Services</span>
+        </a>
+        <a href="#careers" class="nav-item" onclick="switchSection('careers')">
+          <i data-lucide="users"></i>
+          <span>Careers & Openings</span>
+        </a>
+        <a href="#applications" class="nav-item" onclick="switchSection('applications')">
+          <i data-lucide="file-check-2"></i>
+          <span>Job Resumes</span>
+          <span class="nav-badge" id="badge-applications">0</span>
+        </a>
+        <a href="#leads" class="nav-item" onclick="switchSection('leads')">
+          <i data-lucide="inbox"></i>
+          <span>Contact Leads</span>
+          <span class="nav-badge" id="badge-leads">0</span>
+        </a>
+        <a href="#site-settings" class="nav-item" onclick="switchSection('site-settings')">
+          <i data-lucide="sliders"></i>
+          <span>Header, Footer & Content</span>
+        </a>
+        <a href="#settings" class="nav-item" onclick="switchSection('settings')">
+          <i data-lucide="shield-check"></i>
+          <span>Security & Profile</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar" id="current-user-avatar">A</div>
+          <div class="user-info">
+            <span class="user-name" id="current-user-name">Admin</span>
+            <span class="user-role" id="current-user-email">admin@entecmedia.com</span>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()" title="Logout">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
+          <h1 id="page-title">Dashboard Overview</h1>
+        </div>
+        <div class="topbar-right">
+          <a href="/" target="_blank" class="btn btn-outline btn-sm">
+            <i data-lucide="external-link"></i>
+            <span>View Live Site</span>
+          </a>
+        </div>
+      </header>
+
+      <div class="content-body">
+
+        <!-- ================= SECTION: OVERVIEW ================= -->
+        <section id="sec-dashboard" class="content-section active">
+          <!-- KPI Stats -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon icon-blue"><i data-lucide="file-text"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Total Blogs</span>
+                <h3 id="stat-blogs">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon icon-purple"><i data-lucide="briefcase"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Projects Published</span>
+                <h3 id="stat-projects">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon icon-cyan"><i data-lucide="users"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Active Job Openings</span>
+                <h3 id="stat-careers">0</h3>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon icon-green"><i data-lucide="inbox"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">New Inquiries</span>
+                <h3 id="stat-leads">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Tables Grid -->
+          <div class="dashboard-grid">
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i data-lucide="message-square"></i> Recent Client Inquiries</h3>
+                <button class="btn btn-text" onclick="switchSection('leads')">View All</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="table-dash-leads">
+                  <thead>
+                    <tr><th>Name</th><th>Service</th><th>Date</th><th>Action</th></tr>
+                  </thead>
+                  <tbody><tr><td colspan="4" class="text-muted text-center">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i data-lucide="file-check-2"></i> Recent Job Applications</h3>
+                <button class="btn btn-text" onclick="switchSection('applications')">View All</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="table-dash-apps">
+                  <thead>
+                    <tr><th>Applicant</th><th>Job Position</th><th>Resume</th><th>Date</th></tr>
+                  </thead>
+                  <tbody><tr><td colspan="4" class="text-muted text-center">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: BLOGS ================= -->
+        <section id="sec-blogs" class="content-section">
+          <div class="section-toolbar">
+            <div class="search-input-wrap">
+              <i data-lucide="search"></i>
+              <input type="text" id="blog-search" placeholder="Search blogs by title or content..." oninput="filterBlogs()">
+            </div>
+            <div class="toolbar-actions">
+              <select id="blog-filter-cat" class="form-select" onchange="filterBlogs()">
+                <option value="">All Categories</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Branding & Design">Branding & Design</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Technology">Technology</option>
+              </select>
+              <button class="btn btn-primary" onclick="openBlogModal()">
+                <i data-lucide="plus"></i>
+                <span>Create New Post</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="table-blogs">
+                <thead>
+                  <tr>
+                    <th>Cover</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Views</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="blogs-table-body">
+                  <tr><td colspan="7" class="text-center text-muted">Loading blogs...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: PROJECTS ================= -->
+        <section id="sec-projects" class="content-section">
+          <div class="section-toolbar">
+            <div class="search-input-wrap">
+              <i data-lucide="search"></i>
+              <input type="text" id="project-search" placeholder="Search case studies..." oninput="filterProjects()">
+            </div>
+            <button class="btn btn-primary" onclick="openProjectModal()">
+              <i data-lucide="plus"></i>
+              <span>Add New Project</span>
+            </button>
+          </div>
+
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="table-projects">
+                <thead>
+                  <tr>
+                    <th>Thumbnail</th>
+                    <th>Project Title</th>
+                    <th>Client</th>
+                    <th>Category</th>
+                    <th>Featured</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="projects-table-body">
+                  <tr><td colspan="7" class="text-center text-muted">Loading projects...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: SERVICES ================= -->
+        <section id="sec-services" class="content-section">
+          <div class="section-toolbar">
+            <h2>Services Offerings</h2>
+            <button class="btn btn-primary" onclick="openServiceModal()">
+              <i data-lucide="plus"></i>
+              <span>Add Service</span>
+            </button>
+          </div>
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="table-services">
+                <thead>
+                  <tr>
+                    <th>Icon</th>
+                    <th>Service Name</th>
+                    <th>Slug</th>
+                    <th>Short Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="services-table-body">
+                  <tr><td colspan="6" class="text-center text-muted">Loading services...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: CAREERS ================= -->
+        <section id="sec-careers" class="content-section">
+          <div class="section-toolbar">
+            <h2>Job Openings</h2>
+            <button class="btn btn-primary" onclick="openCareerModal()">
+              <i data-lucide="plus"></i>
+              <span>Post New Job</span>
+            </button>
+          </div>
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="table-careers">
+                <thead>
+                  <tr>
+                    <th>Job Title</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="careers-table-body">
+                  <tr><td colspan="6" class="text-center text-muted">Loading jobs...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: JOB APPLICATIONS ================= -->
+        <section id="sec-applications" class="content-section">
+          <div class="section-toolbar">
+            <h2>Candidate Job Applications</h2>
+          </div>
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="table-applications">
+                <thead>
+                  <tr>
+                    <th>Applicant Name</th>
+                    <th>Position</th>
+                    <th>Email / Phone</th>
+                    <th>Resume</th>
+                    <th>Portfolio</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="applications-table-body">
+                  <tr><td colspan="7" class="text-center text-muted">Loading applications...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: LEADS ================= -->
+        <section id="sec-leads" class="content-section">
+          <div class="section-toolbar">
+            <h2>Contact & Enquiry Leads</h2>
+          </div>
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="data-table" id="table-leads">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Contact Info</th>
+                    <th>Service Needed</th>
+                    <th>Budget</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="leads-table-body">
+                  <tr><td colspan="7" class="text-center text-muted">Loading leads...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: SITE SETTINGS & MENUS ================= -->
+        <section id="sec-site-settings" class="content-section">
+          <div class="section-toolbar">
+            <h2>Header, Footer & Content Customization</h2>
+            <button class="btn btn-primary" onclick="saveSiteSettings(event)">
+              <i data-lucide="save"></i>
+              <span>Save All Settings</span>
+            </button>
+          </div>
+
+          <div class="dashboard-grid">
+            <!-- Header & Navigation -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i data-lucide="navigation"></i> Header & Navigation</h3>
+              </div>
+              <div style="padding: 24px;">
+                <div class="form-group">
+                  <label>Header Tagline / Notice</label>
+                  <input type="text" id="setting-header-tagline" class="form-control" placeholder="Innovating the Future of Digital Media">
+                </div>
+                <div class="form-group">
+                  <label>Header CTA Button Text</label>
+                  <input type="text" id="setting-header-cta-text" class="form-control" placeholder="Get in Touch">
+                </div>
+                <div class="form-group">
+                  <label>Header CTA Button URL</label>
+                  <input type="text" id="setting-header-cta-url" class="form-control" placeholder="/contact">
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer & Contact Information -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i data-lucide="phone-call"></i> Footer & Contact Details</h3>
+              </div>
+              <div style="padding: 24px;">
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label>Contact Phone</label>
+                    <input type="text" id="setting-contact-phone" class="form-control" placeholder="+91 98765 43210">
+                  </div>
+                  <div class="form-group col-6">
+                    <label>Official Email</label>
+                    <input type="email" id="setting-contact-email" class="form-control" placeholder="contact@entecmedia.com">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Office Address</label>
+                  <textarea id="setting-contact-address" class="form-control" rows="2" placeholder="Phase 8B, Industrial Area, Sector 74, Mohali, Punjab"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Working Hours</label>
+                  <input type="text" id="setting-working-hours" class="form-control" placeholder="Mon - Fri: 9:30 AM - 6:30 PM">
+                </div>
+              </div>
+            </div>
+
+            <!-- Social Media Handles -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i data-lucide="share-2"></i> Social Media Links</h3>
+              </div>
+              <div style="padding: 24px;">
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label>LinkedIn URL</label>
+                    <input type="url" id="setting-social-linkedin" class="form-control" placeholder="https://linkedin.com/company/entecmedia">
+                  </div>
+                  <div class="form-group col-6">
+                    <label>Instagram URL</label>
+                    <input type="url" id="setting-social-instagram" class="form-control" placeholder="https://instagram.com/entecmedia">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label>Twitter / X URL</label>
+                    <input type="url" id="setting-social-twitter" class="form-control" placeholder="https://x.com/entecmedia">
+                  </div>
+                  <div class="form-group col-6">
+                    <label>YouTube / Facebook URL</label>
+                    <input type="url" id="setting-social-youtube" class="form-control" placeholder="https://youtube.com/@entecmedia">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Homepage Hero & Brand Text -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i data-lucide="layout"></i> Homepage Banner & Tagline</h3>
+              </div>
+              <div style="padding: 24px;">
+                <div class="form-group">
+                  <label>Hero Main Heading</label>
+                  <input type="text" id="setting-hero-heading" class="form-control" placeholder="Building Next-Gen Digital Experiences">
+                </div>
+                <div class="form-group">
+                  <label>Hero Subtitle / Description</label>
+                  <textarea id="setting-hero-subtitle" class="form-control" rows="3" placeholder="We architect high-performance websites, scalable web applications, and iconic digital branding..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: SETTINGS ================= -->
+        <section id="sec-settings" class="content-section">
+          <div class="panel-card" style="max-width: 600px;">
+            <div class="panel-header">
+              <h3><i data-lucide="lock"></i> Change Admin Password</h3>
+            </div>
+            <form onsubmit="handleChangePassword(event)" style="padding: 20px;">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="old-password" required class="form-control" placeholder="••••••••">
+              </div>
+              <div class="form-group">
+                <label>New Password (Min 6 chars)</label>
+                <input type="password" id="new-password" required class="form-control" placeholder="••••••••">
+              </div>
+              <button type="submit" class="btn btn-primary">Update Password</button>
+            </form>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Blog Modal -->
+  <div id="modal-blog" class="modal-backdrop">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-blog-title">Create New Blog Post</h3>
+        <button class="modal-close" onclick="closeModal('modal-blog')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-blog" onsubmit="handleSaveBlog(event)">
+        <input type="hidden" id="blog-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-8">
+              <label>Blog Title *</label>
+              <input type="text" id="blog-title" required class="form-control" placeholder="e.g. 10 Web Design Trends for 2026" oninput="autoSlug('blog-title', 'blog-slug')">
+            </div>
+            <div class="form-group col-4">
+              <label>Category</label>
+              <select id="blog-category" class="form-control">
+                <option value="Web Development">Web Development</option>
+                <option value="Branding & Design">Branding & Design</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Technology">Technology</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Slug (URL Address)</label>
+              <input type="text" id="blog-slug" class="form-control" placeholder="10-web-design-trends-2026">
+            </div>
+            <div class="form-group col-6">
+              <label>Cover Image</label>
+              <div class="file-uploader-wrap">
+                <input type="text" id="blog-cover" class="form-control" placeholder="/uploads/media/example.webp">
+                <label class="btn btn-outline btn-upload">
+                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'blog-cover')" style="display:none;">
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Short Excerpt</label>
+            <textarea id="blog-excerpt" class="form-control" rows="2" placeholder="Brief summary of the article..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Full Content (Markdown / HTML)</label>
+            <textarea id="blog-content" rows="10"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Meta SEO Title</label>
+              <input type="text" id="blog-meta-title" class="form-control" placeholder="SEO Title">
+            </div>
+            <div class="form-group col-6">
+              <label>Publish Status</label>
+              <select id="blog-status" class="form-control">
+                <option value="published">Published (Live)</option>
+                <option value="draft">Draft (Private)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-blog')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Blog Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div id="modal-project" class="modal-backdrop">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-project-title">Add New Project / Case Study</h3>
+        <button class="modal-close" onclick="closeModal('modal-project')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-project" onsubmit="handleSaveProject(event)">
+        <input type="hidden" id="project-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Project Title *</label>
+              <input type="text" id="project-title" required class="form-control" placeholder="e.g. Fintech Brand Identity & Web App" oninput="autoSlug('project-title', 'project-slug')">
+            </div>
+            <div class="form-group col-6">
+              <label>Client Name</label>
+              <input type="text" id="project-client" class="form-control" placeholder="e.g. Apex Global Tech">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Slug</label>
+              <input type="text" id="project-slug" class="form-control" placeholder="apex-global-app">
+            </div>
+            <div class="form-group col-6">
+              <label>Category</label>
+              <input type="text" id="project-category" class="form-control" placeholder="Web Development, UI/UX">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Thumbnail Image</label>
+              <div class="file-uploader-wrap">
+                <input type="text" id="project-thumbnail" class="form-control" placeholder="/uploads/media/thumb.webp">
+                <label class="btn btn-outline btn-upload">
+                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'project-thumbnail')" style="display:none;">
+                </label>
+              </div>
+            </div>
+            <div class="form-group col-6">
+              <label>Live URL (Optional)</label>
+              <input type="url" id="project-url" class="form-control" placeholder="https://example.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Short Description</label>
+            <textarea id="project-short-desc" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Project Overview & Details</label>
+            <textarea id="project-overview" class="form-control" rows="4"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Featured on Home?</label>
+              <select id="project-featured" class="form-control">
+                <option value="1">Yes (Featured)</option>
+                <option value="0">No</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>Status</label>
+              <select id="project-status" class="form-control">
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-project')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Career Modal -->
+  <div id="modal-career" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-career-title">Post Job Opening</h3>
+        <button class="modal-close" onclick="closeModal('modal-career')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-career" onsubmit="handleSaveCareer(event)">
+        <input type="hidden" id="career-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Job Title *</label>
+            <input type="text" id="career-title" required class="form-control" placeholder="e.g. Senior Frontend Developer">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Department</label>
+              <input type="text" id="career-dept" class="form-control" placeholder="Engineering / Design">
+            </div>
+            <div class="form-group col-6">
+              <label>Job Type</label>
+              <select id="career-type" class="form-control">
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Remote">Remote</option>
+                <option value="Contract">Contract</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Location</label>
+              <input type="text" id="career-loc" class="form-control" placeholder="Remote / Mohali, PB">
+            </div>
+            <div class="form-group col-6">
+              <label>Experience</label>
+              <input type="text" id="career-exp" class="form-control" placeholder="2+ Years">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Job Description</label>
+            <textarea id="career-desc" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Requirements</label>
+            <textarea id="career-req" class="form-control" rows="3" placeholder="Bullet points of required skills..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="career-status" class="form-control">
+              <option value="open">Open (Accepting Applications)</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-career')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Job Opening</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Service Modal -->
+  <div id="modal-service" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-service-title">Add / Edit Service</h3>
+        <button class="modal-close" onclick="closeModal('modal-service')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-service" onsubmit="handleSaveService(event)">
+        <input type="hidden" id="service-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Service Title *</label>
+            <input type="text" id="service-title" required class="form-control" placeholder="e.g. Custom Web Development" oninput="autoSlug('service-title', 'service-slug')">
+          </div>
+          <div class="form-group">
+            <label>Slug</label>
+            <input type="text" id="service-slug" class="form-control" placeholder="custom-web-development">
+          </div>
+          <div class="form-group">
+            <label>Short Summary</label>
+            <textarea id="service-short-desc" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Full Details</label>
+            <textarea id="service-full-desc" class="form-control" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="service-status" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-service')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Service</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Alert Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -257,7 +257,69 @@ try {
 }
 
 if (!$sent) {
-    respond(false, 'We could not send your message right now. Please email us directly at ' . $config['from_email'], 500);
+    // Note: Even if SMTP fails, we still attempt to save to database below
+    error_log('[entec-mail] Email sending was not completed, proceeding to store in DB.');
+}
+
+// ---------------------------------------------------------------------------
+// Save to MySQL Database for Admin Panel
+// ---------------------------------------------------------------------------
+try {
+    if (file_exists(__DIR__ . '/config.php')) {
+        require_once __DIR__ . '/config.php';
+        $db = get_db_connection();
+        
+        if ($type === 'career') {
+            $cvPath = '';
+            if (!empty($attachments) && isset($attachments[0])) {
+                $resumeDir = __DIR__ . '/../uploads/resumes/';
+                if (!is_dir($resumeDir)) @mkdir($resumeDir, 0755, true);
+                $cleanCvName = 'cv_' . date('Ymd_His') . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $attachments[0]['name']);
+                @file_put_contents($resumeDir . $cleanCvName, $attachments[0]['data']);
+                $cvPath = '/uploads/resumes/' . $cleanCvName;
+            } elseif (!empty($resumeLink)) {
+                $cvPath = $resumeLink;
+            }
+            
+            $stmt = $db->prepare("INSERT INTO job_applications (job_title, applicant_name, email, phone, portfolio_url, resume_path, cover_note, status, created_at) 
+                                  VALUES (:job, :name, :email, :phone, :portfolio, :resume_path, :note, 'new', NOW())");
+            $stmt->execute([
+                ':job'         => $job ?: 'General Application',
+                ':name'        => $name,
+                ':email'       => $email,
+                ':phone'       => $clean($input['phone'] ?? '', 40),
+                ':portfolio'   => $clean($input['portfolio'] ?? ($input['linkedin'] ?? ''), 250),
+                ':resume_path' => $cvPath,
+                ':note'        => $clean($input['letter'] ?? '', 5000)
+            ]);
+        } elseif ($type === 'newsletter') {
+            $stmt = $db->prepare("INSERT INTO leads (name, email, service_needed, message, status, created_at) 
+                                  VALUES ('Newsletter Subscriber', :email, 'Newsletter', :msg, 'new', NOW())");
+            $stmt->execute([
+                ':email' => $email,
+                ':msg'   => 'Subscribed from ' . ($source ?: 'Footer Form')
+            ]);
+        } else {
+            // Enquiry / Contact form
+            $allDetails = "Company: " . ($company ?: 'N/A') . "\n";
+            $allDetails .= "Website: " . ($clean($input['website'] ?? '', 200) ?: 'N/A') . "\n";
+            $allDetails .= "Source Page: " . ($source ?: 'Website') . "\n\n";
+            $allDetails .= "Message / Requirements:\n" . $clean($input['details'] ?? ($input['message'] ?? ''), 5000);
+            
+            $stmt = $db->prepare("INSERT INTO leads (name, email, phone, service_needed, budget, message, status, created_at) 
+                                  VALUES (:name, :email, :phone, :service, :budget, :message, 'new', NOW())");
+            $stmt->execute([
+                ':name'    => $name,
+                ':email'   => $email,
+                ':phone'   => $clean($input['phone'] ?? '', 40),
+                ':service' => !empty($services) ? implode(', ', $services) : 'General Enquiry',
+                ':budget'  => $clean($input['budget'] ?? '', 60),
+                ':message' => $allDetails
+            ]);
+        }
+    }
+} catch (Throwable $dbErr) {
+    error_log('[entec-db-save-error] ' . $dbErr->getMessage());
 }
 
 $hits[] = $now;

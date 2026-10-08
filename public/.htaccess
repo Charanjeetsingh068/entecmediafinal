@@ -22,6 +22,12 @@ RewriteRule ^services/ecommerce/?$ /services/website-development/ [L,R=301]
 RewriteRule ^services/digital-growth/?$ /services/digital-marketing/ [L,R=301]
 RewriteRule ^services/motion-media/?$ /services/graphic-design/ [L,R=301]
 
+# Admin portal and login URL shortcuts
+RewriteRule ^(adminlogin|admin-login|admin/login|login)/?$ /admin/ [L,R=301]
+RewriteRule ^admin/?$ /admin/index.html [L]
+RewriteRule ^admin/ - [L]
+RewriteRule ^uploads/ - [L]
+
 # Leave the PHP blog CMS and the form mail API alone
 RewriteRule ^blog-cms/ - [L]
 RewriteRule ^api/ - [L]

@@ -90,6 +90,10 @@
           <i data-lucide="sliders"></i>
           <span>Header, Footer & Content</span>
         </a>
+        <a href="#media" class="nav-item" onclick="switchSection('media')">
+          <i data-lucide="image"></i>
+          <span>Media & File Manager</span>
+        </a>
         <a href="#settings" class="nav-item" onclick="switchSection('settings')">
           <i data-lucide="shield-check"></i>
           <span>Security & Profile</span>
@@ -117,8 +121,12 @@
           <button class="menu-toggle-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
           <h1 id="page-title">Dashboard Overview</h1>
         </div>
-        <div class="topbar-right">
-          <a href="/" target="_blank" class="btn btn-outline btn-sm">
+        <div class="topbar-right" style="display:flex;gap:10px;">
+          <button class="btn btn-outline btn-sm" onclick="syncSiteData()" title="Populate initial site data into database">
+            <i data-lucide="refresh-cw"></i>
+            <span>Sync Default Content</span>
+          </button>
+          <a href="/" target="_blank" class="btn btn-primary btn-sm">
             <i data-lucide="external-link"></i>
             <span>View Live Site</span>
           </a>
@@ -492,6 +500,34 @@
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: MEDIA GALLERY & FILE MANAGER ================= -->
+        <section id="sec-media" class="content-section">
+          <div class="section-toolbar">
+            <div class="search-input-wrap">
+              <i data-lucide="search"></i>
+              <input type="text" id="media-search" placeholder="Search media by filename..." oninput="filterMedia()">
+            </div>
+            <div class="toolbar-actions">
+              <label class="btn btn-primary">
+                <i data-lucide="upload-cloud"></i>
+                <span>Upload New Media</span>
+                <input type="file" id="media-upload-input" multiple accept="image/*,.pdf,.doc,.docx" onchange="handleDirectMediaUpload(this)" style="display:none;">
+              </label>
+            </div>
+          </div>
+
+          <!-- Dropzone -->
+          <div class="media-dropzone" onclick="document.getElementById('media-upload-input').click()">
+            <i data-lucide="image-plus" style="width:40px;height:40px;color:var(--accent-blue);"></i>
+            <h4>Click or Drag & Drop Images / Documents here</h4>
+            <p class="text-muted">Supports WEBP, PNG, JPG, SVG, GIF, PDF (Up to 20MB per file)</p>
+          </div>
+
+          <div class="media-grid" id="media-grid-container" style="margin-top: 24px;">
+            <div class="text-center text-muted" style="grid-column: 1/-1; padding: 40px;">Loading media assets...</div>
           </div>
         </section>
 

@@ -126,6 +126,7 @@ function switchSection(sectionId) {
     'applications': 'Candidate Job Applications',
     'leads': 'Contact & Enquiry Leads',
     'site-settings': 'Header, Footer & Content Customization',
+    'media': 'Media Gallery & File Manager',
     'settings': 'Security & Admin Settings'
   };
 
@@ -140,6 +141,7 @@ function switchSection(sectionId) {
   if (sectionId === 'applications') loadApplications();
   if (sectionId === 'leads') loadLeads();
   if (sectionId === 'site-settings') loadSiteSettings();
+  if (sectionId === 'media') loadMedia();
 
   // Close mobile sidebar if open
   document.querySelector('.sidebar').classList.remove('open');
@@ -840,6 +842,130 @@ function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ==================== MEDIA GALLERY ====================
+
+let allMedia = [];
+
+async function loadMedia() {
+  const container = document.getElementById('media-grid-container');
+  try {
+    const res = await apiRequest('/upload.php');
+    if (res.success) {
+      allMedia = res.data;
+      renderMedia(allMedia);
+    }
+  } catch (err) {
+    container.innerHTML = '<div class="text-center text-muted" style="grid-column:1/-1;padding:40px;">Failed to load media files.</div>';
+  }
+}
+
+function renderMedia(files) {
+  const container = document.getElementById('media-grid-container');
+  if (!files || files.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted" style="grid-column:1/-1;padding:40px;">No media uploaded yet. Use the upload button or dropzone above.</div>';
+    return;
+  }
+
+  container.innerHTML = files.map(f => `
+    <div class="media-card">
+      <div class="media-card-preview">
+        ${f.is_image ? `<img src="${f.url}" alt="${escapeHtml(f.filename)}" loading="lazy">` : `<i data-lucide="file-text" style="width:40px;height:40px;color:var(--text-dim);"></i>`}
+      </div>
+      <div class="media-card-info">
+        <span class="media-filename" title="${escapeHtml(f.filename)}">${escapeHtml(f.filename)}</span>
+        <div class="media-meta">
+          <span>${formatBytes(f.size)}</span>
+          <span>${formatDate(f.date * 1000)}</span>
+        </div>
+      </div>
+      <div class="media-card-actions">
+        <button class="btn btn-outline" onclick="copyMediaUrl('${f.url}')" title="Copy Image URL"><i data-lucide="copy"></i> Copy</button>
+        <a href="${f.url}" target="_blank" class="btn btn-outline" title="Open File"><i data-lucide="external-link"></i> View</a>
+        <button class="btn btn-outline" onclick="deleteMedia('${escapeHtml(f.filename)}')" style="color:var(--color-danger);" title="Delete"><i data-lucide="trash-2"></i></button>
+      </div>
+    </div>
+  `).join('');
+  if (window.lucide) lucide.createIcons();
+}
+
+function filterMedia() {
+  const q = document.getElementById('media-search').value.toLowerCase();
+  renderMedia(allMedia.filter(f => f.filename.toLowerCase().includes(q)));
+}
+
+async function handleDirectMediaUpload(input) {
+  if (!input.files || input.files.length === 0) return;
+  const files = Array.from(input.files);
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append('file', file);
+    showToast(`Uploading ${file.name}...`, 'success');
+
+    try {
+      const res = await fetch(`${API_BASE}/upload.php`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`${file.name} uploaded successfully!`, 'success');
+      } else {
+        showToast(data.error || `Upload failed for ${file.name}`, 'error');
+      }
+    } catch (err) {
+      showToast(`Error uploading ${file.name}`, 'error');
+    }
+  }
+
+  input.value = '';
+  loadMedia();
+}
+
+function copyMediaUrl(url) {
+  navigator.clipboard.writeText(window.location.origin + url).then(() => {
+    showToast('Image URL copied to clipboard: ' + url, 'success');
+  }).catch(() => {
+    prompt('Copy URL:', window.location.origin + url);
+  });
+}
+
+async function deleteMedia(filename) {
+  if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
+  try {
+    const res = await apiRequest(`/upload.php?file=${encodeURIComponent(filename)}`, 'DELETE');
+    if (res.success) {
+      showToast('Media file deleted', 'success');
+      loadMedia();
+    }
+  } catch (err) {
+    showToast('Failed to delete media', 'error');
+  }
+}
+
+async function syncSiteData() {
+  if (!confirm('This will populate default services, projects, and careers into the database if they are empty. Proceed?')) return;
+  try {
+    showToast('Synchronizing site data...', 'success');
+    const res = await apiRequest('/seed.php');
+    if (res.success) {
+      showToast(res.message, 'success');
+      loadDashboardStats();
+    }
+  } catch (err) {
+    showToast('Sync failed: ' + err.message, 'error');
+  }
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
 function escapeHtml(str) {

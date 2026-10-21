@@ -4,4 +4,4 @@
 :HL["/_next/static/media/Inter_Variable-s.p.34fk6-9m1aguk.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/images/r/blogs-design-value-1024.webp","image",{"imageSrcSet":"/images/r/blogs-design-value-768.webp 700w, /images/r/blogs-design-value-1024.webp 1200w","imageSizes":"(max-width: 1199px) 80vw, 34vw","fetchPriority":"high"}]
 :HL["/images/r/blogs-design-value-1024.webp","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"blog","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"why-ui-ux-design-pays-off","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"ckNEPqJuNTViRHrH-MKQs"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"blog","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"why-ui-ux-design-pays-off","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"uJ3AUpvgoFqsfPAOtyCIm"}

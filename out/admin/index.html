@@ -3,31 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Entec Media</title>
+  <title>Admin Dashboard &lsaquo; Entec Media &#8212; WordPress</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Rich Text Editor (EasyMDE) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" data-beasties-skip>
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
   <base href="/admin/">
-  <link rel="stylesheet" href="/admin/admin.css" data-beasties-skip>
+  <link rel="stylesheet" href="/admin/admin.css?v=2.2" data-beasties-skip>
 </head>
-<body class="theme-dark">
+<body class="wp-core-ui">
 
-  <!-- ==================== LOGIN VIEW ==================== -->
+  <!-- ==================== 1. WORDPRESS LOGIN VIEW ==================== -->
   <div id="login-view" class="auth-wrapper">
+    <div class="auth-header">
+      <a href="/" target="_blank" title="Go to Entec Media">
+        <img src="/images/lightlogo.svg" onerror="this.onerror=null;this.src='/images/darklogo.svg';" alt="Entec Media" class="auth-logo-img" width="220" height="38">
+      </a>
+    </div>
     <div class="auth-card">
-      <div class="auth-header">
-        <div class="auth-logo">ENTEC<span>MEDIA</span></div>
-        <h2>Admin Portal</h2>
-        <p>Sign in to manage blogs, careers, projects and leads</p>
-      </div>
+      <h2>Entec Media Admin Portal</h2>
+      <p class="auth-subtitle">Sign in to manage posts, careers, media & site content</p>
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="login-email">Email Address</label>
+          <label for="login-email">Username or Email Address</label>
           <div class="input-icon-wrap">
             <i data-lucide="mail"></i>
             <input type="email" id="login-email" required placeholder="admin@entecmedia.com" autocomplete="email">
@@ -40,770 +42,746 @@
             <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
           </div>
         </div>
-        <button type="submit" id="login-btn" class="btn btn-primary btn-block">
-          <span>Sign In to Dashboard</span>
+        <button type="submit" id="login-btn" class="button button-primary" style="width: 100%; height: 38px; font-size: 14px; margin-top: 10px;">
+          <span>Log In</span>
           <i data-lucide="arrow-right"></i>
         </button>
       </form>
     </div>
+    <div class="auth-bottom-links">
+      <a href="/" target="_blank">&larr; Go to Entec Media</a>
+    </div>
   </div>
 
-  <!-- ==================== DASHBOARD VIEW ==================== -->
-  <div id="app-view" class="app-container" style="display: none;">
-    <!-- Backdrop for mobile drawer -->
-    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar()"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="brand-logo">ENTEC<span>MEDIA</span></div>
-        <span class="badge badge-accent">Admin CMS</span>
-      </div>
-      <nav class="sidebar-nav">
-        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 8px 16px 4px; font-weight: 700;">Core</div>
-        <a href="#dashboard" class="nav-item active" onclick="switchSection('dashboard')">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Overview</span>
+  <!-- ==================== 2. WORDPRESS DASHBOARD APP VIEW ==================== -->
+  <div id="app-view" style="display: none;">
+    <!-- Top WordPress Admin Bar -->
+    <header class="wp-admin-bar">
+      <div class="wp-admin-bar-left">
+        <button type="button" class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Menu">
+          <i data-lucide="menu"></i>
+        </button>
+        <a href="#dashboard" class="wp-admin-logo" onclick="switchSection('dashboard')">
+          <img src="/images/lightlogo.svg" onerror="this.onerror=null;this.src='/images/darklogo.svg';" alt="Entec Media" width="161" height="28">
         </a>
-
-        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 14px 16px 4px; font-weight: 700;">Content</div>
-        <a href="#blogs" class="nav-item" onclick="switchSection('blogs')">
-          <i data-lucide="file-text"></i>
-          <span>Blogs & Articles</span>
+        <a href="/" target="_blank" class="wp-visit-site" title="Visit Entec Media Site">
+          <i data-lucide="external-link"></i>
+          <span>Visit Site</span>
         </a>
-        <a href="#careers" class="nav-item" onclick="switchSection('careers')">
-          <i data-lucide="users"></i>
-          <span>Careers & Openings</span>
-        </a>
-        <a href="#applications" class="nav-item" onclick="switchSection('applications')">
-          <i data-lucide="file-check-2"></i>
-          <span>Job Resumes</span>
-          <span class="nav-badge" id="badge-applications">0</span>
-        </a>
-        <a href="#projects" class="nav-item" onclick="switchSection('projects')">
-          <i data-lucide="briefcase"></i>
-          <span>Projects & Works</span>
-        </a>
-        <a href="#services" class="nav-item" onclick="switchSection('services')">
-          <i data-lucide="sparkles"></i>
-          <span>Services</span>
-        </a>
-
-        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 14px 16px 4px; font-weight: 700;">CRM & Assets</div>
-        <a href="#leads" class="nav-item" onclick="switchSection('leads')">
-          <i data-lucide="inbox"></i>
-          <span>Contact Leads</span>
-          <span class="nav-badge" id="badge-leads">0</span>
-        </a>
-        <a href="#media" class="nav-item" onclick="switchSection('media')">
-          <i data-lucide="image"></i>
-          <span>Media Library</span>
-        </a>
-
-        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 14px 16px 4px; font-weight: 700;">System</div>
-        <a href="#site-settings" class="nav-item" onclick="switchSection('site-settings')">
-          <i data-lucide="sliders"></i>
-          <span>Site Content & Info</span>
-        </a>
-        <a href="#settings" class="nav-item" onclick="switchSection('settings')">
-          <i data-lucide="shield-check"></i>
-          <span>Security & Profile</span>
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="user-pill">
-          <div class="user-avatar" id="current-user-avatar">A</div>
-          <div class="user-info">
-            <span class="user-name" id="current-user-name">Admin</span>
-            <span class="user-role" id="current-user-email">admin@entecmedia.com</span>
-          </div>
-        </div>
-        <button class="btn-logout" onclick="handleLogout()" title="Logout">
-          <i data-lucide="log-out"></i>
+        <button type="button" class="wp-new-action-btn" onclick="openBlogModal()">
+          <i data-lucide="plus"></i>
+          <span>New Post</span>
         </button>
       </div>
-    </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Topbar -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="menu-toggle-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
-          <div>
-            <h1 id="page-title">Dashboard Overview</h1>
-            <div class="system-status" style="margin-top: 2px;">
-              <span class="status-dot"></span>
-              <span id="status-text">MySQL Online</span>
-            </div>
-          </div>
+      <div class="wp-admin-bar-right">
+        <div class="wp-user-menu">
+          <span>Howdy, <strong id="admin-user-display-name">Administrator</strong></span>
+          <div class="wp-user-avatar" id="admin-avatar-initials">A</div>
         </div>
-        <div class="topbar-right" style="display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-outline btn-sm" onclick="syncSiteData()" title="Populate initial site data into database">
-            <i data-lucide="refresh-cw"></i>
-            <span>Sync Default Content</span>
-          </button>
-          <a href="/" target="_blank" class="btn btn-primary btn-sm">
-            <i data-lucide="external-link"></i>
-            <span>View Live Site</span>
+        <a href="javascript:void(0)" onclick="handleLogout()" class="wp-logout-link" title="Log Out">
+          <i data-lucide="log-out"></i>
+          <span>Log Out</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="app-container">
+      <!-- Left Sidebar (WordPress Admin Menu) -->
+      <aside class="sidebar" id="wp-sidebar">
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-item active" onclick="switchSection('dashboard')">
+            <i data-lucide="gauge"></i>
+            <span>Dashboard</span>
           </a>
-        </div>
-      </header>
 
-      <div class="content-body">
+          <div class="sidebar-separator"></div>
+          <div class="sidebar-section-title">Posts & Articles</div>
+          <a href="#blogs" class="nav-item" onclick="switchSection('blogs')">
+            <i data-lucide="newspaper"></i>
+            <span>All Posts</span>
+          </a>
+          <a href="javascript:void(0)" class="nav-item" onclick="openBlogModal()">
+            <i data-lucide="pen-tool"></i>
+            <span>Add New Post</span>
+          </a>
 
-        <!-- ================= SECTION: OVERVIEW ================= -->
-        <section id="sec-dashboard" class="content-section active">
-          <!-- KPI Stats -->
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-icon icon-blue"><i data-lucide="file-text"></i></div>
-              <div class="kpi-data">
-                <span class="kpi-label">Total Blogs</span>
-                <h3 id="stat-blogs">0</h3>
-              </div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-icon icon-purple"><i data-lucide="briefcase"></i></div>
-              <div class="kpi-data">
-                <span class="kpi-label">Projects Published</span>
-                <h3 id="stat-projects">0</h3>
-              </div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-icon icon-cyan"><i data-lucide="users"></i></div>
-              <div class="kpi-data">
-                <span class="kpi-label">Active Job Openings</span>
-                <h3 id="stat-careers">0</h3>
-              </div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-icon icon-green"><i data-lucide="inbox"></i></div>
-              <div class="kpi-data">
-                <span class="kpi-label">New Inquiries</span>
-                <h3 id="stat-leads">0</h3>
-              </div>
-            </div>
-          </div>
+          <div class="sidebar-separator"></div>
+          <div class="sidebar-section-title">Careers & HR</div>
+          <a href="#careers" class="nav-item" onclick="switchSection('careers')">
+            <i data-lucide="briefcase"></i>
+            <span>Job Openings</span>
+          </a>
+          <a href="#applications" class="nav-item" onclick="switchSection('applications')">
+            <i data-lucide="file-check-2"></i>
+            <span>Applications</span>
+            <span class="nav-badge" id="badge-applications">0</span>
+          </a>
 
-          <!-- Quick Tables Grid -->
-          <div class="dashboard-grid">
-            <div class="panel-card">
-              <div class="panel-header">
-                <h3><i data-lucide="message-square"></i> Recent Client Inquiries</h3>
-                <button class="btn btn-text" onclick="switchSection('leads')">View All</button>
+          <div class="sidebar-separator"></div>
+          <div class="sidebar-section-title">Portfolio & Media</div>
+          <a href="#media" class="nav-item" onclick="switchSection('media')">
+            <i data-lucide="images"></i>
+            <span>Media Library</span>
+          </a>
+          <a href="#projects" class="nav-item" onclick="switchSection('projects')">
+            <i data-lucide="folder"></i>
+            <span>Projects / Works</span>
+          </a>
+          <a href="#services" class="nav-item" onclick="switchSection('services')">
+            <i data-lucide="layers"></i>
+            <span>Services</span>
+          </a>
+
+          <div class="sidebar-separator"></div>
+          <div class="sidebar-section-title">CRM & Config</div>
+          <a href="#leads" class="nav-item" onclick="switchSection('leads')">
+            <i data-lucide="inbox"></i>
+            <span>Contact Leads</span>
+            <span class="nav-badge" id="badge-leads">0</span>
+          </a>
+          <a href="#settings" class="nav-item" onclick="switchSection('settings')">
+            <i data-lucide="settings"></i>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- ================= SECTION 1: DASHBOARD ================= -->
+        <section id="sec-dashboard" class="content-section">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Dashboard</h1>
+            <hr class="wp-header-end">
+
+            <!-- Overview Stat Boxes -->
+            <div class="wp-dashboard-grid">
+              <div class="wp-stat-box" onclick="switchSection('blogs')" style="cursor: pointer;">
+                <div class="wp-stat-icon"><i data-lucide="newspaper"></i></div>
+                <div class="wp-stat-details">
+                  <h3 id="stat-blogs">0</h3>
+                  <span>Total Posts & Articles</span>
+                </div>
               </div>
-              <div class="table-responsive">
-                <table class="data-table" id="table-dash-leads">
-                  <thead>
-                    <tr><th>Name</th><th>Service</th><th>Date</th><th>Action</th></tr>
-                  </thead>
-                  <tbody><tr><td colspan="4" class="text-muted text-center">Loading...</td></tr></tbody>
-                </table>
+              <div class="wp-stat-box" onclick="switchSection('careers')" style="cursor: pointer;">
+                <div class="wp-stat-icon"><i data-lucide="briefcase"></i></div>
+                <div class="wp-stat-details">
+                  <h3 id="stat-careers">0</h3>
+                  <span>Open Job Roles</span>
+                </div>
+              </div>
+              <div class="wp-stat-box" onclick="switchSection('applications')" style="cursor: pointer;">
+                <div class="wp-stat-icon" style="background:#fcf0f1;color:#b32d2e;"><i data-lucide="file-check-2"></i></div>
+                <div class="wp-stat-details">
+                  <h3 id="stat-applications">0</h3>
+                  <span>Candidate Resumes</span>
+                </div>
+              </div>
+              <div class="wp-stat-box" onclick="switchSection('leads')" style="cursor: pointer;">
+                <div class="wp-stat-icon" style="background:#edfaef;color:#007017;"><i data-lucide="inbox"></i></div>
+                <div class="wp-stat-details">
+                  <h3 id="stat-leads">0</h3>
+                  <span>New Inquiries / Leads</span>
+                </div>
+              </div>
+              <div class="wp-stat-box" onclick="switchSection('media')" style="cursor: pointer;">
+                <div class="wp-stat-icon"><i data-lucide="images"></i></div>
+                <div class="wp-stat-details">
+                  <h3 id="stat-media">0</h3>
+                  <span>Media Assets</span>
+                </div>
               </div>
             </div>
 
-            <div class="panel-card">
-              <div class="panel-header">
-                <h3><i data-lucide="file-check-2"></i> Recent Job Applications</h3>
-                <button class="btn btn-text" onclick="switchSection('applications')">View All</button>
+            <!-- Quick Action Bar -->
+            <div class="postbox">
+              <div class="postbox-header">
+                <h2><i data-lucide="zap"></i> Quick Management Actions</h2>
               </div>
-              <div class="table-responsive">
-                <table class="data-table" id="table-dash-apps">
-                  <thead>
-                    <tr><th>Applicant</th><th>Job Position</th><th>Resume</th><th>Date</th></tr>
-                  </thead>
-                  <tbody><tr><td colspan="4" class="text-muted text-center">Loading...</td></tr></tbody>
-                </table>
+              <div class="postbox-inside" style="display:flex;gap:12px;flex-wrap:wrap;">
+                <button type="button" class="button button-primary" onclick="openBlogModal()">
+                  <i data-lucide="plus"></i> Add New Post
+                </button>
+                <button type="button" class="button" onclick="openCareerModal()">
+                  <i data-lucide="plus"></i> Post Job Opening
+                </button>
+                <button type="button" class="button" onclick="openProjectModal()">
+                  <i data-lucide="plus"></i> Add Portfolio Project
+                </button>
+                <button type="button" class="button" onclick="document.getElementById('media-upload-input').click()">
+                  <i data-lucide="upload-cloud"></i> Upload Media
+                </button>
+                <button type="button" class="button" onclick="syncSiteData()" style="margin-left:auto;">
+                  <i data-lucide="refresh-cw"></i> Populate Defaults
+                </button>
+              </div>
+            </div>
+
+            <!-- Recent Activity Tables -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(450px, 1fr));gap:20px;">
+              <div class="postbox">
+                <div class="postbox-header">
+                  <h3><i data-lucide="newspaper"></i> Recent Posts</h3>
+                  <a href="#blogs" class="button button-small" onclick="switchSection('blogs')">View All</a>
+                </div>
+                <div class="postbox-inside" style="padding:0;">
+                  <table class="wp-list-table striped">
+                    <thead><tr><th>Title</th><th>Category</th><th>Status</th></tr></thead>
+                    <tbody id="table-dash-blogs"><tr><td colspan="3" class="text-center">Loading posts...</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="postbox">
+                <div class="postbox-header">
+                  <h3><i data-lucide="inbox"></i> Recent Client Inquiries</h3>
+                  <a href="#leads" class="button button-small" onclick="switchSection('leads')">View All</a>
+                </div>
+                <div class="postbox-inside" style="padding:0;">
+                  <table class="wp-list-table striped">
+                    <thead><tr><th>Client</th><th>Phone / Email</th><th>Date</th></tr></thead>
+                    <tbody id="table-dash-leads"><tr><td colspan="3" class="text-center">Loading inquiries...</td></tr></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- ================= SECTION: BLOGS ================= -->
-        <section id="sec-blogs" class="content-section">
-          <div class="section-toolbar">
-            <div class="search-input-wrap">
-              <i data-lucide="search"></i>
-              <input type="text" id="blog-search" placeholder="Search blogs by title or content..." oninput="filterBlogs()">
+        <!-- ================= SECTION 2: WORDPRESS POSTS (edit.php) ================= -->
+        <section id="sec-blogs" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Posts</h1>
+            <a href="javascript:void(0)" class="page-title-action" onclick="openBlogModal()">Add New Post</a>
+            <hr class="wp-header-end">
+
+            <!-- Subsubsub Filter Tabs -->
+            <ul class="subsubsub">
+              <li class="all"><a href="javascript:void(0)" class="current" onclick="filterBlogByStatus('all')">All <span class="count">(<span id="count-blogs-all">0</span>)</span></a> <span class="separator">|</span></li>
+              <li class="publish"><a href="javascript:void(0)" onclick="filterBlogByStatus('published')">Published <span class="count">(<span id="count-blogs-published">0</span>)</span></a> <span class="separator">|</span></li>
+              <li class="draft"><a href="javascript:void(0)" onclick="filterBlogByStatus('draft')">Drafts <span class="count">(<span id="count-blogs-draft">0</span>)</span></a></li>
+            </ul>
+
+            <!-- Tablenav Top (Bulk Actions, Filters, Search) -->
+            <div class="tablenav top">
+              <div class="alignleft actions bulkactions">
+                <select id="bulk-action-blogs">
+                  <option value="-1">Bulk actions</option>
+                  <option value="trash">Move to Trash</option>
+                  <option value="publish">Mark as Published</option>
+                  <option value="draft">Mark as Draft</option>
+                </select>
+                <button type="button" class="button action" onclick="handleBlogBulkAction()">Apply</button>
+              </div>
+
+              <div class="alignleft actions">
+                <select id="blog-filter-cat" onchange="filterBlogs()">
+                  <option value="">All Categories</option>
+                  <option value="Web Development">Web Development</option>
+                  <option value="Website Design">Website Design</option>
+                  <option value="SEO">SEO</option>
+                  <option value="Digital Marketing">Digital Marketing</option>
+                  <option value="Branding & Design">Branding & Design</option>
+                  <option value="Technology">Technology</option>
+                </select>
+                <button type="button" class="button" onclick="filterBlogs()">Filter</button>
+              </div>
+
+              <div class="tablenav-pages">
+                <span class="displaying-num" id="blogs-count-display">0 items</span>
+              </div>
+
+              <div class="search-box">
+                <input type="search" id="blog-search" placeholder="Search Posts..." oninput="filterBlogs()">
+                <button type="button" class="button" onclick="filterBlogs()">Search Posts</button>
+              </div>
             </div>
-            <div class="toolbar-actions">
-              <select id="blog-filter-cat" class="form-select" onchange="filterBlogs()">
-                <option value="">All Categories</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Branding & Design">Branding & Design</option>
-                <option value="Digital Marketing">Digital Marketing</option>
-                <option value="Technology">Technology</option>
-              </select>
-              <button class="btn btn-primary" onclick="openBlogModal()">
-                <i data-lucide="plus"></i>
-                <span>Create New Post</span>
+
+            <!-- WordPress WP-List-Table for Posts -->
+            <table class="wp-list-table widefat fixed striped posts">
+              <thead>
+                <tr>
+                  <th scope="col" class="check-column"><input type="checkbox" onchange="toggleSelectAll('blog-select-checkbox', this)"></th>
+                  <th scope="col" class="column-title" style="width: 38%;">Title</th>
+                  <th scope="col" class="column-author">Author</th>
+                  <th scope="col" class="column-categories">Categories</th>
+                  <th scope="col" class="column-tags">Status</th>
+                  <th scope="col" class="column-views" style="width: 80px;">Views</th>
+                  <th scope="col" class="column-date" style="width: 140px;">Date</th>
+                </tr>
+              </thead>
+              <tbody id="blogs-table-body">
+                <tr><td colspan="7" class="text-center" style="padding: 24px;">Loading posts...</td></tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="col" class="check-column"><input type="checkbox" onchange="toggleSelectAll('blog-select-checkbox', this)"></th>
+                  <th scope="col" class="column-title">Title</th>
+                  <th scope="col" class="column-author">Author</th>
+                  <th scope="col" class="column-categories">Categories</th>
+                  <th scope="col" class="column-tags">Status</th>
+                  <th scope="col" class="column-views">Views</th>
+                  <th scope="col" class="column-date">Date</th>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Tablenav Bottom -->
+            <div class="tablenav bottom" style="margin-top: 10px;">
+              <div class="alignleft actions bulkactions">
+                <select id="bulk-action-blogs-bottom">
+                  <option value="-1">Bulk actions</option>
+                  <option value="trash">Move to Trash</option>
+                </select>
+                <button type="button" class="button action" onclick="handleBlogBulkActionBottom()">Apply</button>
+              </div>
+              <div class="tablenav-pages">
+                <span class="displaying-num" id="blogs-count-display-bottom">0 items</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 3: WORDPRESS CAREERS ================= -->
+        <section id="sec-careers" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Job Openings</h1>
+            <a href="javascript:void(0)" class="page-title-action" onclick="openCareerModal()">Add New Job</a>
+            <hr class="wp-header-end">
+
+            <ul class="subsubsub">
+              <li class="all"><a href="javascript:void(0)" class="current" onclick="switchSection('careers')">All Openings <span class="count">(<span id="count-careers-all">0</span>)</span></a> <span class="separator">|</span></li>
+              <li class="applications"><a href="javascript:void(0)" onclick="switchSection('applications')">Candidate Resumes <span class="count">(<span id="count-careers-apps">0</span>)</span></a></li>
+            </ul>
+
+            <table class="wp-list-table widefat fixed striped">
+              <thead>
+                <tr>
+                  <th scope="col" class="column-title" style="width: 35%;">Job Title</th>
+                  <th scope="col">Department</th>
+                  <th scope="col">Job Type</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Experience</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="careers-table-body">
+                <tr><td colspan="6" class="text-center" style="padding: 24px;">Loading job openings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 4: CANDIDATE APPLICATIONS ================= -->
+        <section id="sec-applications" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Candidate Job Applications</h1>
+            <hr class="wp-header-end">
+
+            <table class="wp-list-table widefat fixed striped">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 20%;">Applicant</th>
+                  <th scope="col">Job Position</th>
+                  <th scope="col">Contact (Email / Phone)</th>
+                  <th scope="col">Resume / Portfolio</th>
+                  <th scope="col">Application Status</th>
+                  <th scope="col">Applied Date</th>
+                </tr>
+              </thead>
+              <tbody id="applications-table-body">
+                <tr><td colspan="6" class="text-center" style="padding: 24px;">Loading applications...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 5: WORDPRESS MEDIA LIBRARY (upload.php) ================= -->
+        <section id="sec-media" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Media Library</h1>
+            <a href="javascript:void(0)" class="page-title-action" onclick="document.getElementById('media-upload-input').click()">Add New Media File</a>
+            <hr class="wp-header-end">
+
+            <!-- Hidden File Input for Direct Upload -->
+            <input type="file" id="media-upload-input" multiple accept="image/*,.pdf,.doc,.docx" onchange="handleDirectMediaUpload(this)" style="display:none;">
+
+            <!-- WordPress Dropzone -->
+            <div class="wp-dropzone" onclick="document.getElementById('media-upload-input').click()">
+              <i data-lucide="upload-cloud" style="width: 36px; height: 36px; display: inline-block;"></i>
+              <h4>Drop files anywhere to upload</h4>
+              <p>or click here to select files from your computer (Images, SVGs, PDFs up to 20MB)</p>
+            </div>
+
+            <!-- Media Toolbar (Filter & Search) -->
+            <div class="tablenav top" style="margin-bottom: 16px;">
+              <div class="alignleft actions">
+                <select id="media-filter-type" onchange="filterMedia()">
+                  <option value="">All media items</option>
+                  <option value="images">Images only</option>
+                  <option value="documents">Documents only</option>
+                </select>
+              </div>
+
+              <div class="tablenav-pages">
+                <span class="displaying-num" id="media-count-display">0 items</span>
+              </div>
+
+              <div class="search-box">
+                <input type="search" id="media-search" placeholder="Search media items..." oninput="filterMedia()">
+              </div>
+            </div>
+
+            <!-- Media Items Grid Container -->
+            <div id="media-grid-container" class="media-grid-container">
+              <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--wp-text-muted);">Loading media library...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 6: PROJECTS / PORTFOLIO ================= -->
+        <section id="sec-projects" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Projects & Portfolio</h1>
+            <a href="javascript:void(0)" class="page-title-action" onclick="openProjectModal()">Add New Project</a>
+            <hr class="wp-header-end">
+
+            <div class="tablenav top">
+              <div class="search-box" style="margin-left: auto;">
+                <input type="search" id="project-search" placeholder="Search projects..." oninput="filterProjects()">
+              </div>
+            </div>
+
+            <table class="wp-list-table widefat fixed striped">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 90px;">Thumbnail</th>
+                  <th scope="col" style="width: 35%;">Project Title</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Client</th>
+                  <th scope="col">Live URL</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="projects-table-body">
+                <tr><td colspan="6" class="text-center" style="padding: 24px;">Loading projects...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 7: SERVICES ================= -->
+        <section id="sec-services" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Services</h1>
+            <a href="javascript:void(0)" class="page-title-action" onclick="openServiceModal()">Add New Service</a>
+            <hr class="wp-header-end">
+
+            <table class="wp-list-table widefat fixed striped">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 35%;">Service Name</th>
+                  <th scope="col">Slug URL</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="services-table-body">
+                <tr><td colspan="3" class="text-center" style="padding: 24px;">Loading services...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 8: CONTACT INQUIRIES & LEADS ================= -->
+        <section id="sec-leads" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Contact Leads & Inquiries</h1>
+            <hr class="wp-header-end">
+
+            <table class="wp-list-table widefat fixed striped">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 20%;">Client Name</th>
+                  <th scope="col">Contact (Email & Phone)</th>
+                  <th scope="col">Service / Requirement</th>
+                  <th scope="col">Message Preview</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Submitted Date</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-body">
+                <tr><td colspan="6" class="text-center" style="padding: 24px;">Loading inquiries...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= SECTION 9: GENERAL SETTINGS ================= -->
+        <section id="sec-settings" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">General Settings</h1>
+            <hr class="wp-header-end">
+
+            <form id="form-settings" onsubmit="handleSaveSettings(event)">
+              <div class="postbox">
+                <div class="postbox-header">
+                  <h2>Official Contact & Phone Information</h2>
+                </div>
+                <div class="postbox-inside">
+                  <table class="form-table">
+                    <tr>
+                      <th scope="row"><label for="setting-contact-phone1">Primary Phone</label></th>
+                      <td>
+                        <input type="text" id="setting-contact-phone1" class="form-control" style="max-width: 400px;" placeholder="+91-9992009988">
+                        <p class="description">Main hotline displayed across the website header and footer.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-contact-phone2">Secondary Phone</label></th>
+                      <td>
+                        <input type="text" id="setting-contact-phone2" class="form-control" style="max-width: 400px;" placeholder="+91-9992009901">
+                        <p class="description">Support and alternate calling line.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-contact-email">Official Email</label></th>
+                      <td>
+                        <input type="email" id="setting-contact-email" class="form-control" style="max-width: 400px;" placeholder="info@entecmedia.com">
+                        <p class="description">Official inquiries email address.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-contact-address">Office Address</label></th>
+                      <td>
+                        <textarea id="setting-contact-address" class="form-control" rows="2" style="max-width: 500px;" placeholder="Phase 8B, Industrial Area, Sector 74, Mohali, Punjab"></textarea>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-working-hours">Working Hours</label></th>
+                      <td>
+                        <input type="text" id="setting-working-hours" class="form-control" style="max-width: 400px;" placeholder="Mon - Fri: 9:30 AM - 6:30 PM">
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+
+              <div class="postbox">
+                <div class="postbox-header">
+                  <h2>Social Media Profiles</h2>
+                </div>
+                <div class="postbox-inside">
+                  <table class="form-table">
+                    <tr>
+                      <th scope="row"><label for="setting-social-linkedin">LinkedIn Profile</label></th>
+                      <td><input type="url" id="setting-social-linkedin" class="form-control" style="max-width: 500px;" placeholder="https://linkedin.com/company/entecmedia"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-social-instagram">Instagram Profile</label></th>
+                      <td><input type="url" id="setting-social-instagram" class="form-control" style="max-width: 500px;" placeholder="https://instagram.com/entecmedia"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-social-facebook">Facebook Page</label></th>
+                      <td><input type="url" id="setting-social-facebook" class="form-control" style="max-width: 500px;" placeholder="https://facebook.com/entecmedia"></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><label for="setting-social-youtube">YouTube Channel</label></th>
+                      <td><input type="url" id="setting-social-youtube" class="form-control" style="max-width: 500px;" placeholder="https://youtube.com/@entecmedia"></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+
+              <button type="submit" id="settings-save-btn" class="button button-primary" style="height: 38px; padding: 0 20px; font-size: 14px;">
+                Save Changes
               </button>
-            </div>
-          </div>
-
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="data-table" id="table-blogs">
-                <thead>
-                  <tr>
-                    <th>Cover</th>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Views</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="blogs-table-body">
-                  <tr><td colspan="7" class="text-center text-muted">Loading blogs...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: PROJECTS ================= -->
-        <section id="sec-projects" class="content-section">
-          <div class="section-toolbar">
-            <div class="search-input-wrap">
-              <i data-lucide="search"></i>
-              <input type="text" id="project-search" placeholder="Search case studies..." oninput="filterProjects()">
-            </div>
-            <button class="btn btn-primary" onclick="openProjectModal()">
-              <i data-lucide="plus"></i>
-              <span>Add New Project</span>
-            </button>
-          </div>
-
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="data-table" id="table-projects">
-                <thead>
-                  <tr>
-                    <th>Thumbnail</th>
-                    <th>Project Title</th>
-                    <th>Client</th>
-                    <th>Category</th>
-                    <th>Featured</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="projects-table-body">
-                  <tr><td colspan="7" class="text-center text-muted">Loading projects...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: SERVICES ================= -->
-        <section id="sec-services" class="content-section">
-          <div class="section-toolbar">
-            <h2>Services Offerings</h2>
-            <button class="btn btn-primary" onclick="openServiceModal()">
-              <i data-lucide="plus"></i>
-              <span>Add Service</span>
-            </button>
-          </div>
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="data-table" id="table-services">
-                <thead>
-                  <tr>
-                    <th>Icon</th>
-                    <th>Service Name</th>
-                    <th>Slug</th>
-                    <th>Short Description</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="services-table-body">
-                  <tr><td colspan="6" class="text-center text-muted">Loading services...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: CAREERS ================= -->
-        <section id="sec-careers" class="content-section">
-          <div class="section-toolbar">
-            <h2>Job Openings</h2>
-            <button class="btn btn-primary" onclick="openCareerModal()">
-              <i data-lucide="plus"></i>
-              <span>Post New Job</span>
-            </button>
-          </div>
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="data-table" id="table-careers">
-                <thead>
-                  <tr>
-                    <th>Job Title</th>
-                    <th>Department</th>
-                    <th>Type</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="careers-table-body">
-                  <tr><td colspan="6" class="text-center text-muted">Loading jobs...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: JOB APPLICATIONS ================= -->
-        <section id="sec-applications" class="content-section">
-          <div class="section-toolbar">
-            <h2>Candidate Job Applications</h2>
-          </div>
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="data-table" id="table-applications">
-                <thead>
-                  <tr>
-                    <th>Applicant Name</th>
-                    <th>Position</th>
-                    <th>Email / Phone</th>
-                    <th>Resume</th>
-                    <th>Portfolio</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="applications-table-body">
-                  <tr><td colspan="7" class="text-center text-muted">Loading applications...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: LEADS ================= -->
-        <section id="sec-leads" class="content-section">
-          <div class="section-toolbar">
-            <h2>Contact & Enquiry Leads</h2>
-          </div>
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="data-table" id="table-leads">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Contact Info</th>
-                    <th>Service Needed</th>
-                    <th>Budget</th>
-                    <th>Message</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="leads-table-body">
-                  <tr><td colspan="7" class="text-center text-muted">Loading leads...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: SITE SETTINGS & MENUS ================= -->
-        <section id="sec-site-settings" class="content-section">
-          <div class="section-toolbar">
-            <h2>Header, Footer & Content Customization</h2>
-            <button class="btn btn-primary" onclick="saveSiteSettings(event)">
-              <i data-lucide="save"></i>
-              <span>Save All Settings</span>
-            </button>
-          </div>
-
-          <div class="dashboard-grid">
-            <!-- Header & Navigation -->
-            <div class="panel-card">
-              <div class="panel-header">
-                <h3><i data-lucide="navigation"></i> Header & Navigation</h3>
-              </div>
-              <div style="padding: 24px;">
-                <div class="form-group">
-                  <label>Header Tagline / Notice</label>
-                  <input type="text" id="setting-header-tagline" class="form-control" placeholder="Innovating the Future of Digital Media">
-                </div>
-                <div class="form-group">
-                  <label>Header CTA Button Text</label>
-                  <input type="text" id="setting-header-cta-text" class="form-control" placeholder="Get in Touch">
-                </div>
-                <div class="form-group">
-                  <label>Header CTA Button URL</label>
-                  <input type="text" id="setting-header-cta-url" class="form-control" placeholder="/contact">
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer & Contact Information -->
-            <div class="panel-card">
-              <div class="panel-header">
-                <h3><i data-lucide="phone-call"></i> Footer & Contact Details</h3>
-              </div>
-              <div style="padding: 24px;">
-                <div class="form-row">
-                  <div class="form-group col-4">
-                    <label>Primary Phone</label>
-                    <input type="text" id="setting-contact-phone" class="form-control" placeholder="+91-9992009988">
-                  </div>
-                  <div class="form-group col-4">
-                    <label>Secondary Phone</label>
-                    <input type="text" id="setting-contact-phone2" class="form-control" placeholder="+91-9992009901">
-                  </div>
-                  <div class="form-group col-4">
-                    <label>Official Email</label>
-                    <input type="email" id="setting-contact-email" class="form-control" placeholder="info@entecmedia.com">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Office Address</label>
-                  <textarea id="setting-contact-address" class="form-control" rows="2" placeholder="Phase 8B, Industrial Area, Sector 74, Mohali, Punjab"></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Working Hours</label>
-                  <input type="text" id="setting-working-hours" class="form-control" placeholder="Mon - Fri: 9:30 AM - 6:30 PM">
-                </div>
-              </div>
-            </div>
-
-            <!-- Social Media Handles -->
-            <div class="panel-card">
-              <div class="panel-header">
-                <h3><i data-lucide="share-2"></i> Social Media Links</h3>
-              </div>
-              <div style="padding: 24px;">
-                <div class="form-row">
-                  <div class="form-group col-6">
-                    <label>LinkedIn URL</label>
-                    <input type="url" id="setting-social-linkedin" class="form-control" placeholder="https://linkedin.com/company/entecmedia">
-                  </div>
-                  <div class="form-group col-6">
-                    <label>Instagram URL</label>
-                    <input type="url" id="setting-social-instagram" class="form-control" placeholder="https://instagram.com/entecmedia">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group col-6">
-                    <label>Twitter / X URL</label>
-                    <input type="url" id="setting-social-twitter" class="form-control" placeholder="https://x.com/entecmedia">
-                  </div>
-                  <div class="form-group col-6">
-                    <label>YouTube / Facebook URL</label>
-                    <input type="url" id="setting-social-youtube" class="form-control" placeholder="https://youtube.com/@entecmedia">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Homepage Hero & Brand Text -->
-            <div class="panel-card">
-              <div class="panel-header">
-                <h3><i data-lucide="layout"></i> Homepage Banner & Tagline</h3>
-              </div>
-              <div style="padding: 24px;">
-                <div class="form-group">
-                  <label>Hero Main Heading</label>
-                  <input type="text" id="setting-hero-heading" class="form-control" placeholder="Building Next-Gen Digital Experiences">
-                </div>
-                <div class="form-group">
-                  <label>Hero Subtitle / Description</label>
-                  <textarea id="setting-hero-subtitle" class="form-control" rows="3" placeholder="We architect high-performance websites, scalable web applications, and iconic digital branding..."></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: MEDIA GALLERY & FILE MANAGER ================= -->
-        <section id="sec-media" class="content-section">
-          <div class="section-toolbar">
-            <div class="search-input-wrap">
-              <i data-lucide="search"></i>
-              <input type="text" id="media-search" placeholder="Search media by filename..." oninput="filterMedia()">
-            </div>
-            <div class="toolbar-actions">
-              <label class="btn btn-primary">
-                <i data-lucide="upload-cloud"></i>
-                <span>Upload New Media</span>
-                <input type="file" id="media-upload-input" multiple accept="image/*,.pdf,.doc,.docx" onchange="handleDirectMediaUpload(this)" style="display:none;">
-              </label>
-            </div>
-          </div>
-
-          <!-- Dropzone -->
-          <div class="media-dropzone" onclick="document.getElementById('media-upload-input').click()">
-            <i data-lucide="image-plus" style="width:40px;height:40px;color:var(--accent-blue);"></i>
-            <h4>Click or Drag & Drop Images / Documents here</h4>
-            <p class="text-muted">Supports WEBP, PNG, JPG, SVG, GIF, PDF (Up to 20MB per file)</p>
-          </div>
-
-          <div class="media-grid" id="media-grid-container" style="margin-top: 24px;">
-            <div class="text-center text-muted" style="grid-column: 1/-1; padding: 40px;">Loading media assets...</div>
-          </div>
-        </section>
-
-        <!-- ================= SECTION: SETTINGS ================= -->
-        <section id="sec-settings" class="content-section">
-          <div class="panel-card" style="max-width: 600px;">
-            <div class="panel-header">
-              <h3><i data-lucide="lock"></i> Change Admin Password</h3>
-            </div>
-            <form onsubmit="handleChangePassword(event)" style="padding: 20px;">
-              <div class="form-group">
-                <label>Current Password</label>
-                <input type="password" id="old-password" required class="form-control" placeholder="••••••••">
-              </div>
-              <div class="form-group">
-                <label>New Password (Min 6 chars)</label>
-                <input type="password" id="new-password" required class="form-control" placeholder="••••••••">
-              </div>
-              <button type="submit" class="btn btn-primary">Update Password</button>
             </form>
           </div>
         </section>
-
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 
-  <!-- ==================== MODALS ==================== -->
+  <!-- ==================== 3. WORDPRESS MODALS ==================== -->
 
-  <!-- Blog Modal -->
+  <!-- Modal: Post Editor (Add / Edit Blog) -->
   <div id="modal-blog" class="modal-backdrop">
-    <div class="modal-content modal-lg">
+    <div class="modal-card modal-card-lg">
       <div class="modal-header">
-        <h3 id="modal-blog-title">Create New Blog Post</h3>
-        <button class="modal-close" onclick="closeModal('modal-blog')"><i data-lucide="x"></i></button>
+        <h3 id="modal-blog-title">Add New Post</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-blog')">&times;</button>
       </div>
       <form id="form-blog" onsubmit="handleSaveBlog(event)">
         <input type="hidden" id="blog-id">
         <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group col-8">
-              <label>Blog Title *</label>
-              <input type="text" id="blog-title" required class="form-control" placeholder="e.g. 10 Web Design Trends for 2026" oninput="autoSlug('blog-title', 'blog-slug')">
-            </div>
-            <div class="form-group col-4">
-              <label>Category</label>
-              <select id="blog-category" class="form-control">
-                <option value="Web Development">Web Development</option>
-                <option value="Branding & Design">Branding & Design</option>
-                <option value="Digital Marketing">Digital Marketing</option>
-                <option value="Technology">Technology</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Slug (URL Address)</label>
-              <input type="text" id="blog-slug" class="form-control" placeholder="10-web-design-trends-2026">
-            </div>
-            <div class="form-group col-6">
-              <label>Cover Image</label>
-              <div class="file-uploader-wrap" style="display:flex;gap:6px;">
-                <input type="text" id="blog-cover" class="form-control" placeholder="/uploads/media/example.webp" oninput="updateImagePreview('blog-cover', 'blog-cover-preview')">
-                <button type="button" class="btn btn-outline btn-sm" onclick="openMediaPicker('blog-cover', 'blog-cover-preview')">
-                  <i data-lucide="image"></i> Browse
-                </button>
-                <label class="btn btn-outline btn-upload btn-sm">
-                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'blog-cover', 'blog-cover-preview')" style="display:none;">
-                </label>
+          <div class="editor-dual-layout">
+            <!-- Left Column: Title, Slug & Content -->
+            <div class="editor-main-col">
+              <input type="text" id="blog-title" required class="form-control post-title-input" placeholder="Add title" oninput="autoSlug('blog-title', 'blog-slug')">
+              
+              <div class="permalink-bar">
+                <span>Permalink:</span>
+                <strong>https://entecmedia.com/blog/<span id="permalink-slug-text">sample-post</span>/</strong>
+                <input type="hidden" id="blog-slug">
               </div>
-              <img id="blog-cover-preview" class="image-preview-thumb" alt="Preview">
+
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <label style="font-weight:600;font-size:13px;">Post Content</label>
+                  <button type="button" class="button button-small" onclick="openMediaPickerForEditor()">
+                    <i data-lucide="image"></i> Add Media
+                  </button>
+                </div>
+                <textarea id="blog-content" rows="14"></textarea>
+              </div>
+
+              <div class="form-group" style="margin-top:10px;">
+                <label for="blog-excerpt">Excerpt / Summary</label>
+                <textarea id="blog-excerpt" class="form-control" rows="2" placeholder="Write an excerpt (optional)"></textarea>
+              </div>
+            </div>
+
+            <!-- Right Column: Document Settings Meta Boxes -->
+            <div class="editor-sidebar-col">
+              <!-- Publish Box -->
+              <div class="postbox" style="margin-bottom:0;">
+                <div class="postbox-header">
+                  <h3>Publish</h3>
+                </div>
+                <div class="postbox-inside">
+                  <div class="form-group">
+                    <label for="blog-status">Status</label>
+                    <select id="blog-status" class="form-control">
+                      <option value="published">Published</option>
+                      <option value="draft">Draft</option>
+                    </select>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:12px;">
+                    <button type="button" class="button" onclick="setBlogDraftAndSave()">Save Draft</button>
+                    <button type="submit" id="blog-submit-btn" class="button button-primary" style="flex:1;">Publish</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Categories Box -->
+              <div class="postbox" style="margin-bottom:0;">
+                <div class="postbox-header">
+                  <h3>Categories</h3>
+                </div>
+                <div class="postbox-inside">
+                  <select id="blog-category" class="form-control">
+                    <option value="Web Development">Web Development</option>
+                    <option value="Website Design">Website Design</option>
+                    <option value="SEO">SEO</option>
+                    <option value="Digital Marketing">Digital Marketing</option>
+                    <option value="Branding & Design">Branding & Design</option>
+                    <option value="Technology">Technology</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Featured Image Box (WordPress Signature UI) -->
+              <div class="postbox" style="margin-bottom:0;">
+                <div class="postbox-header">
+                  <h3>Featured Image</h3>
+                </div>
+                <div class="postbox-inside">
+                  <input type="hidden" id="blog-cover">
+                  <div class="featured-image-box">
+                    <img id="blog-cover-preview" class="featured-image-preview" src="" alt="Featured preview" style="display:none;">
+                    <a href="javascript:void(0)" id="blog-set-featured-link" class="button" onclick="openMediaPicker('blog-cover', 'blog-cover-preview')">Set featured image</a>
+                    <div id="blog-featured-actions" class="featured-image-actions" style="display:none;margin-top:8px;">
+                      <a href="javascript:void(0)" onclick="openMediaPicker('blog-cover', 'blog-cover-preview')">Replace image</a>
+                      <span>|</span>
+                      <a href="javascript:void(0)" onclick="removeFeaturedImage('blog-cover', 'blog-cover-preview')" style="color:var(--wp-color-danger);">Remove featured image</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SEO Meta Box -->
+              <div class="postbox" style="margin-bottom:0;">
+                <div class="postbox-header">
+                  <h3>Search Engine Optimization (SEO)</h3>
+                </div>
+                <div class="postbox-inside">
+                  <div class="form-group">
+                    <label for="blog-meta-title">Meta Title</label>
+                    <input type="text" id="blog-meta-title" class="form-control" placeholder="Post title for Google search">
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label for="blog-meta-desc">Meta Description</label>
+                    <textarea id="blog-meta-desc" class="form-control" rows="2" placeholder="Search snippet description"></textarea>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="form-group">
-            <label>Short Excerpt</label>
-            <textarea id="blog-excerpt" class="form-control" rows="2" placeholder="Brief summary of the article..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Full Content (Markdown / HTML)</label>
-            <textarea id="blog-content" rows="10"></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Meta SEO Title</label>
-              <input type="text" id="blog-meta-title" class="form-control" placeholder="SEO Title">
-            </div>
-            <div class="form-group col-6">
-              <label>Publish Status</label>
-              <select id="blog-status" class="form-control">
-                <option value="published">Published (Live)</option>
-                <option value="draft">Draft (Private)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="closeModal('modal-blog')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Blog Post</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Project Modal -->
-  <div id="modal-project" class="modal-backdrop">
-    <div class="modal-content modal-lg">
-      <div class="modal-header">
-        <h3 id="modal-project-title">Add New Project / Case Study</h3>
-        <button class="modal-close" onclick="closeModal('modal-project')"><i data-lucide="x"></i></button>
-      </div>
-      <form id="form-project" onsubmit="handleSaveProject(event)">
-        <input type="hidden" id="project-id">
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Project Title *</label>
-              <input type="text" id="project-title" required class="form-control" placeholder="e.g. Fintech Brand Identity & Web App" oninput="autoSlug('project-title', 'project-slug')">
-            </div>
-            <div class="form-group col-6">
-              <label>Client Name</label>
-              <input type="text" id="project-client" class="form-control" placeholder="e.g. Apex Global Tech">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Slug</label>
-              <input type="text" id="project-slug" class="form-control" placeholder="apex-global-app">
-            </div>
-            <div class="form-group col-6">
-              <label>Category</label>
-              <input type="text" id="project-category" class="form-control" placeholder="Web Development, UI/UX">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Thumbnail Image</label>
-              <div class="file-uploader-wrap" style="display:flex;gap:6px;">
-                <input type="text" id="project-thumbnail" class="form-control" placeholder="/uploads/media/thumb.webp" oninput="updateImagePreview('project-thumbnail', 'project-thumb-preview')">
-                <button type="button" class="btn btn-outline btn-sm" onclick="openMediaPicker('project-thumbnail', 'project-thumb-preview')">
-                  <i data-lucide="image"></i> Browse
-                </button>
-                <label class="btn btn-outline btn-upload btn-sm">
-                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'project-thumbnail', 'project-thumb-preview')" style="display:none;">
-                </label>
-              </div>
-              <img id="project-thumb-preview" class="image-preview-thumb" alt="Preview">
-            </div>
-            <div class="form-group col-6">
-              <label>Live URL (Optional)</label>
-              <input type="url" id="project-url" class="form-control" placeholder="https://example.com">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Short Description</label>
-            <textarea id="project-short-desc" class="form-control" rows="2"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Project Overview & Details</label>
-            <textarea id="project-overview" class="form-control" rows="4"></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Featured on Home?</label>
-              <select id="project-featured" class="form-control">
-                <option value="1">Yes (Featured)</option>
-                <option value="0">No</option>
-              </select>
-            </div>
-            <div class="form-group col-6">
-              <label>Status</label>
-              <select id="project-status" class="form-control">
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="closeModal('modal-project')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Project</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Career Modal -->
+  <!-- Modal: Job Opening (Add / Edit Career) -->
   <div id="modal-career" class="modal-backdrop">
-    <div class="modal-content">
+    <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modal-career-title">Post Job Opening</h3>
-        <button class="modal-close" onclick="closeModal('modal-career')"><i data-lucide="x"></i></button>
+        <h3 id="modal-career-title">Post New Job Opening</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-career')">&times;</button>
       </div>
       <form id="form-career" onsubmit="handleSaveCareer(event)">
         <input type="hidden" id="career-id">
         <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Job Title *</label>
-              <input type="text" id="career-title" required class="form-control" placeholder="e.g. Senior Frontend Developer" oninput="autoSlug('career-title', 'career-slug')">
-            </div>
-            <div class="form-group col-6">
-              <label>Slug (URL Address)</label>
-              <input type="text" id="career-slug" class="form-control" placeholder="senior-frontend-developer">
-            </div>
+          <div class="form-group">
+            <label for="career-title">Job Title</label>
+            <input type="text" id="career-title" required class="form-control" placeholder="e.g. Senior Frontend Developer" oninput="autoSlug('career-title', 'career-slug')">
           </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Department</label>
+          <div class="form-group">
+            <label for="career-slug">URL Slug</label>
+            <input type="text" id="career-slug" class="form-control" placeholder="senior-frontend-developer">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label for="career-dept">Department</label>
               <select id="career-dept" class="form-control">
                 <option value="Development">Development</option>
                 <option value="Design">Design</option>
-                <option value="Digital Marketing">Digital Marketing</option>
-                <option value="Operations">Operations</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Management">Management</option>
               </select>
             </div>
-            <div class="form-group col-6">
-              <label>Job Type</label>
+            <div class="form-group">
+              <label for="career-type">Job Type</label>
               <select id="career-type" class="form-control">
                 <option value="Full-time">Full-time</option>
                 <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
                 <option value="Remote">Remote</option>
                 <option value="Hybrid">Hybrid</option>
-                <option value="Internship">Internship</option>
-                <option value="Contract">Contract</option>
               </select>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Location</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label for="career-loc">Location</label>
               <input type="text" id="career-loc" class="form-control" placeholder="Zirakpur, Punjab / Remote">
             </div>
-            <div class="form-group col-6">
-              <label>Experience</label>
-              <input type="text" id="career-exp" class="form-control" placeholder="2–4 years">
+            <div class="form-group">
+              <label for="career-exp">Experience</label>
+              <input type="text" id="career-exp" class="form-control" placeholder="2-4 years">
             </div>
           </div>
           <div class="form-group">
-            <label>Salary Range</label>
-            <input type="text" id="career-salary" class="form-control" placeholder="e.g. ₹4.8L – ₹8.4L per year">
+            <label for="career-salary">Salary Range</label>
+            <input type="text" id="career-salary" class="form-control" placeholder="e.g. ₹4.8L - ₹8.4L per year">
           </div>
           <div class="form-group">
-            <label>Job Overview / Summary</label>
-            <textarea id="career-desc" class="form-control" rows="3" placeholder="Brief summary of the role..."></textarea>
+            <label for="career-desc">Job Description / Overview</label>
+            <textarea id="career-desc" class="form-control" rows="3" placeholder="Brief summary of the role and requirements..."></textarea>
           </div>
           <div class="form-group">
-            <label>Key Responsibilities (One per line)</label>
-            <textarea id="career-resp" class="form-control" rows="3" placeholder="Build responsive Next.js websites&#10;Write clean, maintainable TypeScript code&#10;Collaborate with the design and marketing teams"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Requirements & Skills (One per line)</label>
-            <textarea id="career-req" class="form-control" rows="3" placeholder="2+ years React / Next.js experience&#10;Figma and CSS layout proficiency&#10;Understanding of REST APIs and Git"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Status</label>
+            <label for="career-status">Status</label>
             <select id="career-status" class="form-control">
               <option value="open">Open (Accepting Applications)</option>
               <option value="closed">Closed</option>
@@ -811,41 +789,103 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="closeModal('modal-career')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Job Opening</button>
+          <button type="button" class="button" onclick="closeModal('modal-career')">Cancel</button>
+          <button type="submit" class="button button-primary">Save Job Opening</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Service Modal -->
-  <div id="modal-service" class="modal-backdrop">
-    <div class="modal-content">
+  <!-- Modal: Project / Portfolio (Add / Edit) -->
+  <div id="modal-project" class="modal-backdrop">
+    <div class="modal-card">
       <div class="modal-header">
-        <h3 id="modal-service-title">Add / Edit Service</h3>
-        <button class="modal-close" onclick="closeModal('modal-service')"><i data-lucide="x"></i></button>
+        <h3 id="modal-project-title">Add Portfolio Project</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-project')">&times;</button>
+      </div>
+      <form id="form-project" onsubmit="handleSaveProject(event)">
+        <input type="hidden" id="project-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="project-title">Project Name</label>
+            <input type="text" id="project-title" required class="form-control" placeholder="e.g. NexaTech Enterprise Portal" oninput="autoSlug('project-title', 'project-slug')">
+          </div>
+          <div class="form-group">
+            <label for="project-slug">Project Slug</label>
+            <input type="text" id="project-slug" class="form-control" placeholder="nexatech-enterprise">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label for="project-client">Client</label>
+              <input type="text" id="project-client" class="form-control" placeholder="e.g. NexaTech Corp">
+            </div>
+            <div class="form-group">
+              <label for="project-cat">Category</label>
+              <select id="project-cat" class="form-control">
+                <option value="Website Development">Website Development</option>
+                <option value="Website Design">Website Design</option>
+                <option value="Mobile App Development">Mobile App Development</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="SEO & Marketing">SEO & Marketing</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Thumbnail Image</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="project-thumb" class="form-control" placeholder="Image URL">
+              <button type="button" class="button" onclick="openMediaPicker('project-thumb', 'project-thumb-preview')">Choose from Media</button>
+            </div>
+            <img id="project-thumb-preview" src="" alt="preview" style="max-height:100px;display:none;margin-top:8px;border:1px solid #dcdcde;">
+          </div>
+          <div class="form-group">
+            <label for="project-url">Live Website URL</label>
+            <input type="url" id="project-url" class="form-control" placeholder="https://example.com">
+          </div>
+          <div class="form-group">
+            <label for="project-desc">Overview & Results</label>
+            <textarea id="project-desc" class="form-control" rows="3" placeholder="Case study overview, metrics, and technology stack..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="project-status">Publish Status</label>
+            <select id="project-status" class="form-control">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="button" onclick="closeModal('modal-project')">Cancel</button>
+          <button type="submit" class="button button-primary">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Service (Add / Edit) -->
+  <div id="modal-service" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="modal-service-title">Add New Service</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-service')">&times;</button>
       </div>
       <form id="form-service" onsubmit="handleSaveService(event)">
         <input type="hidden" id="service-id">
         <div class="modal-body">
           <div class="form-group">
-            <label>Service Title *</label>
-            <input type="text" id="service-title" required class="form-control" placeholder="e.g. Custom Web Development" oninput="autoSlug('service-title', 'service-slug')">
+            <label for="service-title">Service Name</label>
+            <input type="text" id="service-title" required class="form-control" placeholder="e.g. Website Development" oninput="autoSlug('service-title', 'service-slug')">
           </div>
           <div class="form-group">
-            <label>Slug</label>
-            <input type="text" id="service-slug" class="form-control" placeholder="custom-web-development">
+            <label for="service-slug">Service Slug</label>
+            <input type="text" id="service-slug" class="form-control" placeholder="website-development">
           </div>
           <div class="form-group">
-            <label>Short Summary</label>
-            <textarea id="service-short-desc" class="form-control" rows="2"></textarea>
+            <label for="service-desc">Short Description</label>
+            <textarea id="service-desc" class="form-control" rows="3" placeholder="Brief summary of service capabilities..."></textarea>
           </div>
           <div class="form-group">
-            <label>Full Details</label>
-            <textarea id="service-full-desc" class="form-control" rows="4"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Status</label>
+            <label for="service-status">Status</label>
             <select id="service-status" class="form-control">
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -853,74 +893,74 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" onclick="closeModal('modal-service')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Service</button>
+          <button type="button" class="button" onclick="closeModal('modal-service')">Cancel</button>
+          <button type="submit" class="button button-primary">Save Service</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Media Picker Modal (WordPress Style) -->
+  <!-- Modal: WordPress Media Picker Modal -->
   <div id="modal-media-picker" class="modal-backdrop">
-    <div class="modal-content modal-lg">
+    <div class="modal-card modal-card-lg">
       <div class="modal-header">
-        <h3><i data-lucide="image"></i> Select Image from Media Library</h3>
-        <button class="modal-close" onclick="closeModal('modal-media-picker')"><i data-lucide="x"></i></button>
+        <h3>Choose Featured Image from Media Library</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-media-picker')">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="section-toolbar" style="margin-bottom: 16px; display:flex; gap:10px; align-items:center;">
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:center;">
           <input type="text" id="picker-media-search" class="form-control" placeholder="Search media by filename..." oninput="filterPickerMedia()" style="flex:1;">
-          <label class="btn btn-primary btn-sm">
-            <i data-lucide="upload"></i> Upload New
+          <label class="button">
+            <i data-lucide="upload-cloud"></i>
+            <span>Upload New</span>
             <input type="file" accept="image/*" onchange="uploadToPicker(this)" style="display:none;">
           </label>
         </div>
-        <div id="media-picker-list" class="media-picker-grid">
-          <div class="text-center text-muted" style="grid-column: 1/-1; padding: 30px;">Loading media assets...</div>
+        <div id="media-picker-list" class="media-grid-container" style="max-height: 400px; overflow-y: auto;">
+          <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--wp-text-muted);">Loading media assets...</div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-media-picker')">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="confirmMediaSelection()">Use Selected Image</button>
+        <button type="button" class="button" onclick="closeModal('modal-media-picker')">Cancel</button>
+        <button type="button" class="button button-primary" onclick="confirmMediaSelection()">Select Image</button>
       </div>
     </div>
   </div>
 
-  <!-- Media Details & Preview Modal -->
+  <!-- Modal: Media Details & Attachment Preview -->
   <div id="modal-media-details" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-card">
       <div class="modal-header">
-        <h3 id="media-details-title">Image Details</h3>
-        <button class="modal-close" onclick="closeModal('modal-media-details')"><i data-lucide="x"></i></button>
+        <h3 id="media-details-title">Attachment Details</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-media-details')">&times;</button>
       </div>
-      <div class="modal-body" style="text-align:center;">
-        <div style="background:var(--bg-input); border-radius:var(--radius-sm); padding:16px; display:flex; justify-content:center; align-items:center; max-height:300px; overflow:hidden;">
-          <img id="media-details-img" src="" alt="Preview" style="max-width:100%; max-height:260px; object-fit:contain; border-radius:6px;">
+      <div class="modal-body" style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px;">
+        <div style="background:#f0f0f1;padding:12px;display:flex;align-items:center;justify-content:center;border-radius:3px;">
+          <img id="media-details-img" src="" alt="attachment preview" style="max-width:100%;max-height:260px;object-fit:contain;">
         </div>
-        <div style="margin-top:16px; text-align:left;">
-          <div class="form-group">
-            <label>Direct File URL</label>
-            <div style="display:flex; gap:6px;">
-              <input type="text" id="media-details-url" readonly class="form-control" style="font-family:var(--font-mono); font-size:12px;">
-              <button type="button" class="btn btn-primary btn-sm" onclick="copyFromInput('media-details-url')">Copy</button>
+        <div>
+          <div style="margin-bottom:12px;">
+            <label style="font-weight:600;font-size:12px;color:var(--wp-text-muted);">FILE URL</label>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <input type="text" id="media-details-url" readonly class="form-control" style="font-size:12px;">
+              <button type="button" class="button" onclick="copyFromInput('media-details-url')">Copy URL</button>
             </div>
           </div>
-          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:8px;">
-            <span id="media-details-size">Size: -</span>
-            <span id="media-details-date">Date: -</span>
-          </div>
+          <p id="media-details-size" style="font-size:13px;color:var(--wp-text-muted);margin-bottom:4px;"></p>
+          <p id="media-details-date" style="font-size:13px;color:var(--wp-text-muted);margin-bottom:16px;"></p>
+          <button type="button" id="media-details-delete-btn" class="button-link-delete">Delete Permanently</button>
         </div>
       </div>
-      <div class="modal-footer" style="display:flex; justify-content:space-between;">
-        <button type="button" id="media-details-delete-btn" class="btn btn-outline" style="color:var(--color-danger); border-color:var(--color-danger);"><i data-lucide="trash-2"></i> Delete File</button>
-        <button type="button" class="btn btn-outline" onclick="closeModal('modal-media-details')">Close</button>
+      <div class="modal-footer">
+        <button type="button" class="button" onclick="closeModal('modal-media-details')">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Alert Container -->
+  <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <script src="/admin/admin.js"></script>
+  <!-- Admin JavaScript Logic -->
+  <script src="/admin/admin.js?v=2.2"></script>
 </body>
 </html>

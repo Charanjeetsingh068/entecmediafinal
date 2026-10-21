@@ -27,7 +27,7 @@ export default function ContactMain({ content, services }: ContactMainProps) {
   const waNumber = c.whatsappHref.replace(/^\D*wa\.me\//, "+").replace(/^\+(\d{2})(\d{5})(\d+)$/, "+$1 $2 $3");
 
   const cards: { icon: ContactIconName; title: string; value: string; note: string; href: string; external?: boolean }[] = [
-    { icon: "phone", title: m.cards.callTitle, value: c.phone, note: m.cards.callNote, href: c.phoneHref },
+    { icon: "phone", title: m.cards.callTitle, value: c.phoneDisplay, note: m.cards.callNote, href: c.phoneHref },
     { icon: "mail", title: m.cards.mailTitle, value: c.email, note: m.cards.mailNote, href: `mailto:${c.email}` },
     { icon: "whatsapp", title: m.cards.whatsappTitle, value: waNumber, note: m.cards.whatsappNote, href: c.whatsappHref, external: true },
     { icon: "pin", title: m.cards.visitTitle, value: c.addressLines[c.addressLines.length - 1] ?? "", note: m.cards.visitNote, href: directions, external: true },

@@ -51,7 +51,7 @@ export interface LegalDoc {
 }
 
 const CONTACT_HTML = `<p><strong>Entec Media</strong><br>#123, First Floor, Complex Street, Zirakpur, Punjab, India</p>
-<p>Email: <a href="mailto:info@entecmedia.com">info@entecmedia.com</a><br>Phone / WhatsApp: <a href="tel:+919996550841">+91-9996550841</a><br>Hours: Monday – Saturday, 10:00 AM – 7:00 PM IST</p>`;
+<p>Email: <a href="mailto:info@entecmedia.com">info@entecmedia.com</a><br>Phone / WhatsApp: <a href="tel:+919992009988">+91-9992009988</a>, <a href="tel:+919992009901">+91-9992009901</a><br>Hours: Monday – Saturday, 10:00 AM – 7:00 PM IST</p>`;
 
 export const privacyPolicy: LegalDoc = {
   name: "Privacy Policy",

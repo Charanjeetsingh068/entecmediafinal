@@ -52,9 +52,14 @@ export default function LineTerrain({
       const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
       w = canvas.clientWidth;
       h = canvas.clientHeight;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (w === 0 || h === 0) return;
+      const targetW = Math.round(w * dpr);
+      const targetH = Math.round(h * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
       const mobile = w < 768;
       lines = mobile ? 22 : 32;
       cols = mobile ? 56 : 96;

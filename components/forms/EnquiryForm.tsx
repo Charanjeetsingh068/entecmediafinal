@@ -210,7 +210,8 @@ export default function EnquiryForm({ source, defaultService }: EnquiryFormProps
             <>
               {" "}Please email us at{" "}
               <a href={`mailto:${siteConfig.contact.email}`}>{siteConfig.contact.email}</a> or call{" "}
-              <a href={siteConfig.contact.phoneHref}>{siteConfig.contact.phone}</a>.
+              <a href={siteConfig.contact.phoneHref}>{siteConfig.contact.phone}</a> /{" "}
+              <a href={siteConfig.contact.phone2Href}>{siteConfig.contact.phone2}</a>.
             </>
           )}
         </p>

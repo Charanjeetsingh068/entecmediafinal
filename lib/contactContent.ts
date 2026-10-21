@@ -86,7 +86,7 @@ export const contactPageContent: ContactPageContent = {
   seo: {
     title: "Contact Us — Talk to Entec Media in Zirakpur, Punjab",
     description:
-      "Get in touch with Entec Media for website design & development, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads. Call +91-9996550841, WhatsApp or email info@entecmedia.com.",
+      "Get in touch with Entec Media for website design & development, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads. Call +91-9992009988, +91-9992009901, WhatsApp or email info@entecmedia.com.",
   },
   hero: {
     label: "CONTACT US",

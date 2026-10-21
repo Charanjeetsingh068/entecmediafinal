@@ -204,7 +204,8 @@ export default function ContactForm({ content: f, services }: ContactFormProps) 
       {status === "error" && (
         <p className="cf-error" role="alert">
           {error} Please email <a href={`mailto:${siteConfig.contact.email}`}>{siteConfig.contact.email}</a> or call{" "}
-          <a href={siteConfig.contact.phoneHref}>{siteConfig.contact.phone}</a>.
+          <a href={siteConfig.contact.phoneHref}>{siteConfig.contact.phone}</a> /{" "}
+          <a href={siteConfig.contact.phone2Href}>{siteConfig.contact.phone2}</a>.
         </p>
       )}
 

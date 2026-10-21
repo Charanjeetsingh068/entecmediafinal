@@ -24,7 +24,9 @@ const NAVIGATION_CONFIG = {
   contact: {
     email: siteConfig.contact.email,
     phone: siteConfig.contact.phone,
+    phone2: siteConfig.contact.phone2,
     phoneHref: siteConfig.contact.phoneHref,
+    phone2Href: siteConfig.contact.phone2Href,
   },
   menuLinks: siteConfig.navLinks,
   socials: siteConfig.socialLinks,
@@ -139,15 +141,36 @@ export default function Header() {
   });
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Handle body scroll locking when menu is toggled
+  // Handle body scroll locking when menu is toggled without layout shift (jhatka)
   useEffect(() => {
+    type LenisWindow = Window & { __lenis?: { stop: () => void; start: () => void } };
+    const win = typeof window !== "undefined" ? (window as LenisWindow) : null;
+
     if (menuOpen) {
+      win?.__lenis?.stop();
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      if (scrollBarWidth > 0) {
+        document.body.style.paddingRight = `${scrollBarWidth}px`;
+        const headerEl = document.querySelector<HTMLElement>(".header-main");
+        if (headerEl) headerEl.style.paddingRight = `${scrollBarWidth}px`;
+      }
+      document.documentElement.classList.add("menu-open-scroll-lock");
       document.body.classList.add("menu-open-scroll-lock");
     } else {
+      win?.__lenis?.start();
+      document.documentElement.classList.remove("menu-open-scroll-lock");
       document.body.classList.remove("menu-open-scroll-lock");
+      document.body.style.paddingRight = "";
+      const headerEl = document.querySelector<HTMLElement>(".header-main");
+      if (headerEl) headerEl.style.paddingRight = "";
     }
     return () => {
+      win?.__lenis?.start();
+      document.documentElement.classList.remove("menu-open-scroll-lock");
       document.body.classList.remove("menu-open-scroll-lock");
+      document.body.style.paddingRight = "";
+      const headerEl = document.querySelector<HTMLElement>(".header-main");
+      if (headerEl) headerEl.style.paddingRight = "";
     };
   }, [menuOpen]);
 
@@ -336,7 +359,7 @@ export default function Header() {
           {/* Top Row Header */}
           <div className="nav-overlay-header">
             <Link href="/" className="logo-link" onClick={() => setMenuOpen(false)} tabIndex={menuOpen ? 0 : -1}>
-              <Image src={whiteLogoImg} alt="Entec Media Logo" className="logo-img-dark" />
+              <Image src={whiteLogoImg} alt="Entec Media Logo" className="logo-img logo-img-dark" />
             </Link>
             <button className="nav-close-btn" onClick={() => setMenuOpen(false)} aria-label="Close Menu" tabIndex={menuOpen ? 0 : -1}>
               <span className="nav-close-label">Close</span>
@@ -382,6 +405,9 @@ export default function Header() {
                 </a>
                 <a href={NAVIGATION_CONFIG.contact.phoneHref} className="nav-phone-link" tabIndex={menuOpen ? 0 : -1}>
                   {NAVIGATION_CONFIG.contact.phone}
+                </a>
+                <a href={NAVIGATION_CONFIG.contact.phone2Href} className="nav-phone-link" tabIndex={menuOpen ? 0 : -1}>
+                  {NAVIGATION_CONFIG.contact.phone2}
                 </a>
               </div>
             </div>

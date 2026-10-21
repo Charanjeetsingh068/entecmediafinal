@@ -493,9 +493,14 @@ export default function Footer() {
           </div>
           <div className="ef-info-cell ef-rise" style={rise(6)}>
             <span className="ef-info-label">Call us</span>
-            <a href={siteConfig.contact.phoneHref} className="ef-info-value ef-link">
-              <Roll>{siteConfig.contact.phone}</Roll>
-            </a>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <a href={siteConfig.contact.phoneHref} className="ef-info-value ef-link">
+                <Roll>{siteConfig.contact.phone}</Roll>
+              </a>
+              <a href={siteConfig.contact.phone2Href} className="ef-info-value ef-link">
+                <Roll>{siteConfig.contact.phone2}</Roll>
+              </a>
+            </div>
           </div>
           <div className="ef-info-cell ef-rise" style={rise(7)}>
             <span className="ef-info-label">Careers</span>

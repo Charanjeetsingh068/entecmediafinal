@@ -48,6 +48,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 html,
 body {
   width: 100%;
@@ -1196,10 +1200,29 @@ textarea {
   clip-path: circle(0px at var(--nv-origin));
   visibility: hidden;
   transition: clip-path 0.7s cubic-bezier(0.7, 0, 0.2, 1), visibility 0s linear 0.7s;
+  will-change: clip-path;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
+}
+
+.nav-overlay::-webkit-scrollbar,
+.nav-overlay *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.nav-overlay,
+.nav-overlay * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .nav-overlay-open {
@@ -1236,7 +1259,7 @@ textarea {
 }
 
 .logo-img-dark {
-  height: 74px;
+  height: 56px;
   width: auto;
   display: block;
 }
@@ -1628,23 +1651,65 @@ textarea {
   }
 }
 
-/* Scroll Lock when menu open */
+/* Scroll Lock when menu open - remove any scrollbars completely */
+html.menu-open-scroll-lock,
 body.menu-open-scroll-lock {
   overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html.menu-open-scroll-lock::-webkit-scrollbar,
+body.menu-open-scroll-lock::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Short desktop screens */
-@media (min-width: 1200px) and (max-height: 820px) {
+@media (min-width: 1200px) and (max-height: 900px) {
+  .nav-overlay-header {
+    height: 72px;
+  }
+
   .nav-overlay-grid {
-    padding: 28px 0;
+    padding: clamp(12px, 2vh, 24px) 0;
+    gap: 36px;
+  }
+
+  .nav-brand-tagline {
+    font-size: 20px;
+    line-height: 1.35;
+  }
+
+  .nav-col-left {
+    gap: 16px;
+  }
+
+  .nav-contact-info {
+    margin-top: 10px;
+    gap: 4px;
+  }
+
+  .nav-contact-email {
+    font-size: 20px;
+  }
+
+  .nav-contact-phone {
+    font-size: 13px;
   }
 
   .nav-link-text {
-    font-size: 36px;
+    font-size: clamp(26px, 2.8vw, 40px);
   }
 
   .nav-main-link-item {
-    padding: 8px 0;
+    padding: clamp(6px, 1.1vh, 10px) 0;
+  }
+
+  .nav-overlay-foot {
+    padding-top: 12px;
+    margin-top: 10px;
   }
 }
 

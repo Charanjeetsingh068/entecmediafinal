@@ -25,6 +25,26 @@ if ($method === 'GET') {
     $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
     $slug = isset($_GET['slug']) ? trim($_GET['slug']) : null;
 
+    function format_career_row($c) {
+        if (!$c) return $c;
+        $c['summary'] = $c['description'] ?? '';
+        $c['requirementsSummary'] = !empty($c['requirements']) 
+            ? substr(strip_tags($c['requirements']), 0, 160) . '...' 
+            : substr(strip_tags($c['description'] ?? ''), 0, 160) . '...';
+        $c['types'] = [$c['job_type'] ?: 'Full-time'];
+        $c['salary'] = [
+            ['amount' => !empty($c['salary_range']) ? $c['salary_range'] : 'Competitive', 'period' => 'per year']
+        ];
+        $c['responsibilities'] = !empty($c['responsibilities'])
+            ? array_values(array_filter(array_map('trim', explode("\n", $c['responsibilities']))))
+            : [];
+        $c['requirements'] = !empty($c['requirements'])
+            ? array_values(array_filter(array_map('trim', explode("\n", $c['requirements']))))
+            : [];
+        $c['niceToHave'] = [];
+        return $c;
+    }
+
     if ($id || $slug) {
         $query = "SELECT * FROM careers WHERE " . ($id ? "id = :val" : "slug = :val");
         $stmt = $db->prepare($query);
@@ -32,12 +52,14 @@ if ($method === 'GET') {
         $career = $stmt->fetch();
 
         if (!$career) send_json_response(['error' => 'Job opening not found'], 404);
-        send_json_response(['success' => true, 'data' => $career]);
+        send_json_response(['success' => true, 'data' => format_career_row($career)]);
     }
 
     $where = !isset($_GET['admin']) ? "WHERE status = 'open'" : "";
     $stmt = $db->query("SELECT * FROM careers {$where} ORDER BY created_at DESC");
-    send_json_response(['success' => true, 'data' => $stmt->fetchAll()]);
+    $list = $stmt->fetchAll();
+    $formatted = array_map('format_career_row', $list);
+    send_json_response(['success' => true, 'data' => $formatted]);
 }
 
 // POST: Create Career (Admin) OR Submit Application (Public)

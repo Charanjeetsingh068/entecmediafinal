@@ -62,15 +62,15 @@ export interface FetchBlogsParams {
   search?: string;
 }
 
-const BLOG_API_BASE_URL =
-  process.env.NEXT_PUBLIC_BLOG_API_URL || 'http://localhost/blog-cms/api';
-
-// A localhost API can only answer on the developer's own machine. On the live site the browser would
-// just fail to connect (a console error in PageSpeed), so it goes straight to the fallback posts.
-const apiReachable = () =>
-  typeof window === 'undefined' ||
-  !/^https?:\/\/(localhost|127\.0\.0\.1)\b/.test(BLOG_API_BASE_URL) ||
-  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+const getBlogApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_BLOG_API_URL) {
+    return process.env.NEXT_PUBLIC_BLOG_API_URL.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+};
 
 const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -139,31 +139,34 @@ export async function getPublishedBlogs(params: FetchBlogsParams = {}): Promise<
     if (params.tag) queryParams.set('tag', params.tag);
     if (params.search) queryParams.set('search', params.search);
 
-    const url = `${BLOG_API_BASE_URL}/public/blogs.php?${queryParams.toString()}`;
-    if (!apiReachable()) throw new Error('Blog API not reachable from this site');
+    const base = getBlogApiBaseUrl();
+    const url = `${base}/api/blogs.php?${queryParams.toString()}`;
     const res = await fetch(url, {
       next: { revalidate: 60 },
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(2500),
     });
 
     if (res.ok) {
-      const data = await res.json();
-      if (data.success && data.data && data.data.blogs && data.data.blogs.length > 0) {
-        return {
-          blogs: data.data.blogs,
-          pagination: data.data.pagination || {
-            total_records: data.data.blogs.length,
-            total_pages: 1,
-            current_page: params.page || 1,
-            limit: params.limit || 9,
-            has_next: false,
-            has_prev: false,
-          },
-        };
+      const text = await res.text();
+      if (!text.trim().startsWith("<?php")) {
+        const data = JSON.parse(text);
+        if (data.success && data.data && Array.isArray(data.data.blogs) && data.data.blogs.length > 0) {
+          return {
+            blogs: data.data.blogs,
+            pagination: data.data.pagination || {
+              total_records: data.data.blogs.length,
+              total_pages: 1,
+              current_page: params.page || 1,
+              limit: params.limit || 9,
+              has_next: false,
+              has_prev: false,
+            },
+          };
+        }
       }
     }
   } catch {
-    // API offline - use fallback
+    // API offline or dev static file - use fallback
   }
 
   // Fallback filtering
@@ -202,20 +205,23 @@ export async function getBlogBySlug(slug: string): Promise<{
   relatedBlogs: BlogPost[];
 }> {
   try {
-    const url = `${BLOG_API_BASE_URL}/public/blog.php?slug=${encodeURIComponent(slug)}`;
-    if (!apiReachable()) throw new Error('Blog API not reachable from this site');
+    const base = getBlogApiBaseUrl();
+    const url = `${base}/api/blogs.php?slug=${encodeURIComponent(slug)}`;
     const res = await fetch(url, {
       next: { revalidate: 60 },
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(2500),
     });
 
     if (res.ok) {
-      const data = await res.json();
-      if (data.success && data.data && data.data.blog) {
-        return {
-          blog: data.data.blog,
-          relatedBlogs: data.data.related_blogs || [],
-        };
+      const text = await res.text();
+      if (!text.trim().startsWith("<?php")) {
+        const data = JSON.parse(text);
+        if (data.success && data.data && data.data.blog) {
+          return {
+            blog: data.data.blog,
+            relatedBlogs: data.data.related_blogs || [],
+          };
+        }
       }
     }
   } catch {
@@ -247,17 +253,20 @@ export async function getBlogBySlug(slug: string): Promise<{
  */
 export async function getBlogCategories(): Promise<BlogCategory[]> {
   try {
-    const url = `${BLOG_API_BASE_URL}/public/categories.php`;
-    if (!apiReachable()) throw new Error('Blog API not reachable from this site');
+    const base = getBlogApiBaseUrl();
+    const url = `${base}/api/blogs.php?action=categories`;
     const res = await fetch(url, {
       next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(1500),
+      signal: AbortSignal.timeout(2500),
     });
 
     if (res.ok) {
-      const data = await res.json();
-      if (data.success && data.data && data.data.categories && data.data.categories.length > 0) {
-        return data.data.categories;
+      const text = await res.text();
+      if (!text.trim().startsWith("<?php")) {
+        const data = JSON.parse(text);
+        if (data.success && data.data && Array.isArray(data.data.categories) && data.data.categories.length > 0) {
+          return data.data.categories;
+        }
       }
     }
   } catch {

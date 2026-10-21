@@ -50,6 +50,9 @@
 
   <!-- ==================== DASHBOARD VIEW ==================== -->
   <div id="app-view" class="app-container" style="display: none;">
+    <!-- Backdrop for mobile drawer -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -57,21 +60,16 @@
         <span class="badge badge-accent">Admin CMS</span>
       </div>
       <nav class="sidebar-nav">
+        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 8px 16px 4px; font-weight: 700;">Core</div>
         <a href="#dashboard" class="nav-item active" onclick="switchSection('dashboard')">
           <i data-lucide="layout-dashboard"></i>
           <span>Overview</span>
         </a>
+
+        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 14px 16px 4px; font-weight: 700;">Content</div>
         <a href="#blogs" class="nav-item" onclick="switchSection('blogs')">
           <i data-lucide="file-text"></i>
           <span>Blogs & Articles</span>
-        </a>
-        <a href="#projects" class="nav-item" onclick="switchSection('projects')">
-          <i data-lucide="briefcase"></i>
-          <span>Projects & Works</span>
-        </a>
-        <a href="#services" class="nav-item" onclick="switchSection('services')">
-          <i data-lucide="sparkles"></i>
-          <span>Services</span>
         </a>
         <a href="#careers" class="nav-item" onclick="switchSection('careers')">
           <i data-lucide="users"></i>
@@ -82,18 +80,30 @@
           <span>Job Resumes</span>
           <span class="nav-badge" id="badge-applications">0</span>
         </a>
+        <a href="#projects" class="nav-item" onclick="switchSection('projects')">
+          <i data-lucide="briefcase"></i>
+          <span>Projects & Works</span>
+        </a>
+        <a href="#services" class="nav-item" onclick="switchSection('services')">
+          <i data-lucide="sparkles"></i>
+          <span>Services</span>
+        </a>
+
+        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 14px 16px 4px; font-weight: 700;">CRM & Assets</div>
         <a href="#leads" class="nav-item" onclick="switchSection('leads')">
           <i data-lucide="inbox"></i>
           <span>Contact Leads</span>
           <span class="nav-badge" id="badge-leads">0</span>
         </a>
-        <a href="#site-settings" class="nav-item" onclick="switchSection('site-settings')">
-          <i data-lucide="sliders"></i>
-          <span>Header, Footer & Content</span>
-        </a>
         <a href="#media" class="nav-item" onclick="switchSection('media')">
           <i data-lucide="image"></i>
-          <span>Media & File Manager</span>
+          <span>Media Library</span>
+        </a>
+
+        <div class="sidebar-section-title" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 14px 16px 4px; font-weight: 700;">System</div>
+        <a href="#site-settings" class="nav-item" onclick="switchSection('site-settings')">
+          <i data-lucide="sliders"></i>
+          <span>Site Content & Info</span>
         </a>
         <a href="#settings" class="nav-item" onclick="switchSection('settings')">
           <i data-lucide="shield-check"></i>
@@ -120,9 +130,15 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="menu-toggle-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
-          <h1 id="page-title">Dashboard Overview</h1>
+          <div>
+            <h1 id="page-title">Dashboard Overview</h1>
+            <div class="system-status" style="margin-top: 2px;">
+              <span class="status-dot"></span>
+              <span id="status-text">MySQL Online</span>
+            </div>
+          </div>
         </div>
-        <div class="topbar-right" style="display:flex;gap:10px;">
+        <div class="topbar-right" style="display:flex;gap:10px;align-items:center;">
           <button class="btn btn-outline btn-sm" onclick="syncSiteData()" title="Populate initial site data into database">
             <i data-lucide="refresh-cw"></i>
             <span>Sync Default Content</span>
@@ -436,13 +452,17 @@
               </div>
               <div style="padding: 24px;">
                 <div class="form-row">
-                  <div class="form-group col-6">
-                    <label>Contact Phone</label>
-                    <input type="text" id="setting-contact-phone" class="form-control" placeholder="+91 98765 43210">
+                  <div class="form-group col-4">
+                    <label>Primary Phone</label>
+                    <input type="text" id="setting-contact-phone" class="form-control" placeholder="+91-9992009988">
                   </div>
-                  <div class="form-group col-6">
+                  <div class="form-group col-4">
+                    <label>Secondary Phone</label>
+                    <input type="text" id="setting-contact-phone2" class="form-control" placeholder="+91-9992009901">
+                  </div>
+                  <div class="form-group col-4">
                     <label>Official Email</label>
-                    <input type="email" id="setting-contact-email" class="form-control" placeholder="contact@entecmedia.com">
+                    <input type="email" id="setting-contact-email" class="form-control" placeholder="info@entecmedia.com">
                   </div>
                 </div>
                 <div class="form-group">
@@ -590,12 +610,16 @@
             </div>
             <div class="form-group col-6">
               <label>Cover Image</label>
-              <div class="file-uploader-wrap">
-                <input type="text" id="blog-cover" class="form-control" placeholder="/uploads/media/example.webp">
-                <label class="btn btn-outline btn-upload">
-                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'blog-cover')" style="display:none;">
+              <div class="file-uploader-wrap" style="display:flex;gap:6px;">
+                <input type="text" id="blog-cover" class="form-control" placeholder="/uploads/media/example.webp" oninput="updateImagePreview('blog-cover', 'blog-cover-preview')">
+                <button type="button" class="btn btn-outline btn-sm" onclick="openMediaPicker('blog-cover', 'blog-cover-preview')">
+                  <i data-lucide="image"></i> Browse
+                </button>
+                <label class="btn btn-outline btn-upload btn-sm">
+                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'blog-cover', 'blog-cover-preview')" style="display:none;">
                 </label>
               </div>
+              <img id="blog-cover-preview" class="image-preview-thumb" alt="Preview">
             </div>
           </div>
           <div class="form-group">
@@ -661,12 +685,16 @@
           <div class="form-row">
             <div class="form-group col-6">
               <label>Thumbnail Image</label>
-              <div class="file-uploader-wrap">
-                <input type="text" id="project-thumbnail" class="form-control" placeholder="/uploads/media/thumb.webp">
-                <label class="btn btn-outline btn-upload">
-                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'project-thumbnail')" style="display:none;">
+              <div class="file-uploader-wrap" style="display:flex;gap:6px;">
+                <input type="text" id="project-thumbnail" class="form-control" placeholder="/uploads/media/thumb.webp" oninput="updateImagePreview('project-thumbnail', 'project-thumb-preview')">
+                <button type="button" class="btn btn-outline btn-sm" onclick="openMediaPicker('project-thumbnail', 'project-thumb-preview')">
+                  <i data-lucide="image"></i> Browse
+                </button>
+                <label class="btn btn-outline btn-upload btn-sm">
+                  Upload <input type="file" accept="image/*" onchange="uploadImage(this, 'project-thumbnail', 'project-thumb-preview')" style="display:none;">
                 </label>
               </div>
+              <img id="project-thumb-preview" class="image-preview-thumb" alt="Preview">
             </div>
             <div class="form-group col-6">
               <label>Live URL (Optional)</label>
@@ -716,14 +744,25 @@
       <form id="form-career" onsubmit="handleSaveCareer(event)">
         <input type="hidden" id="career-id">
         <div class="modal-body">
-          <div class="form-group">
-            <label>Job Title *</label>
-            <input type="text" id="career-title" required class="form-control" placeholder="e.g. Senior Frontend Developer">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Job Title *</label>
+              <input type="text" id="career-title" required class="form-control" placeholder="e.g. Senior Frontend Developer" oninput="autoSlug('career-title', 'career-slug')">
+            </div>
+            <div class="form-group col-6">
+              <label>Slug (URL Address)</label>
+              <input type="text" id="career-slug" class="form-control" placeholder="senior-frontend-developer">
+            </div>
           </div>
           <div class="form-row">
             <div class="form-group col-6">
               <label>Department</label>
-              <input type="text" id="career-dept" class="form-control" placeholder="Engineering / Design">
+              <select id="career-dept" class="form-control">
+                <option value="Development">Development</option>
+                <option value="Design">Design</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Operations">Operations</option>
+              </select>
             </div>
             <div class="form-group col-6">
               <label>Job Type</label>
@@ -731,6 +770,8 @@
                 <option value="Full-time">Full-time</option>
                 <option value="Part-time">Part-time</option>
                 <option value="Remote">Remote</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Internship">Internship</option>
                 <option value="Contract">Contract</option>
               </select>
             </div>
@@ -738,20 +779,28 @@
           <div class="form-row">
             <div class="form-group col-6">
               <label>Location</label>
-              <input type="text" id="career-loc" class="form-control" placeholder="Remote / Mohali, PB">
+              <input type="text" id="career-loc" class="form-control" placeholder="Zirakpur, Punjab / Remote">
             </div>
             <div class="form-group col-6">
               <label>Experience</label>
-              <input type="text" id="career-exp" class="form-control" placeholder="2+ Years">
+              <input type="text" id="career-exp" class="form-control" placeholder="2–4 years">
             </div>
           </div>
           <div class="form-group">
-            <label>Job Description</label>
-            <textarea id="career-desc" class="form-control" rows="3"></textarea>
+            <label>Salary Range</label>
+            <input type="text" id="career-salary" class="form-control" placeholder="e.g. ₹4.8L – ₹8.4L per year">
           </div>
           <div class="form-group">
-            <label>Requirements</label>
-            <textarea id="career-req" class="form-control" rows="3" placeholder="Bullet points of required skills..."></textarea>
+            <label>Job Overview / Summary</label>
+            <textarea id="career-desc" class="form-control" rows="3" placeholder="Brief summary of the role..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Key Responsibilities (One per line)</label>
+            <textarea id="career-resp" class="form-control" rows="3" placeholder="Build responsive Next.js websites&#10;Write clean, maintainable TypeScript code&#10;Collaborate with the design and marketing teams"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Requirements & Skills (One per line)</label>
+            <textarea id="career-req" class="form-control" rows="3" placeholder="2+ years React / Next.js experience&#10;Figma and CSS layout proficiency&#10;Understanding of REST APIs and Git"></textarea>
           </div>
           <div class="form-group">
             <label>Status</label>
@@ -808,6 +857,64 @@
           <button type="submit" class="btn btn-primary">Save Service</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Media Picker Modal (WordPress Style) -->
+  <div id="modal-media-picker" class="modal-backdrop">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3><i data-lucide="image"></i> Select Image from Media Library</h3>
+        <button class="modal-close" onclick="closeModal('modal-media-picker')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="section-toolbar" style="margin-bottom: 16px; display:flex; gap:10px; align-items:center;">
+          <input type="text" id="picker-media-search" class="form-control" placeholder="Search media by filename..." oninput="filterPickerMedia()" style="flex:1;">
+          <label class="btn btn-primary btn-sm">
+            <i data-lucide="upload"></i> Upload New
+            <input type="file" accept="image/*" onchange="uploadToPicker(this)" style="display:none;">
+          </label>
+        </div>
+        <div id="media-picker-list" class="media-picker-grid">
+          <div class="text-center text-muted" style="grid-column: 1/-1; padding: 30px;">Loading media assets...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-media-picker')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmMediaSelection()">Use Selected Image</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Media Details & Preview Modal -->
+  <div id="modal-media-details" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="media-details-title">Image Details</h3>
+        <button class="modal-close" onclick="closeModal('modal-media-details')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="background:var(--bg-input); border-radius:var(--radius-sm); padding:16px; display:flex; justify-content:center; align-items:center; max-height:300px; overflow:hidden;">
+          <img id="media-details-img" src="" alt="Preview" style="max-width:100%; max-height:260px; object-fit:contain; border-radius:6px;">
+        </div>
+        <div style="margin-top:16px; text-align:left;">
+          <div class="form-group">
+            <label>Direct File URL</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="media-details-url" readonly class="form-control" style="font-family:var(--font-mono); font-size:12px;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="copyFromInput('media-details-url')">Copy</button>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:8px;">
+            <span id="media-details-size">Size: -</span>
+            <span id="media-details-date">Date: -</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between;">
+        <button type="button" id="media-details-delete-btn" class="btn btn-outline" style="color:var(--color-danger); border-color:var(--color-danger);"><i data-lucide="trash-2"></i> Delete File</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-media-details')">Close</button>
+      </div>
     </div>
   </div>
 

@@ -47,10 +47,131 @@ function get_db_connection() {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-        return new PDO($dsn, $db_user, $db_pass, $options);
+        $pdo = new PDO($dsn, $db_user, $db_pass, $options);
+        ensure_database_schema($pdo);
+        return $pdo;
     } catch (PDOException $e) {
         send_json_response(['error' => 'Database connection failed: ' . $e->getMessage()], 500);
         exit();
+    }
+}
+
+function ensure_database_schema($db) {
+    try {
+        $check = $db->query("SHOW TABLES LIKE 'admins'");
+        if ($check && $check->rowCount() > 0) return;
+
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS `admins` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `name` VARCHAR(100) NOT NULL,
+              `email` VARCHAR(150) NOT NULL UNIQUE,
+              `password_hash` VARCHAR(255) NOT NULL,
+              `role` ENUM('superadmin', 'editor') DEFAULT 'superadmin',
+              `last_login` DATETIME NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `blogs` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `title` VARCHAR(255) NOT NULL,
+              `slug` VARCHAR(255) NOT NULL UNIQUE,
+              `excerpt` TEXT NULL,
+              `content` LONGTEXT NOT NULL,
+              `cover_image` VARCHAR(500) NULL,
+              `category` VARCHAR(100) DEFAULT 'General',
+              `author` VARCHAR(100) DEFAULT 'Entec Media Team',
+              `read_time` VARCHAR(30) DEFAULT '5 min read',
+              `meta_title` VARCHAR(255) NULL,
+              `meta_description` TEXT NULL,
+              `keywords` VARCHAR(500) NULL,
+              `status` ENUM('published', 'draft') DEFAULT 'published',
+              `views` INT UNSIGNED DEFAULT 0,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `careers` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `title` VARCHAR(255) NOT NULL,
+              `slug` VARCHAR(255) NOT NULL UNIQUE,
+              `department` VARCHAR(100) DEFAULT 'Engineering',
+              `location` VARCHAR(150) DEFAULT 'Remote / Mohali',
+              `job_type` ENUM('Full-time', 'Part-time', 'Contract', 'Internship', 'Remote', 'Hybrid', 'On-site') DEFAULT 'Full-time',
+              `experience` VARCHAR(100) DEFAULT '1-3 Years',
+              `salary_range` VARCHAR(100) NULL,
+              `description` LONGTEXT NOT NULL,
+              `requirements` LONGTEXT NULL,
+              `responsibilities` LONGTEXT NULL,
+              `status` ENUM('open', 'closed') DEFAULT 'open',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `job_applications` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `career_id` INT UNSIGNED NULL,
+              `job_title` VARCHAR(255) NOT NULL,
+              `applicant_name` VARCHAR(150) NOT NULL,
+              `email` VARCHAR(150) NOT NULL,
+              `phone` VARCHAR(50) NULL,
+              `portfolio_url` VARCHAR(500) NULL,
+              `resume_path` VARCHAR(500) NOT NULL,
+              `cover_note` TEXT NULL,
+              `status` ENUM('new', 'reviewed', 'shortlisted', 'rejected') DEFAULT 'new',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `projects` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `title` VARCHAR(255) NOT NULL,
+              `slug` VARCHAR(255) NOT NULL UNIQUE,
+              `client` VARCHAR(150) NULL,
+              `category` VARCHAR(100) DEFAULT 'Web Development',
+              `thumbnail` VARCHAR(500) NULL,
+              `short_desc` TEXT NULL,
+              `overview` LONGTEXT NULL,
+              `featured` TINYINT(1) DEFAULT 0,
+              `status` ENUM('published', 'draft') DEFAULT 'published',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `services` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `title` VARCHAR(255) NOT NULL,
+              `slug` VARCHAR(255) NOT NULL UNIQUE,
+              `icon` VARCHAR(500) NULL,
+              `short_desc` TEXT NULL,
+              `full_desc` LONGTEXT NULL,
+              `status` ENUM('active', 'inactive') DEFAULT 'active',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `leads` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `name` VARCHAR(150) NOT NULL,
+              `email` VARCHAR(150) NOT NULL,
+              `phone` VARCHAR(50) NULL,
+              `service_needed` VARCHAR(150) NULL,
+              `budget` VARCHAR(100) NULL,
+              `message` TEXT NOT NULL,
+              `status` ENUM('new', 'in_progress', 'converted', 'closed') DEFAULT 'new',
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `site_settings` (
+              `key_name` VARCHAR(100) PRIMARY KEY,
+              `value_data` LONGTEXT NULL,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+
+        $pass_hash = password_hash('Entecmedia@123', PASSWORD_BCRYPT);
+        $stmt = $db->prepare("INSERT INTO `admins` (`id`, `name`, `email`, `password_hash`, `role`) VALUES (1, 'Entec Administrator', 'admin@entecmedia.com', ?, 'superadmin') ON DUPLICATE KEY UPDATE `email` = VALUES(`email`)");
+        $stmt->execute([$pass_hash]);
+    } catch (Exception $e) {
+        error_log("Schema ensure error: " . $e->getMessage());
     }
 }
 

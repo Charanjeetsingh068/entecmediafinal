@@ -14,6 +14,26 @@ if ($method === 'GET') {
     $page = isset($_GET['page']) ? max((int)$_GET['page'], 1) : 1;
     $offset = ($page - 1) * $limit;
 
+    // Categories list for Next.js frontend
+    if (isset($_GET['action']) && $_GET['action'] === 'categories') {
+        $stmt = $db->query("SELECT category as name, COUNT(*) as published_blogs_count 
+                            FROM blogs 
+                            WHERE status = 'published' AND category IS NOT NULL AND category != '' 
+                            GROUP BY category");
+        $cats = $stmt ? $stmt->fetchAll() : [];
+        $formatted = [];
+        $idx = 1;
+        foreach ($cats as $c) {
+            $formatted[] = [
+                'id' => $idx++,
+                'name' => $c['name'],
+                'slug' => create_slug($c['name']),
+                'published_blogs_count' => (int)$c['published_blogs_count']
+            ];
+        }
+        send_json_response(['success' => true, 'data' => ['categories' => $formatted]]);
+    }
+
     // Single blog by ID or Slug
     if ($id || $slug) {
         $query = "SELECT * FROM blogs WHERE " . ($id ? "id = :val" : "slug = :val");
@@ -25,12 +45,41 @@ if ($method === 'GET') {
             send_json_response(['error' => 'Blog post not found'], 404);
         }
 
+        // Format fields for Next.js frontend
+        $blog['featured_image_url'] = $blog['cover_image'];
+        $blog['featured_image_alt'] = $blog['title'];
+        $blog['category_name']      = $blog['category'];
+        $blog['category_slug']      = create_slug($blog['category']);
+        $blog['author_name']        = $blog['author'] ?? 'Entec Media Team';
+        $blog['formatted_date']     = date('M j, Y', strtotime($blog['created_at']));
+
         // Increment view count if public
         if (!isset($_GET['admin'])) {
             $db->prepare("UPDATE blogs SET views = views + 1 WHERE id = ?")->execute([$blog['id']]);
         }
 
-        send_json_response(['success' => true, 'data' => $blog]);
+        // Fetch related blogs in same category or newest
+        $rel_stmt = $db->prepare("SELECT id, title, slug, excerpt, cover_image, category, author, read_time, created_at 
+                                  FROM blogs 
+                                  WHERE status = 'published' AND id != :current_id 
+                                  ORDER BY (category = :cat) DESC, created_at DESC 
+                                  LIMIT 4");
+        $rel_stmt->execute([':current_id' => $blog['id'], ':cat' => $blog['category']]);
+        $related = $rel_stmt->fetchAll();
+        foreach ($related as &$r) {
+            $r['featured_image_url'] = $r['cover_image'];
+            $r['category_name']      = $r['category'];
+            $r['category_slug']      = create_slug($r['category']);
+            $r['formatted_date']     = date('M j, Y', strtotime($r['created_at']));
+        }
+
+        send_json_response([
+            'success' => true,
+            'data'    => [
+                'blog'          => $blog,
+                'related_blogs' => $related
+            ]
+        ]);
     }
 
     // List Blogs with Filters
@@ -70,14 +119,27 @@ if ($method === 'GET') {
     $stmt->execute($params);
     $blogs = $stmt->fetchAll();
 
+    foreach ($blogs as &$b) {
+        $b['featured_image_url'] = $b['cover_image'];
+        $b['featured_image_alt'] = $b['title'];
+        $b['category_name']      = $b['category'];
+        $b['category_slug']      = create_slug($b['category']);
+        $b['author_name']        = $b['author'] ?? 'Entec Media Team';
+        $b['formatted_date']     = date('M j, Y', strtotime($b['created_at']));
+    }
+
     send_json_response([
-        'success' => true,
-        'data' => $blogs,
-        'pagination' => [
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
-            'total_pages' => ceil($total / $limit)
+        'success'    => true,
+        'data'       => [
+            'blogs'      => $blogs,
+            'pagination' => [
+                'total_records' => $total,
+                'total_pages'   => (int)ceil($total / $limit),
+                'current_page'  => $page,
+                'limit'         => $limit,
+                'has_next'      => $page < ceil($total / $limit),
+                'has_prev'      => $page > 1
+            ]
         ]
     ]);
 }

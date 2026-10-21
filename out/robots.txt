@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /blog-cms/
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /blog-api/
+
+Sitemap: https://entecmedia.com/sitemap.xml

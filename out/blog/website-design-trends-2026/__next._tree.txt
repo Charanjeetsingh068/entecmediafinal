@@ -1,0 +1,7 @@
+:HL["/_next/static/chunks/0450rvccb3m27.css","style"]
+:HL["/_next/static/chunks/32k9bjjtlwtuy.css","style"]
+:HL["/_next/static/chunks/19rhlcx2srev9.css","style"]
+:HL["/_next/static/media/Inter_Variable-s.p.34fk6-9m1aguk.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/images/r/blogs-future-trends-1024.webp","image",{"imageSrcSet":"/images/r/blogs-future-trends-768.webp 700w, /images/r/blogs-future-trends-1024.webp 1200w","imageSizes":"(max-width: 1199px) 80vw, 34vw","fetchPriority":"high"}]
+:HL["/images/r/blogs-future-trends-1024.webp","image"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"blog","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"website-design-trends-2026","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"LF0TnfKEU4ov-DhO087ua"}

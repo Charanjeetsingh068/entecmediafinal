@@ -1,0 +1,18 @@
+<!doctype html>
+<html><body style="margin:0;background:#555">
+<iframe id="a" style="border:0;display:block"></iframe>
+<script>
+const q = new URLSearchParams(location.search);
+const W = +q.get('w'), H = +q.get('h'), row = +(q.get('row') || 0), off = +(q.get('off') || 0.25);
+const f = document.getElementById('a');
+f.style.width = W + 'px'; f.style.height = H + 'px'; f.src = '/';
+f.addEventListener('load', () => {
+  setTimeout(() => {
+    const w = f.contentWindow, d = w.document;
+    const target = q.get('more') ? d.querySelector('.fp-more') : d.querySelectorAll('.fp-row')[row];
+    const y = target.getBoundingClientRect().top + w.scrollY - H * off;
+    w.__lenis ? w.__lenis.scrollTo(y, { immediate: true }) : w.scrollTo(0, y);
+  }, 2500);
+});
+</script>
+</body></html>

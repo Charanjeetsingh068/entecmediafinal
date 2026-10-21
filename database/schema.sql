@@ -156,6 +156,23 @@ CREATE TABLE IF NOT EXISTS `site_settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------------------
+-- 9. Table: pages (Dynamic Page Sections & Layouts)
+-- --------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pages` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `title` VARCHAR(255) NOT NULL,
+  `slug` VARCHAR(100) NOT NULL UNIQUE,
+  `meta_title` VARCHAR(255) NULL,
+  `meta_description` TEXT NULL,
+  `status` ENUM('published', 'draft') DEFAULT 'published',
+  `sections` LONGTEXT NOT NULL COMMENT 'JSON array of sections and components',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_page_slug` (`slug`),
+  INDEX `idx_page_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------------------
 -- Initial Default Admin User:
 -- Email: admin@entecmedia.com
 -- Password: AdminPassword@2026 (Change on first login)

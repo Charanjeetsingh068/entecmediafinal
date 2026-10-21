@@ -165,6 +165,19 @@ function ensure_database_schema($db) {
               `value_data` LONGTEXT NULL,
               `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+            CREATE TABLE IF NOT EXISTS `pages` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `title` VARCHAR(255) NOT NULL,
+              `slug` VARCHAR(100) NOT NULL UNIQUE,
+              `meta_title` VARCHAR(255) NULL,
+              `meta_description` TEXT NULL,
+              `status` ENUM('published', 'draft') DEFAULT 'published',
+              `sections` LONGTEXT NOT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              INDEX `idx_page_slug` (`slug`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ");
 
         $pass_hash = password_hash('Entecmedia@123', PASSWORD_BCRYPT);

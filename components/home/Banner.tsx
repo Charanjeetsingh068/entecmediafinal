@@ -10,7 +10,7 @@ import team3Img from "@/public/images/team3-avatar.webp";
 import team4Img from "@/public/images/team4-avatar.webp";
 import RImg from "@/components/shared/RImg";
 
-export default function Banner() {
+export default function Banner({ dynamicContent }: { dynamicContent?: any } = {}) {
   const [isSticky, setIsSticky] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -106,12 +106,17 @@ export default function Banner() {
       <div className="container banner-content" ref={contentRef}>
         {/* Left Column */}
         <div className="banner-left">
-          <h1 className="banner-title">
-            We design, build <br />
-            <span className="purple-text">&amp; grow brands</span>
-          </h1>
+          {dynamicContent?.title ? (
+            <h1 className="banner-title" dangerouslySetInnerHTML={{ __html: dynamicContent.title }} />
+          ) : (
+            <h1 className="banner-title">
+              We design, build <br />
+              <span className="purple-text">&amp; grow brands</span>
+            </h1>
+          )}
           <p className="banner-desc">
-            Entec Media is an IT &amp; digital marketing company — websites, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads that turn your business goals into measurable growth.
+            {dynamicContent?.subtitle ||
+              "Entec Media is an IT & digital marketing company — websites, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads that turn your business goals into measurable growth."}
           </p>
         </div>
 
@@ -128,11 +133,15 @@ export default function Banner() {
             <div className="rating-info">
               <div className="rating-stars-row">
                 <span className="rating-stars">◆◆◆◆◆</span>
-                <span className="rating-val">4.9/5</span>
+                <span className="rating-val">{dynamicContent?.rating_value || "4.9/5"}</span>
               </div>
               <p className="rating-label">
-                Trusted by <br />
-                Top Brands
+                {dynamicContent?.rating_label || (
+                  <>
+                    Trusted by <br />
+                    Top Brands
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -140,7 +149,11 @@ export default function Banner() {
           {/* Bottom Collaboration Box */}
           <div className="collab-wrapper">
             <p className="collab-label">Ready to start something great?</p>
-            <KButton href="/contact" label="Let's Collaborate" variant="dark" />
+            <KButton
+              href={dynamicContent?.button_link || "/contact"}
+              label={dynamicContent?.button_text || "Let's Collaborate"}
+              variant="dark"
+            />
           </div>
         </div>
       </div>

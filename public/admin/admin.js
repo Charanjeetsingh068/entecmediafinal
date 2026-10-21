@@ -169,6 +169,7 @@ function switchSection(sectionId) {
 
   // Load data based on section
   if (sectionId === 'dashboard') loadDashboardStats();
+  if (sectionId === 'pages') loadPages();
   if (sectionId === 'blogs') loadBlogs();
   if (sectionId === 'careers') loadCareers();
   if (sectionId === 'applications') loadApplications();
@@ -200,6 +201,8 @@ async function loadDashboardStats() {
     const res = await apiRequest('/stats.php');
     if (res.success) {
       const data = res.data;
+      if (document.getElementById('stat-pages')) document.getElementById('stat-pages').innerText = data.pages_count || 6;
+      if (document.getElementById('badge-pages')) document.getElementById('badge-pages').innerText = data.pages_count || 6;
       if (document.getElementById('stat-blogs')) document.getElementById('stat-blogs').innerText = data.blogs_count || 0;
       if (document.getElementById('stat-careers')) document.getElementById('stat-careers').innerText = data.careers_open_count || 0;
       if (document.getElementById('stat-applications')) document.getElementById('stat-applications').innerText = data.applications_count || 0;
@@ -245,6 +248,565 @@ async function loadDashboardStats() {
     console.error('Stats error:', err);
   }
   if (window.lucide) lucide.createIcons();
+}
+
+// ==================== WORDPRESS PAGES & SECTIONS CRUD (edit.php?post_type=page) ====================
+
+let allPages = [];
+let activePageStatus = 'all';
+let currentPageData = null;
+let currentSections = [];
+
+async function loadPages() {
+  try {
+    const res = await apiRequest('/pages.php');
+    if (res.success) {
+      allPages = res.pages || [];
+      updatePageCountBadges();
+      filterPages();
+    }
+  } catch (err) {
+    showToast('Failed to load pages', 'error');
+  }
+}
+
+function updatePageCountBadges() {
+  const allCount = allPages.length;
+  const pubCount = allPages.filter(p => p.status === 'published').length;
+  const draftCount = allPages.filter(p => p.status === 'draft').length;
+
+  const countAll = document.getElementById('count-pages-all');
+  if (countAll) countAll.innerText = allCount;
+  const countPub = document.getElementById('count-pages-published');
+  if (countPub) countPub.innerText = pubCount;
+  const countDraft = document.getElementById('count-pages-draft');
+  if (countDraft) countDraft.innerText = draftCount;
+
+  const badgePages = document.getElementById('badge-pages');
+  if (badgePages) badgePages.innerText = allCount;
+  const statPages = document.getElementById('stat-pages');
+  if (statPages) statPages.innerText = allCount;
+}
+
+function filterPagesByStatus(status) {
+  activePageStatus = status;
+  document.querySelectorAll('#sec-pages ul.subsubsub a').forEach(a => a.classList.remove('current'));
+  const currentTab = document.querySelector(`#sec-pages ul.subsubsub .${status === 'published' ? 'publish' : status} a`);
+  if (currentTab) currentTab.classList.add('current');
+  filterPages();
+}
+
+function filterPages() {
+  const query = (document.getElementById('pages-search-input')?.value || '').toLowerCase();
+  const filtered = allPages.filter(p => {
+    const matchesStatus = activePageStatus === 'all' || p.status === activePageStatus;
+    const matchesSearch = !query || p.title.toLowerCase().includes(query) || p.slug.toLowerCase().includes(query);
+    return matchesStatus && matchesSearch;
+  });
+  renderPages(filtered);
+}
+
+function renderPages(pages) {
+  const tbody = document.getElementById('pages-table-body');
+  if (!tbody) return;
+
+  const displayCount = document.getElementById('pages-count-display');
+  if (displayCount) displayCount.innerText = `${pages.length} pages`;
+
+  if (pages.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 24px;">No pages found matching your filter.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pages.map(p => {
+    const route = p.slug === 'home' ? '/' : `/${p.slug}`;
+    const sectionCount = p.section_count || (Array.isArray(p.sections) ? p.sections.length : 0);
+    const dateFormatted = p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+
+    return `
+      <tr>
+        <td class="title column-title">
+          <strong><a href="javascript:void(0)" onclick="openPageSectionsManager('${escapeHtml(p.slug)}', ${p.id})" style="color:var(--wp-link-color);font-size:14px;font-weight:600;">${escapeHtml(p.title)}</a></strong>
+          <div class="row-actions">
+            <span class="edit"><a href="javascript:void(0)" onclick="openPageSectionsManager('${escapeHtml(p.slug)}', ${p.id})">Manage Sections</a> | </span>
+            <span class="quick-edit"><a href="javascript:void(0)" onclick="openEditPageModal(${p.id})">Edit Details</a> | </span>
+            <span class="view"><a href="${route}" target="_blank">View Live Page</a></span>
+          </div>
+        </td>
+        <td><code>${route}</code></td>
+        <td>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;background:#e7f1fb;color:#0c5460;font-size:12px;font-weight:600;">
+            <i data-lucide="layers" style="width:12px;height:12px;"></i> ${sectionCount} Active
+          </span>
+        </td>
+        <td>
+          <span class="badge ${p.status === 'published' ? 'badge-published' : 'badge-draft'}">
+            ${p.status === 'published' ? 'Published' : 'Draft'}
+          </span>
+        </td>
+        <td style="color:var(--wp-text-muted);font-size:12px;">${dateFormatted}</td>
+        <td>
+          <button type="button" class="button button-primary button-small" onclick="openPageSectionsManager('${escapeHtml(p.slug)}', ${p.id})">
+            <i data-lucide="sliders" style="width:13px;height:13px;vertical-align:-2px;"></i> Manage Sections
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+async function openPageSectionsManager(slug, id) {
+  try {
+    const res = await apiRequest(`/pages.php?slug=${slug}`);
+    if (!res.success || !res.page) {
+      showToast('Could not load page details', 'error');
+      return;
+    }
+    currentPageData = res.page;
+    currentSections = Array.isArray(res.page.sections) ? res.page.sections : [];
+
+    const titleEl = document.getElementById('modal-page-sections-title');
+    if (titleEl) {
+      titleEl.innerHTML = `<i data-lucide="layout-template"></i> <span>Manage Sections: ${escapeHtml(currentPageData.title)} (${currentPageData.slug === 'home' ? '/' : '/' + currentPageData.slug})</span>`;
+    }
+
+    const countText = document.getElementById('active-sections-count-text');
+    if (countText) countText.innerText = `${currentSections.length} Sections`;
+
+    document.getElementById('current-editing-page-slug').value = currentPageData.slug;
+    document.getElementById('current-editing-page-id').value = currentPageData.id || '';
+
+    renderPageSectionCards();
+    openModal('modal-page-sections');
+    if (window.lucide) lucide.createIcons();
+  } catch (err) {
+    showToast('Failed to open sections manager', 'error');
+  }
+}
+
+function syncInputsToCurrentSections() {
+  currentSections.forEach((sec, idx) => {
+    const badgeEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="badge"]`);
+    if (badgeEl) sec.badge = badgeEl.value;
+
+    const titleEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="title"]`);
+    if (titleEl) sec.title = titleEl.value;
+
+    const subtitleEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="subtitle"]`);
+    if (subtitleEl) sec.subtitle = subtitleEl.value;
+
+    const btnTextEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="button_text"]`);
+    if (btnTextEl) sec.button_text = btnTextEl.value;
+
+    const btnLinkEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="button_link"]`);
+    if (btnLinkEl) sec.button_link = btnLinkEl.value;
+
+    const imgEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="image"]`);
+    if (imgEl) sec.image = imgEl.value;
+
+    const phone1El = document.querySelector(`[data-sec-idx="${idx}"][data-field="phone1"]`);
+    if (phone1El) sec.phone1 = phone1El.value;
+
+    const phone2El = document.querySelector(`[data-sec-idx="${idx}"][data-field="phone2"]`);
+    if (phone2El) sec.phone2 = phone2El.value;
+
+    const emailEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="email"]`);
+    if (emailEl) sec.email = emailEl.value;
+
+    const addressEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="address"]`);
+    if (addressEl) sec.address = addressEl.value;
+
+    const hoursEl = document.querySelector(`[data-sec-idx="${idx}"][data-field="hours"]`);
+    if (hoursEl) sec.hours = hoursEl.value;
+
+    // Structured items
+    if (Array.isArray(sec.items)) {
+      sec.items.forEach((item, itemIdx) => {
+        const itemTitleEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_title"]`);
+        if (itemTitleEl) item.title = itemTitleEl.value;
+
+        const itemDescEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_desc"]`);
+        if (itemDescEl) item.desc = itemDescEl.value;
+
+        const itemNumberEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_number"]`);
+        if (itemNumberEl) item.number = itemNumberEl.value;
+
+        const itemLabelEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_label"]`);
+        if (itemLabelEl) item.label = itemLabelEl.value;
+
+        const itemNameEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_name"]`);
+        if (itemNameEl) item.name = itemNameEl.value;
+
+        const itemRoleEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_role"]`);
+        if (itemRoleEl) item.role = itemRoleEl.value;
+
+        const itemQuoteEl = document.querySelector(`[data-sec-idx="${idx}"][data-item-idx="${itemIdx}"][data-field="item_quote"]`);
+        if (itemQuoteEl) item.quote = itemQuoteEl.value;
+      });
+    }
+  });
+}
+
+function renderPageSectionCards() {
+  const container = document.getElementById('page-sections-container');
+  if (!container) return;
+
+  const countText = document.getElementById('active-sections-count-text');
+  if (countText) countText.innerText = `${currentSections.length} Sections`;
+
+  if (currentSections.length === 0) {
+    container.innerHTML = `
+      <div class="text-center" style="padding: 40px; background:#fff; border:1px dashed var(--wp-border-color); border-radius:4px;">
+        <p style="color:var(--wp-text-muted);font-size:14px;margin-bottom:12px;">No sections created for this page yet.</p>
+        <button type="button" class="button button-primary" onclick="openAddSectionModal()"><i data-lucide="plus"></i> Add First Section</button>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = currentSections.map((sec, idx) => {
+    const isHidden = sec.visible === false;
+    const canMoveUp = idx > 0;
+    const canMoveDown = idx < currentSections.length - 1;
+
+    let specificFieldsHtml = '';
+
+    // If hero or CTA, show button and image fields
+    if (sec.type === 'hero' || sec.type === 'cta') {
+      specificFieldsHtml += `
+        <div class="section-grid-2" style="margin-top: 10px;">
+          <div class="form-group">
+            <label style="font-size:12px;font-weight:600;">Button Text</label>
+            <input type="text" class="form-control" data-sec-idx="${idx}" data-field="button_text" value="${escapeHtml(sec.button_text || '')}" placeholder="e.g. Let's Collaborate">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;font-weight:600;">Button Link URL</label>
+            <input type="text" class="form-control" data-sec-idx="${idx}" data-field="button_link" value="${escapeHtml(sec.button_link || '')}" placeholder="e.g. /contact">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 8px;">
+          <label style="font-size:12px;font-weight:600;">Media / Background Image URL</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="sec-img-${idx}" class="form-control" data-sec-idx="${idx}" data-field="image" value="${escapeHtml(sec.image || '')}" placeholder="/images/...">
+            <button type="button" class="button" onclick="openMediaPicker('sec-img-${idx}')">Choose Image</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // If contact details
+    if (sec.type === 'contact_details') {
+      specificFieldsHtml += `
+        <div class="section-grid-2" style="margin-top: 10px;">
+          <div class="form-group">
+            <label style="font-size:12px;font-weight:600;">Primary Phone</label>
+            <input type="text" class="form-control" data-sec-idx="${idx}" data-field="phone1" value="${escapeHtml(sec.phone1 || '+91-9992009988')}">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;font-weight:600;">Secondary Phone</label>
+            <input type="text" class="form-control" data-sec-idx="${idx}" data-field="phone2" value="${escapeHtml(sec.phone2 || '+91-9992009901')}">
+          </div>
+        </div>
+        <div class="section-grid-2" style="margin-top: 8px;">
+          <div class="form-group">
+            <label style="font-size:12px;font-weight:600;">Email Address</label>
+            <input type="email" class="form-control" data-sec-idx="${idx}" data-field="email" value="${escapeHtml(sec.email || 'info@entecmedia.com')}">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px;font-weight:600;">Working Hours</label>
+            <input type="text" class="form-control" data-sec-idx="${idx}" data-field="hours" value="${escapeHtml(sec.hours || 'Mon - Sat: 10:00 AM - 7:00 PM IST')}">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 8px;">
+          <label style="font-size:12px;font-weight:600;">Office Address</label>
+          <input type="text" class="form-control" data-sec-idx="${idx}" data-field="address" value="${escapeHtml(sec.address || '')}">
+        </div>
+      `;
+    }
+
+    // Structured items (features, stats, testimonials, team)
+    let itemsHtml = '';
+    if (Array.isArray(sec.items) && sec.items.length > 0) {
+      itemsHtml = `
+        <div class="section-items-box">
+          <div class="section-items-box-header">
+            <strong style="font-size:13px;color:var(--wp-text-dark);">${escapeHtml(sec.name)} Items (${sec.items.length})</strong>
+            <button type="button" class="button button-small" onclick="addSectionItem(${idx})"><i data-lucide="plus" style="width:12px;height:12px;"></i> Add Item</button>
+          </div>
+          <div class="section-items-container">
+            ${sec.items.map((item, itemIdx) => {
+              if (item.number !== undefined || item.label !== undefined) {
+                // Stat item
+                return `
+                  <div class="section-item-card">
+                    <input type="text" style="width:120px;" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_number" value="${escapeHtml(item.number || '')}" placeholder="e.g. 10+">
+                    <input type="text" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_label" value="${escapeHtml(item.label || '')}" placeholder="Label, e.g. Years Experience">
+                    <button type="button" class="btn-icon-wp danger" onclick="removeSectionItem(${idx}, ${itemIdx})" title="Remove Item">&times;</button>
+                  </div>
+                `;
+              } else if (item.quote !== undefined || item.role !== undefined) {
+                // Testimonial item
+                return `
+                  <div class="section-item-card" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <div style="display:flex;gap:10px;">
+                      <input type="text" style="width:40%;" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_name" value="${escapeHtml(item.name || '')}" placeholder="Client Name">
+                      <input type="text" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_role" value="${escapeHtml(item.role || '')}" placeholder="Designation & Company">
+                      <button type="button" class="btn-icon-wp danger" onclick="removeSectionItem(${idx}, ${itemIdx})" title="Remove Item">&times;</button>
+                    </div>
+                    <input type="text" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_quote" value="${escapeHtml(item.quote || '')}" placeholder="Client Testimonial Quote">
+                  </div>
+                `;
+              } else {
+                // Feature or standard card item
+                return `
+                  <div class="section-item-card">
+                    <input type="text" style="width:30%;" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_title" value="${escapeHtml(item.title || '')}" placeholder="Title">
+                    <input type="text" class="form-control" data-sec-idx="${idx}" data-item-idx="${itemIdx}" data-field="item_desc" value="${escapeHtml(item.desc || '')}" placeholder="Description">
+                    <button type="button" class="btn-icon-wp danger" onclick="removeSectionItem(${idx}, ${itemIdx})" title="Remove Item">&times;</button>
+                  </div>
+                `;
+              }
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="section-builder-card ${isHidden ? 'is-hidden' : ''}" id="sec-card-${idx}">
+        <div class="section-card-header">
+          <div class="section-card-info">
+            <span style="font-weight:700;color:var(--wp-text-muted);font-size:12px;">#${idx + 1}</span>
+            <span class="section-type-badge">${escapeHtml(sec.type || 'section')}</span>
+            <span class="section-card-name">${escapeHtml(sec.name || sec.title || 'Untitled Section')}</span>
+            ${isHidden ? '<span class="badge badge-draft" style="font-size:11px;">Hidden</span>' : ''}
+          </div>
+          <div class="section-card-tools">
+            ${canMoveUp ? `<button type="button" class="btn-icon-wp" onclick="moveSectionUp(${idx})" title="Move Section Up">&#9650;</button>` : ''}
+            ${canMoveDown ? `<button type="button" class="btn-icon-wp" onclick="moveSectionDown(${idx})" title="Move Section Down">&#9660;</button>` : ''}
+            <button type="button" class="button button-small" onclick="toggleSectionVisibility(${idx})" title="${isHidden ? 'Show Section on Live Website' : 'Hide Section'}">
+              <i data-lucide="${isHidden ? 'eye' : 'eye-off'}" style="width:13px;height:13px;vertical-align:-2px;"></i> ${isHidden ? 'Show' : 'Hide'}
+            </button>
+            <button type="button" class="btn-icon-wp danger" onclick="deleteSection(${idx})" title="Delete Section">&times;</button>
+          </div>
+        </div>
+
+        <div class="section-card-body">
+          <div class="section-grid-2">
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:600;">Headline / Section Title</label>
+              <input type="text" class="form-control" data-sec-idx="${idx}" data-field="title" value="${escapeHtml(sec.title || '')}" placeholder="Headline">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:600;">Badge / Tagline</label>
+              <input type="text" class="form-control" data-sec-idx="${idx}" data-field="badge" value="${escapeHtml(sec.badge || '')}" placeholder="Optional small badge text">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label style="font-size:12px;font-weight:600;">Subtitle / Paragraph Description</label>
+            <textarea class="form-control" rows="2" data-sec-idx="${idx}" data-field="subtitle" placeholder="Supporting text or details">${escapeHtml(sec.subtitle || '')}</textarea>
+          </div>
+          ${specificFieldsHtml}
+          ${itemsHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function moveSectionUp(idx) {
+  if (idx <= 0) return;
+  syncInputsToCurrentSections();
+  const temp = currentSections[idx];
+  currentSections[idx] = currentSections[idx - 1];
+  currentSections[idx - 1] = temp;
+  renderPageSectionCards();
+}
+
+function moveSectionDown(idx) {
+  if (idx >= currentSections.length - 1) return;
+  syncInputsToCurrentSections();
+  const temp = currentSections[idx];
+  currentSections[idx] = currentSections[idx + 1];
+  currentSections[idx + 1] = temp;
+  renderPageSectionCards();
+}
+
+function toggleSectionVisibility(idx) {
+  syncInputsToCurrentSections();
+  currentSections[idx].visible = currentSections[idx].visible === false ? true : false;
+  renderPageSectionCards();
+  showToast(`Section ${currentSections[idx].visible ? 'enabled' : 'hidden'}`, 'success');
+}
+
+function deleteSection(idx) {
+  if (!confirm('Are you sure you want to delete this section from the page?')) return;
+  syncInputsToCurrentSections();
+  currentSections.splice(idx, 1);
+  renderPageSectionCards();
+  showToast('Section removed', 'info');
+}
+
+function addSectionItem(secIdx) {
+  syncInputsToCurrentSections();
+  const sec = currentSections[secIdx];
+  if (!sec) return;
+  if (!Array.isArray(sec.items)) sec.items = [];
+
+  if (sec.type === 'testimonials') {
+    sec.items.push({ name: 'New Client', role: 'Company Executive', quote: 'Great partnership with measurable results.', rating: 5 });
+  } else if (sec.type === 'mission') {
+    sec.items.push({ number: '100+', label: 'New Milestone' });
+  } else {
+    sec.items.push({ title: 'New Feature', desc: 'Description of the feature and benefits.' });
+  }
+
+  renderPageSectionCards();
+}
+
+function removeSectionItem(secIdx, itemIdx) {
+  syncInputsToCurrentSections();
+  if (currentSections[secIdx] && Array.isArray(currentSections[secIdx].items)) {
+    currentSections[secIdx].items.splice(itemIdx, 1);
+    renderPageSectionCards();
+  }
+}
+
+async function saveCurrentPageSections() {
+  if (!currentPageData) return;
+  syncInputsToCurrentSections();
+
+  try {
+    const payload = {
+      id: currentPageData.id,
+      title: currentPageData.title,
+      slug: currentPageData.slug,
+      meta_title: currentPageData.meta_title,
+      meta_description: currentPageData.meta_description,
+      status: currentPageData.status || 'published',
+      sections: currentSections
+    };
+
+    const res = await apiRequest('/pages.php', 'POST', payload);
+    if (res.success) {
+      showToast('Page sections saved successfully!', 'success');
+      loadPages();
+    } else {
+      showToast(res.error || 'Failed to save sections', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to save page sections', 'error');
+  }
+}
+
+function openAddSectionModal() {
+  document.getElementById('new-section-name').value = '';
+  document.getElementById('new-section-title').value = '';
+  document.getElementById('new-section-subtitle').value = '';
+  document.getElementById('new-section-badge').value = '';
+  openModal('modal-add-section');
+}
+
+function handleConfirmAddSection(e) {
+  e.preventDefault();
+  syncInputsToCurrentSections();
+
+  const name = document.getElementById('new-section-name').value.trim();
+  const type = document.getElementById('new-section-type').value;
+  const badge = document.getElementById('new-section-badge').value.trim();
+  const title = document.getElementById('new-section-title').value.trim();
+  const subtitle = document.getElementById('new-section-subtitle').value.trim();
+
+  const newSec = {
+    id: 'sec_' + Date.now().toString(36),
+    name: name,
+    type: type,
+    badge: badge,
+    title: title,
+    subtitle: subtitle,
+    visible: true,
+    order: currentSections.length + 1,
+    button_text: type === 'cta' || type === 'hero' ? 'Get Started' : '',
+    button_link: type === 'cta' || type === 'hero' ? '/contact' : '',
+    items: type === 'features' ? [
+      { title: 'Feature One', desc: 'Detailed explanation of this capability.' },
+      { title: 'Feature Two', desc: 'High performance and scalable architecture.' }
+    ] : []
+  };
+
+  currentSections.push(newSec);
+  closeModal('modal-add-section');
+  renderPageSectionCards();
+  showToast(`Section "${name}" added to page! Click Save to apply changes.`, 'success');
+}
+
+function openNewPageModal() {
+  document.getElementById('edit-page-id').value = '';
+  document.getElementById('modal-edit-page-title').innerText = 'Add New Page';
+  document.getElementById('edit-page-title').value = '';
+  document.getElementById('edit-page-slug').value = '';
+  document.getElementById('edit-page-status').value = 'published';
+  document.getElementById('edit-page-meta-title').value = '';
+  document.getElementById('edit-page-meta-desc').value = '';
+  openModal('modal-edit-page');
+}
+
+function openEditPageModal(pageId) {
+  const p = allPages.find(item => item.id == pageId);
+  if (!p) return;
+
+  document.getElementById('edit-page-id').value = p.id;
+  document.getElementById('modal-edit-page-title').innerText = `Edit Page Details: ${p.title}`;
+  document.getElementById('edit-page-title').value = p.title || '';
+  document.getElementById('edit-page-slug').value = p.slug || '';
+  document.getElementById('edit-page-status').value = p.status || 'published';
+  document.getElementById('edit-page-meta-title').value = p.meta_title || '';
+  document.getElementById('edit-page-meta-desc').value = p.meta_description || '';
+  openModal('modal-edit-page');
+}
+
+async function handleSavePageDetails(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-page-id').value;
+  const title = document.getElementById('edit-page-title').value.trim();
+  const slug = document.getElementById('edit-page-slug').value.trim().toLowerCase();
+  const status = document.getElementById('edit-page-status').value;
+  const meta_title = document.getElementById('edit-page-meta-title').value.trim();
+  const meta_description = document.getElementById('edit-page-meta-desc').value.trim();
+
+  let existingSections = [];
+  if (id) {
+    const existing = allPages.find(p => p.id == id);
+    if (existing && Array.isArray(existing.sections)) existingSections = existing.sections;
+  }
+
+  try {
+    const payload = {
+      id: id || undefined,
+      title,
+      slug,
+      status,
+      meta_title,
+      meta_description,
+      sections: existingSections
+    };
+
+    const res = await apiRequest('/pages.php', 'POST', payload);
+    if (res.success) {
+      showToast('Page details saved successfully!', 'success');
+      closeModal('modal-edit-page');
+      loadPages();
+    } else {
+      showToast(res.error || 'Failed to save page', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to save page details', 'error');
+  }
 }
 
 // ==================== WORDPRESS POSTS CRUD (edit.php) ====================
@@ -1446,11 +2008,253 @@ function getMockStore() {
         social_instagram: "https://instagram.com/entecmedia",
         social_facebook: "https://facebook.com/entecmedia",
         social_youtube: "https://youtube.com/@entecmedia"
-      }
+      },
+      pages: getDefaultMockPages()
     };
+    localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(store));
+  } else if (!store.pages) {
+    store.pages = getDefaultMockPages();
     localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(store));
   }
   return store;
+}
+
+function getDefaultMockPages() {
+  return [
+    {
+      id: 1,
+      title: "Home Page",
+      slug: "home",
+      meta_title: "Entec Media - IT & Digital Marketing Company",
+      meta_description: "Websites, mobile apps, UI/UX, SEO, Google Ads and Meta Ads.",
+      status: "published",
+      sections: [
+        {
+          id: "sec_hero",
+          name: "Hero Banner",
+          type: "hero",
+          visible: true,
+          order: 1,
+          badge: "IT & Digital Marketing Company",
+          title: "We design, build & grow brands",
+          subtitle: "Entec Media is an IT & digital marketing company — websites, mobile apps, UI/UX, graphic design, SEO, Google Ads and Meta Ads that turn your business goals into measurable growth.",
+          button_text: "Let's Collaborate",
+          button_link: "/contact",
+          secondary_button_text: "View Projects",
+          secondary_button_link: "/portfolio",
+          image: "/images/ENTEC.png",
+          rating_value: "4.9/5",
+          rating_label: "Trusted by Top Brands"
+        },
+        {
+          id: "sec_mission",
+          name: "Mission & Impact",
+          type: "mission",
+          visible: true,
+          order: 2,
+          badge: "Our Core Mission",
+          title: "We design, develop and market digital products that drive growth.",
+          subtitle: "At the end of the day, we’re here to help your business grow. That means combining smart design, solid technology and data-driven marketing into one strategy.",
+          button_text: "Learn About Us",
+          button_link: "/about",
+          items: [
+            { number: "10+", label: "Years Experience" },
+            { number: "150+", label: "Projects Completed" },
+            { number: "98%", label: "Client Satisfaction" },
+            { number: "24/7", label: "Dedicated Support" }
+          ]
+        },
+        {
+          id: "sec_why_choose_us",
+          name: "Why Choose Us",
+          type: "features",
+          visible: true,
+          order: 3,
+          badge: "The Entec Advantage",
+          title: "Why Choose Entec Media",
+          subtitle: "Strategy > aesthetics. Results that accelerate your digital growth.",
+          items: [
+            { title: "Clarity", desc: "Crystal clear project roadmap, regular communication, and 0% hidden surprises." },
+            { title: "Performance", desc: "Blazing fast load speeds, clean architecture, and conversion-focused UX." },
+            { title: "Scale", desc: "Enterprise-ready foundations built to scale smoothly as your company expands." }
+          ]
+        },
+        {
+          id: "sec_testimonials",
+          name: "Client Testimonials",
+          type: "testimonials",
+          visible: true,
+          order: 4,
+          badge: "Social Proof",
+          title: "Trusted by Industry Leaders",
+          subtitle: "What founders and marketing directors say about partnering with Entec Media.",
+          items: [
+            {
+              name: "Amit Patel",
+              role: "Founder & CEO, TechVentures",
+              quote: "Entec Media redesigned our web platform and scaled our lead pipeline by 300% in under 90 days.",
+              service: "Web Development",
+              rating: 5,
+              avatar: "/images/team1-avatar.webp"
+            },
+            {
+              name: "Sarah Jenkins",
+              role: "VP Marketing, Lumina Global",
+              quote: "The team delivered our mobile app ahead of schedule with flawless UI/UX. Conversions have doubled.",
+              service: "Mobile App Design",
+              rating: 5,
+              avatar: "/images/team2-avatar.webp"
+            }
+          ]
+        },
+        {
+          id: "sec_cta",
+          name: "Call to Action Banner",
+          type: "cta",
+          visible: true,
+          order: 5,
+          badge: "Start Your Project",
+          title: "Ready to start something great?",
+          subtitle: "Get in touch with our team today and let's build your next digital success story.",
+          button_text: "Let's Collaborate",
+          button_link: "/contact"
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "About Us",
+      slug: "about",
+      meta_title: "About Entec Media - Team, Culture & Vision",
+      meta_description: "Discover the story behind Entec Media.",
+      status: "published",
+      sections: [
+        {
+          id: "sec_about_hero",
+          name: "About Hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          badge: "Who We Are",
+          title: "We are Entec Media",
+          subtitle: "An IT & digital marketing powerhouse helping companies build remarkable digital products and scale profitably.",
+          image: "/images/aboutbac.webp",
+          button_text: "View Careers",
+          button_link: "/careers"
+        },
+        {
+          id: "sec_about_story",
+          name: "Company Story",
+          type: "mission",
+          visible: true,
+          order: 2,
+          badge: "Our Journey",
+          title: "Crafting digital experiences with purpose",
+          subtitle: "Entec Media brings together veteran engineers, creative UI/UX designers, and analytical performance marketers to solve complex business challenges.",
+          items: [
+            { number: "10+", label: "Years of Excellence" },
+            { number: "50+", label: "Talented Creators" },
+            { number: "250+", label: "Projects Delivered" }
+          ]
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Contact Us",
+      slug: "contact",
+      meta_title: "Contact Entec Media - Start Your Project Today",
+      meta_description: "Get in touch with Entec Media.",
+      status: "published",
+      sections: [
+        {
+          id: "sec_contact_hero",
+          name: "Contact Hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          badge: "Get In Touch",
+          title: "Let’s build something extraordinary together",
+          subtitle: "Have a project in mind, an idea to validate, or questions about scaling your digital presence?"
+        },
+        {
+          id: "sec_contact_info",
+          name: "Contact Information & Office",
+          type: "contact_details",
+          visible: true,
+          order: 2,
+          badge: "Reach Us Directly",
+          title: "Contact Details",
+          phone1: "+91-9992009988",
+          phone2: "+91-9992009901",
+          email: "info@entecmedia.com",
+          address: "#123, First Floor, Complex Street, Zirakpur, Punjab, India",
+          hours: "Monday – Saturday, 10:00 AM – 7:00 PM IST",
+          map_query: "Zirakpur, Punjab, India"
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Services",
+      slug: "services",
+      meta_title: "Our Services | Entec Media",
+      meta_description: "Web development, mobile apps, UI/UX, SEO, and paid ads.",
+      status: "published",
+      sections: [
+        {
+          id: "sec_services_hero",
+          name: "Services Hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          badge: "Comprehensive Solutions",
+          title: "High-Impact Digital Services Built for Growth",
+          subtitle: "We craft robust web applications, mobile apps, and high-conversion ad campaigns."
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Portfolio / Works",
+      slug: "portfolio",
+      meta_title: "Our Portfolio | Entec Media",
+      meta_description: "Explore our latest digital projects and case studies.",
+      status: "published",
+      sections: [
+        {
+          id: "sec_portfolio_hero",
+          name: "Portfolio Hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          badge: "Selected Case Studies",
+          title: "Work That Drives Real Business Impact",
+          subtitle: "Explore our latest web applications, mobile apps, and marketing campaigns."
+        }
+      ]
+    },
+    {
+      id: 6,
+      title: "Careers",
+      slug: "careers",
+      meta_title: "Careers at Entec Media",
+      meta_description: "Join our team of developers, designers, and marketers.",
+      status: "published",
+      sections: [
+        {
+          id: "sec_careers_hero",
+          name: "Careers Hero",
+          type: "hero",
+          visible: true,
+          order: 1,
+          badge: "We Are Hiring",
+          title: "Build Your Career With Digital Innovators",
+          subtitle: "Join a high-energy team solving exciting challenges with modern technologies."
+        }
+      ]
+    }
+  ];
 }
 
 function handleLocalMockApi(endpoint, method, body) {
@@ -1474,6 +2278,7 @@ function handleLocalMockApi(endpoint, method, body) {
     return {
       success: true,
       data: {
+        pages_count: (store.pages || []).length,
         blogs_count: store.blogs.length,
         careers_open_count: store.careers.filter(c => c.status === 'open').length,
         applications_count: store.applications.length,
@@ -1654,6 +2459,42 @@ function handleLocalMockApi(endpoint, method, body) {
         localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(store));
       }
       return { success: true, message: 'File deleted' };
+    }
+  }
+
+  // 10. Pages & Sections
+  if (endpoint.startsWith('/pages.php')) {
+    if (method === 'GET') {
+      const urlParams = new URLSearchParams(endpoint.split('?')[1] || '');
+      const slug = urlParams.get('slug');
+      const id = urlParams.get('id');
+      if (slug || id) {
+        const found = (store.pages || []).find(p => (slug && p.slug === slug) || (id && p.id == id));
+        return { success: true, page: found || (store.pages && store.pages[0]) };
+      }
+      return { success: true, pages: store.pages || [] };
+    }
+    if (method === 'POST' || method === 'PUT') {
+      if (!Array.isArray(store.pages)) store.pages = [];
+      const pageId = body?.id;
+      const existingIdx = store.pages.findIndex(p => (pageId && p.id == pageId) || p.slug === body?.slug);
+      if (existingIdx >= 0) {
+        store.pages[existingIdx] = { ...store.pages[existingIdx], ...body, updated_at: new Date().toISOString() };
+      } else {
+        const newPage = { id: Date.now(), ...body, updated_at: new Date().toISOString() };
+        store.pages.push(newPage);
+      }
+      localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(store));
+      return { success: true, message: 'Page and sections saved successfully' };
+    }
+    if (method === 'DELETE') {
+      const urlParams = new URLSearchParams(endpoint.split('?')[1] || '');
+      const id = urlParams.get('id');
+      if (Array.isArray(store.pages)) {
+        store.pages = store.pages.filter(p => p.id != id);
+        localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(store));
+      }
+      return { success: true, message: 'Page deleted successfully' };
     }
   }
 
@@ -1874,3 +2715,21 @@ window.handleSaveSettings = handleSaveSettings;
 window.syncSiteData = syncSiteData;
 window.autoSlug = autoSlug;
 window.showToast = showToast;
+
+// Pages and Visual Section Builder
+window.loadPages = loadPages;
+window.filterPagesByStatus = filterPagesByStatus;
+window.filterPages = filterPages;
+window.openPageSectionsManager = openPageSectionsManager;
+window.saveCurrentPageSections = saveCurrentPageSections;
+window.openAddSectionModal = openAddSectionModal;
+window.handleConfirmAddSection = handleConfirmAddSection;
+window.moveSectionUp = moveSectionUp;
+window.moveSectionDown = moveSectionDown;
+window.toggleSectionVisibility = toggleSectionVisibility;
+window.deleteSection = deleteSection;
+window.addSectionItem = addSectionItem;
+window.removeSectionItem = removeSectionItem;
+window.openNewPageModal = openNewPageModal;
+window.openEditPageModal = openEditPageModal;
+window.handleSavePageDetails = handleSavePageDetails;

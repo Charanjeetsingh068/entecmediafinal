@@ -6,6 +6,7 @@ require_admin_auth();
 $db = get_db_connection();
 
 $stats = [
+    'pages_count'        => (int)$db->query("SELECT COUNT(*) FROM pages")->fetchColumn(),
     'blogs_count'        => (int)$db->query("SELECT COUNT(*) FROM blogs")->fetchColumn(),
     'projects_count'     => (int)$db->query("SELECT COUNT(*) FROM projects")->fetchColumn(),
     'services_count'     => (int)$db->query("SELECT COUNT(*) FROM services WHERE status = 'active'")->fetchColumn(),

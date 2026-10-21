@@ -42,11 +42,28 @@ function ReviewCard({ item, brand, hidden }: { item: Review; brand: boolean; hid
  * last copy of the slides, it is moved invisibly to the same slide in the middle copy. All reviews are slides; the four dots cycle with them (slides 1–4
  * light dots 1–4, slide 5 lights dot 1 again, …).
  */
-export default function Testimonials({ reviews = testimonials }: { reviews?: Review[] }) {
+export default function Testimonials({
+  reviews = testimonials,
+  dynamicContent
+}: {
+  reviews?: Review[];
+  dynamicContent?: any;
+} = {}) {
+  const activeReviews: Review[] =
+    dynamicContent?.items && Array.isArray(dynamicContent.items) && dynamicContent.items.length > 0
+      ? dynamicContent.items.map((it: any) => ({
+          quote: it.quote || it.desc || "",
+          name: it.name || "Client",
+          role: it.role || "Executive",
+          service: it.service || "Digital Services",
+          avatar: it.avatar || "/images/team1-avatar.webp"
+        }))
+      : reviews;
+
   // Two rows; each is doubled in the markup so the loop is seamless
-  const half = Math.ceil(reviews.length / 2);
-  const rows = [reviews.slice(0, half), reviews.slice(half)];
-  const phoneSlides = Array.from({ length: COPIES }, (_, c) => reviews.map((item, k) => ({ item, k, c }))).flat();
+  const half = Math.ceil(activeReviews.length / 2);
+  const rows = [activeReviews.slice(0, half), activeReviews.slice(half)];
+  const phoneSlides = Array.from({ length: COPIES }, (_, c) => activeReviews.map((item, k) => ({ item, k, c }))).flat();
 
   const sectionRef = useRef<HTMLElement>(null);
   const voiceRef = useRef<HTMLCanvasElement>(null);

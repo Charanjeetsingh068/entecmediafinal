@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css" data-beasties-skip>
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
   <base href="/admin/">
-  <link rel="stylesheet" href="/admin/admin.css?v=2.2" data-beasties-skip>
+  <link rel="stylesheet" href="/admin/admin.css?v=2.3" data-beasties-skip>
 </head>
 <body class="wp-core-ui">
 
@@ -101,9 +101,12 @@
             <i data-lucide="newspaper"></i>
             <span>All Posts</span>
           </a>
-          <a href="javascript:void(0)" class="nav-item" onclick="openBlogModal()">
-            <i data-lucide="pen-tool"></i>
-            <span>Add New Post</span>
+          <div class="sidebar-separator"></div>
+          <div class="sidebar-section-title">Pages & Sections</div>
+          <a href="#pages" class="nav-item" onclick="switchSection('pages')">
+            <i data-lucide="layout-template"></i>
+            <span>All Pages</span>
+            <span class="nav-badge" id="badge-pages">6</span>
           </a>
 
           <div class="sidebar-separator"></div>
@@ -157,6 +160,13 @@
 
             <!-- Overview Stat Boxes -->
             <div class="wp-dashboard-grid">
+              <div class="wp-stat-box" onclick="switchSection('pages')" style="cursor: pointer;">
+                <div class="wp-stat-icon" style="background:#e7f1fb;color:#2271b1;"><i data-lucide="layout-template"></i></div>
+                <div class="wp-stat-details">
+                  <h3 id="stat-pages">6</h3>
+                  <span>Pages & Sections</span>
+                </div>
+              </div>
               <div class="wp-stat-box" onclick="switchSection('blogs')" style="cursor: pointer;">
                 <div class="wp-stat-icon"><i data-lucide="newspaper"></i></div>
                 <div class="wp-stat-details">
@@ -340,6 +350,54 @@
                 <span class="displaying-num" id="blogs-count-display-bottom">0 items</span>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- ================= SECTION: WORDPRESS PAGES (edit.php?post_type=page) ================= -->
+        <section id="sec-pages" class="content-section" style="display: none;">
+          <div class="wrap">
+            <h1 class="wp-heading-inline">Pages & Sections</h1>
+            <a href="javascript:void(0)" class="page-title-action" onclick="openNewPageModal()">Add New Page</a>
+            <hr class="wp-header-end">
+
+            <p style="color:var(--wp-text-muted);font-size:13px;margin: 8px 0 16px;">
+              Manage content and dynamic sections for all website pages. Click <strong>"Manage Sections"</strong> on any page to edit, reorder, add, or toggle sections.
+            </p>
+
+            <!-- Subsubsub Filter Tabs -->
+            <ul class="subsubsub">
+              <li class="all"><a href="javascript:void(0)" class="current" onclick="filterPagesByStatus('all')">All <span class="count">(<span id="count-pages-all">6</span>)</span></a> <span class="separator">|</span></li>
+              <li class="publish"><a href="javascript:void(0)" onclick="filterPagesByStatus('published')">Published <span class="count">(<span id="count-pages-published">6</span>)</span></a> <span class="separator">|</span></li>
+              <li class="draft"><a href="javascript:void(0)" onclick="filterPagesByStatus('draft')">Drafts <span class="count">(<span id="count-pages-draft">0</span>)</span></a></li>
+            </ul>
+
+            <!-- Tablenav Top (Search & Display Num) -->
+            <div class="tablenav top">
+              <div class="alignleft actions">
+                <span class="displaying-num" id="pages-count-display">6 pages</span>
+              </div>
+              <div class="search-box">
+                <input type="search" id="pages-search-input" placeholder="Search pages..." oninput="filterPages()">
+                <button type="button" class="button" onclick="filterPages()">Search Pages</button>
+              </div>
+            </div>
+
+            <!-- Pages Table (wp-list-table) -->
+            <table class="wp-list-table widefat fixed striped">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 250px;">Page Title</th>
+                  <th scope="col">Route / Slug</th>
+                  <th scope="col" style="width: 140px;">Active Sections</th>
+                  <th scope="col" style="width: 100px;">Status</th>
+                  <th scope="col" style="width: 150px;">Last Modified</th>
+                  <th scope="col" style="width: 200px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pages-table-body">
+                <tr><td colspan="6" class="text-center" style="padding: 24px;">Loading pages & sections...</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -957,10 +1015,147 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: PAGE SECTIONS BUILDER ==================== -->
+  <div id="modal-page-sections" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 960px; max-height: 90vh;">
+      <div class="modal-header" style="background:#f6f7f7;border-bottom:1px solid var(--wp-border-subtle);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h3 id="modal-page-sections-title" style="margin:0;font-size:16px;color:var(--wp-text-dark);display:flex;align-items:center;gap:8px;">
+            <i data-lucide="layout-template"></i>
+            <span>Manage Page Sections</span>
+          </h3>
+          <span id="modal-page-sections-subtitle" style="font-size:12px;color:var(--wp-text-muted);">Configure and customize dynamic sections for this page</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button type="button" class="button button-primary" onclick="openAddSectionModal()">
+            <i data-lucide="plus"></i> Add New Section
+          </button>
+          <button type="button" class="modal-close" onclick="closeModal('modal-page-sections')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 20px; overflow-y: auto; max-height: calc(90vh - 140px); background: #f0f0f1;">
+        <input type="hidden" id="current-editing-page-slug">
+        <input type="hidden" id="current-editing-page-id">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;background:#ffffff;padding:12px 16px;border:1px solid var(--wp-border-color);border-radius:4px;">
+          <div style="font-size:13px;color:var(--wp-text-dark);">
+            <strong id="active-sections-count-text">0 Sections</strong> on this page. Reorder using arrows, edit text/buttons/images, or toggle section visibility.
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="button button-primary" onclick="saveCurrentPageSections()">
+              <i data-lucide="check"></i> Save Sections
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Section Cards Container -->
+        <div id="page-sections-container">
+          <div class="text-center" style="padding:40px;color:var(--wp-text-muted);">Loading sections...</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#ffffff;border-top:1px solid var(--wp-border-subtle);display:flex;justify-content:space-between;">
+        <button type="button" class="button" onclick="closeModal('modal-page-sections')">Close</button>
+        <button type="button" class="button button-primary button-large" onclick="saveCurrentPageSections()">
+          <i data-lucide="check"></i> Save Page Sections
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD NEW SECTION ==================== -->
+  <div id="modal-add-section" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3>Add New Section</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-add-section')">&times;</button>
+      </div>
+      <form id="form-add-section" onsubmit="handleConfirmAddSection(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="new-section-name">Section Name / Label</label>
+            <input type="text" id="new-section-name" required class="form-control" placeholder="e.g. Why Choose Us, Featured Work, CTA Banner">
+          </div>
+          <div class="form-group">
+            <label for="new-section-type">Section Type & Layout</label>
+            <select id="new-section-type" class="form-control" required>
+              <option value="hero">Hero Banner (Headline, Subtitle, CTA Buttons & Media)</option>
+              <option value="mission">Mission & Story (Heading, Story Paragraph & Numbered Stats)</option>
+              <option value="features">Feature Cards Grid (Multi-column Cards with Icons)</option>
+              <option value="testimonials">Testimonials & Reviews (Client Quotes & Ratings)</option>
+              <option value="team">Team Showcase (Members, Roles, Avatars & Bios)</option>
+              <option value="services">Services Highlight (Interactive Services Grid)</option>
+              <option value="cta">Call to Action Banner (Conversion Banner & Buttons)</option>
+              <option value="contact_details">Contact Details (Phone, Email, Address & Hours)</option>
+              <option value="custom">Custom Content Block (Flexible Content & Media)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="new-section-badge">Section Tagline / Badge (Optional)</label>
+            <input type="text" id="new-section-badge" class="form-control" placeholder="e.g. Fast & Reliable, Proven Results">
+          </div>
+          <div class="form-group">
+            <label for="new-section-title">Headline / Title</label>
+            <input type="text" id="new-section-title" required class="form-control" placeholder="Section main heading">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="new-section-subtitle">Description / Subtitle</label>
+            <textarea id="new-section-subtitle" class="form-control" rows="3" placeholder="Supporting text or paragraph"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="button" onclick="closeModal('modal-add-section')">Cancel</button>
+          <button type="submit" class="button button-primary">Add Section to Page</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: EDIT PAGE DETAILS ==================== -->
+  <div id="modal-edit-page" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="modal-edit-page-title">Edit Page Details</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-edit-page')">&times;</button>
+      </div>
+      <form id="form-edit-page" onsubmit="handleSavePageDetails(event)">
+        <input type="hidden" id="edit-page-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit-page-title">Page Title</label>
+            <input type="text" id="edit-page-title" required class="form-control" placeholder="e.g. Home Page, About Us">
+          </div>
+          <div class="form-group">
+            <label for="edit-page-slug">URL Slug / Route</label>
+            <input type="text" id="edit-page-slug" required class="form-control" placeholder="e.g. home, about, contact">
+          </div>
+          <div class="form-group">
+            <label for="edit-page-status">Status</label>
+            <select id="edit-page-status" class="form-control">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-page-meta-title">SEO Meta Title</label>
+            <input type="text" id="edit-page-meta-title" class="form-control" placeholder="Search engine title">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="edit-page-meta-desc">SEO Meta Description</label>
+            <textarea id="edit-page-meta-desc" class="form-control" rows="3" placeholder="Search snippet description"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="button" onclick="closeModal('modal-edit-page')">Cancel</button>
+          <button type="submit" class="button button-primary">Save Page Details</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Admin JavaScript Logic -->
-  <script src="/admin/admin.js?v=2.2"></script>
+  <script src="/admin/admin.js?v=2.3"></script>
 </body>
 </html>

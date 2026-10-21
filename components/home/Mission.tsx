@@ -88,7 +88,7 @@ const slides = [
   }
 ];
 
-export default function Mission() {
+export default function Mission({ dynamicContent }: { dynamicContent?: any } = {}) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
@@ -144,15 +144,20 @@ export default function Mission() {
 
             {/* Overlay 1: Top Left-center Title Badge */}
             <div className="mission-title-badge">
-              <h2>
-                <span className="blue-text">Aligned</span> with <br />your mission
-              </h2>
+              {dynamicContent?.title ? (
+                <h2 dangerouslySetInnerHTML={{ __html: dynamicContent.title }} />
+              ) : (
+                <h2>
+                  <span className="blue-text">Aligned</span> with <br />your mission
+                </h2>
+              )}
             </div>
 
             {/* Overlay 2: Top Right Intro Text */}
             <div className="mission-right-intro">
               <p>
-                We partner with startups and businesses to turn ideas into websites, apps and marketing campaigns that deliver results.
+                {dynamicContent?.subtitle ||
+                  "We partner with startups and businesses to turn ideas into websites, apps and marketing campaigns that deliver results."}
               </p>
             </div>
 

@@ -86,6 +86,10 @@ if (strpos($uri, '/api/') === 0) {
 // 3. Static Next.js Pages
 $clean = trim($uri, '/');
 if (empty($clean)) {
+    if (file_exists(__DIR__ . '/index.html')) {
+        include __DIR__ . '/index.html';
+        exit;
+    }
     if (file_exists(__DIR__ . '/out/index.html')) {
         include __DIR__ . '/out/index.html';
         exit;

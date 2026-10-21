@@ -1,5 +1,5 @@
 Options -MultiViews
-DirectoryIndex out/index.html index.html index.php
+DirectoryIndex index.html index.php out/index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
@@ -28,18 +28,18 @@ DirectoryIndex out/index.html index.html index.php
   RewriteRule ^_next/(.*)$ out/_next/$1 [L]
 
   # 6. Static files that exist directly in out/
-  RewriteCond %{DOCUMENT_ROOT}/out%{REQUEST_URI} -f
+  RewriteCond %{DOCUMENT_ROOT}/out/$1 -f
   RewriteRule ^(.*)$ out/$1 [L]
 
   # 7. HTML pages (e.g. /about/ -> out/about/index.html or out/about.html)
-  RewriteCond %{DOCUMENT_ROOT}/out%{REQUEST_URI}/index.html -f
+  RewriteCond %{DOCUMENT_ROOT}/out/$1/index.html -f
   RewriteRule ^(.*)/$ out/$1/index.html [L]
 
-  RewriteCond %{DOCUMENT_ROOT}/out%{REQUEST_URI}.html -f
+  RewriteCond %{DOCUMENT_ROOT}/out/$1.html -f
   RewriteRule ^(.*)$ out/$1.html [L]
 
   # 8. Root Homepage
-  RewriteRule ^$ out/index.html [L]
+  RewriteRule ^$ index.html [L]
 </IfModule>
 
 # Fallback 404

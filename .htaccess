@@ -9,43 +9,36 @@ DirectoryIndex out/index.html index.html index.php
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
 
-  # 2. Admin URL Shortcuts & Direct Admin Portal
+  # 2. Admin Portal & Shortcuts (Direct mapping to standalone admin CMS)
   RewriteRule ^(adminlogin|admin-login|admin/login|login)/?$ /admin/ [L,R=301]
-  RewriteRule ^admin/?$ out/admin/index.html [L]
-  RewriteCond %{DOCUMENT_ROOT}/out/admin/$1 -f
-  RewriteRule ^admin/(.*)$ out/admin/$1 [L]
-  RewriteCond %{DOCUMENT_ROOT}/public/admin/$1 -f
+  RewriteRule ^admin$ /admin/ [L,R=301]
+  RewriteRule ^admin/$ public/admin/index.html [L]
+  RewriteRule ^admin/index\.html$ public/admin/index.html [L]
+  RewriteRule ^admin/admin\.css$ public/admin/admin.css [L]
+  RewriteRule ^admin/admin\.js$ public/admin/admin.js [L]
   RewriteRule ^admin/(.*)$ public/admin/$1 [L]
 
   # 3. Direct API access (PHP scripts)
-  RewriteCond %{DOCUMENT_ROOT}/public/api/$1 -f
   RewriteRule ^api/(.*)$ public/api/$1 [L,QSA]
-  RewriteCond %{DOCUMENT_ROOT}/out/api/$1 -f
-  RewriteRule ^api/(.*)$ out/api/$1 [L,QSA]
 
   # 4. Media Uploads
-  RewriteCond %{DOCUMENT_ROOT}/public/uploads/$1 -f
   RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
-  RewriteCond %{DOCUMENT_ROOT}/out/uploads/$1 -f
-  RewriteRule ^uploads/(.*)$ out/uploads/$1 [L]
 
   # 5. Next.js Static Assets (_next)
-  RewriteCond %{DOCUMENT_ROOT}/out/_next/$1 -f
   RewriteRule ^_next/(.*)$ out/_next/$1 [L]
 
-  # 6. Direct Files in out/
-  RewriteCond %{DOCUMENT_ROOT}/out/$1 -f
+  # 6. Static files that exist directly in out/
+  RewriteCond %{DOCUMENT_ROOT}/out%{REQUEST_URI} -f
   RewriteRule ^(.*)$ out/$1 [L]
 
   # 7. HTML pages (e.g. /about/ -> out/about/index.html or out/about.html)
-  RewriteCond %{DOCUMENT_ROOT}/out/$1/index.html -f
+  RewriteCond %{DOCUMENT_ROOT}/out%{REQUEST_URI}/index.html -f
   RewriteRule ^(.*)/$ out/$1/index.html [L]
 
-  RewriteCond %{DOCUMENT_ROOT}/out/$1.html -f
+  RewriteCond %{DOCUMENT_ROOT}/out%{REQUEST_URI}.html -f
   RewriteRule ^(.*)$ out/$1.html [L]
 
   # 8. Root Homepage
-  RewriteCond %{DOCUMENT_ROOT}/out/index.html -f
   RewriteRule ^$ out/index.html [L]
 </IfModule>
 

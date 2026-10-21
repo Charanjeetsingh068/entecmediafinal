@@ -425,6 +425,10 @@ function renderCareers(careers) {
   if (window.lucide) lucide.createIcons();
 }
 
+function filterCareers() {
+  renderCareers(allCareers);
+}
+
 function openCareerModal(c = null) {
   document.getElementById('career-id').value = c ? c.id : '';
   document.getElementById('career-title').value = c ? c.title : '';
@@ -1656,12 +1660,16 @@ window.deleteService = deleteService;
 window.updateLeadStatus = updateLeadStatus;
 window.deleteLead = deleteLead;
 window.openMediaPicker = openMediaPicker;
-window.selectPickerMedia = selectPickerMedia;
-window.confirmPickerSelection = confirmPickerSelection;
-window.openMediaModal = openMediaModal;
-window.viewMediaDetails = viewMediaDetails;
+window.selectPickerItem = selectPickerItem;
+window.confirmMediaSelection = confirmMediaSelection;
+window.filterPickerMedia = filterPickerMedia;
+window.uploadToPicker = uploadToPicker;
+window.openMediaDetailsModal = openMediaDetailsModal;
+window.copyMediaUrl = copyMediaUrl;
+window.copyFromInput = copyFromInput;
+window.deleteMedia = deleteMedia;
 window.filterMedia = filterMedia;
-window.handleMediaUpload = handleMediaUpload;
+window.handleDirectMediaUpload = handleDirectMediaUpload;
 window.syncSiteData = syncSiteData;
 window.showToast = showToast;
 

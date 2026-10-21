@@ -13,14 +13,59 @@ if ($uri === '/login' || $uri === '/adminlogin' || $uri === '/login/' || $uri ==
     exit;
 }
 
-// 2. Admin Portal
-if ($uri === '/admin' || $uri === '/admin/' || $uri === '/admin/index.html' || strpos($uri, '/admin/') === 0) {
+// 2. Admin Portal & Assets
+if ($uri === '/admin') {
+    header('Location: /admin/', true, 301);
+    exit;
+}
+
+if ($uri === '/admin/' || $uri === '/admin/index.html') {
+    if (file_exists(__DIR__ . '/public/admin/index.html')) {
+        include __DIR__ . '/public/admin/index.html';
+        exit;
+    }
     if (file_exists(__DIR__ . '/out/admin/index.html')) {
         include __DIR__ . '/out/admin/index.html';
         exit;
     }
+}
+
+if (strpos($uri, '/admin/') === 0) {
+    $asset = substr($uri, 7); // e.g. "admin.css", "admin.js"
+    $filePath = '';
+    if (file_exists(__DIR__ . '/public/admin/' . $asset) && is_file(__DIR__ . '/public/admin/' . $asset)) {
+        $filePath = __DIR__ . '/public/admin/' . $asset;
+    } elseif (file_exists(__DIR__ . '/out/admin/' . $asset) && is_file(__DIR__ . '/out/admin/' . $asset)) {
+        $filePath = __DIR__ . '/out/admin/' . $asset;
+    }
+
+    if ($filePath) {
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimes = [
+            'css'   => 'text/css',
+            'js'    => 'application/javascript',
+            'svg'   => 'image/svg+xml',
+            'webp'  => 'image/webp',
+            'png'   => 'image/png',
+            'jpg'   => 'image/jpeg',
+            'jpeg'  => 'image/jpeg',
+            'ico'   => 'image/x-icon',
+            'json'  => 'application/json',
+            'woff2' => 'font/woff2',
+            'woff'  => 'font/woff',
+        ];
+        header('Content-Type: ' . ($mimes[$ext] ?? 'application/octet-stream'));
+        readfile($filePath);
+        exit;
+    }
+
+    // Default SPA fallback within /admin/
     if (file_exists(__DIR__ . '/public/admin/index.html')) {
         include __DIR__ . '/public/admin/index.html';
+        exit;
+    }
+    if (file_exists(__DIR__ . '/out/admin/index.html')) {
+        include __DIR__ . '/out/admin/index.html';
         exit;
     }
 }

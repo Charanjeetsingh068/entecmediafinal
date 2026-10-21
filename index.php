@@ -7,8 +7,14 @@
 $raw_uri = $_SERVER['REQUEST_URI'] ?? '/';
 $uri = parse_url($raw_uri, PHP_URL_PATH);
 
-// 1. Admin Portal
-if ($uri === '/admin' || $uri === '/admin/' || strpos($uri, '/admin/') === 0) {
+// 1. Admin Login Redirects
+if ($uri === '/login' || $uri === '/adminlogin' || $uri === '/login/' || $uri === '/adminlogin/') {
+    header('Location: /admin/');
+    exit;
+}
+
+// 2. Admin Portal
+if ($uri === '/admin' || $uri === '/admin/' || $uri === '/admin/index.html' || strpos($uri, '/admin/') === 0) {
     if (file_exists(__DIR__ . '/out/admin/index.html')) {
         include __DIR__ . '/out/admin/index.html';
         exit;

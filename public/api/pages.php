@@ -342,6 +342,21 @@ function get_default_pages() {
 // --------------------------------------------------------------------
 function seed_pages_if_empty($db) {
     try {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS `pages` (
+              `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              `title` VARCHAR(255) NOT NULL,
+              `slug` VARCHAR(100) NOT NULL UNIQUE,
+              `meta_title` VARCHAR(255) NULL,
+              `meta_description` TEXT NULL,
+              `status` ENUM('published', 'draft') DEFAULT 'published',
+              `sections` LONGTEXT NOT NULL,
+              `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              INDEX `idx_page_slug` (`slug`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+
         $check = $db->query("SELECT COUNT(*) FROM pages");
         if ($check && (int)$check->fetchColumn() === 0) {
             $defaults = get_default_pages();
@@ -371,33 +386,44 @@ if ($method === 'GET') {
     $id = $_GET['id'] ?? null;
 
     if ($slug || $id) {
-        if ($id) {
-            $stmt = $db->prepare("SELECT * FROM pages WHERE id = :id LIMIT 1");
-            $stmt->execute([':id' => $id]);
-        } else {
-            $stmt = $db->prepare("SELECT * FROM pages WHERE slug = :slug LIMIT 1");
-            $stmt->execute([':slug' => $slug]);
+        try {
+            if ($id) {
+                $stmt = $db->prepare("SELECT * FROM pages WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $id]);
+            } else {
+                $stmt = $db->prepare("SELECT * FROM pages WHERE slug = :slug LIMIT 1");
+                $stmt->execute([':slug' => $slug]);
+            }
+
+            $row = $stmt ? $stmt->fetch() : null;
+            if ($row) {
+                $row['sections'] = json_decode($row['sections'], true) ?? [];
+                send_json_response(['success' => true, 'page' => $row]);
+            }
+        } catch (Exception $e) {
+            // fallback to default
         }
 
-        $row = $stmt->fetch();
-        if ($row) {
-            $row['sections'] = json_decode($row['sections'], true) ?? [];
-            send_json_response(['success' => true, 'page' => $row]);
-        } else {
-            // If not found in DB, search default fallback
-            $defaults = get_default_pages();
-            foreach ($defaults as $d) {
-                if (($slug && $d['slug'] === $slug) || ($id && $d['id'] == $id)) {
-                    send_json_response(['success' => true, 'page' => $d]);
-                }
+        // If not found in DB or DB error, search default fallback
+        $defaults = get_default_pages();
+        foreach ($defaults as $d) {
+            if (($slug && $d['slug'] === $slug) || ($id && $d['id'] == $id)) {
+                send_json_response(['success' => true, 'page' => $d]);
             }
-            send_json_response(['error' => 'Page not found'], 404);
         }
+        send_json_response(['error' => 'Page not found'], 404);
     }
 
     // List all pages
-    $stmt = $db->query("SELECT id, title, slug, status, meta_title, meta_description, updated_at, sections FROM pages ORDER BY id ASC");
-    $raw_pages = $stmt->fetchAll();
+    $raw_pages = [];
+    try {
+        $stmt = $db->query("SELECT id, title, slug, status, meta_title, meta_description, updated_at, sections FROM pages ORDER BY id ASC");
+        if ($stmt) {
+            $raw_pages = $stmt->fetchAll();
+        }
+    } catch (Exception $e) {
+        $raw_pages = [];
+    }
 
     if (empty($raw_pages)) {
         $raw_pages = get_default_pages();

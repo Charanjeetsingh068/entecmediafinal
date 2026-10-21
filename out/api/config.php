@@ -58,9 +58,6 @@ function get_db_connection() {
 
 function ensure_database_schema($db) {
     try {
-        $check = $db->query("SHOW TABLES LIKE 'admins'");
-        if ($check && $check->rowCount() > 0) return;
-
         $db->exec("
             CREATE TABLE IF NOT EXISTS `admins` (
               `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

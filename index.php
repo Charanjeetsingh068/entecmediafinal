@@ -83,6 +83,41 @@ if (strpos($uri, '/api/') === 0) {
     }
 }
 
+// 2.5 Static Assets Router (images, fonts, uploads)
+if (strpos($uri, '/images/') === 0 || strpos($uri, '/fonts/') === 0 || strpos($uri, '/uploads/') === 0) {
+    $sub = substr($uri, 1);
+    $assetPath = '';
+    if (file_exists(__DIR__ . '/' . $sub) && is_file(__DIR__ . '/' . $sub)) {
+        $assetPath = __DIR__ . '/' . $sub;
+    } elseif (file_exists(__DIR__ . '/public/' . $sub) && is_file(__DIR__ . '/public/' . $sub)) {
+        $assetPath = __DIR__ . '/public/' . $sub;
+    } elseif (file_exists(__DIR__ . '/out/' . $sub) && is_file(__DIR__ . '/out/' . $sub)) {
+        $assetPath = __DIR__ . '/out/' . $sub;
+    }
+
+    if ($assetPath) {
+        $ext = strtolower(pathinfo($assetPath, PATHINFO_EXTENSION));
+        $mimes = [
+            'svg'   => 'image/svg+xml',
+            'webp'  => 'image/webp',
+            'png'   => 'image/png',
+            'jpg'   => 'image/jpeg',
+            'jpeg'  => 'image/jpeg',
+            'gif'   => 'image/gif',
+            'ico'   => 'image/x-icon',
+            'woff2' => 'font/woff2',
+            'woff'  => 'font/woff',
+            'ttf'   => 'font/ttf',
+            'css'   => 'text/css',
+            'js'    => 'application/javascript',
+        ];
+        header('Content-Type: ' . ($mimes[$ext] ?? 'application/octet-stream'));
+        header('Cache-Control: public, max-age=2592000');
+        readfile($assetPath);
+        exit;
+    }
+}
+
 // 3. Static Next.js Pages
 $clean = trim($uri, '/');
 if (empty($clean)) {

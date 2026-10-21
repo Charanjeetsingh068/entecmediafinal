@@ -21,8 +21,22 @@ DirectoryIndex index.html index.php out/index.html
   # 3. Direct API access (PHP scripts)
   RewriteRule ^api/(.*)$ public/api/$1 [L,QSA]
 
-  # 4. Media Uploads
+  # 4. Media Uploads & Static Assets
   RewriteRule ^uploads/(.*)$ public/uploads/$1 [L]
+
+  # Images mapping
+  RewriteCond %{DOCUMENT_ROOT}/images/$1 -f
+  RewriteRule ^images/(.*)$ images/$1 [L]
+  RewriteCond %{DOCUMENT_ROOT}/public/images/$1 -f
+  RewriteRule ^images/(.*)$ public/images/$1 [L]
+  RewriteCond %{DOCUMENT_ROOT}/out/images/$1 -f
+  RewriteRule ^images/(.*)$ out/images/$1 [L]
+  RewriteRule ^images/(.*)$ public/images/$1 [L]
+
+  # Fonts mapping
+  RewriteCond %{DOCUMENT_ROOT}/fonts/$1 -f
+  RewriteRule ^fonts/(.*)$ fonts/$1 [L]
+  RewriteRule ^fonts/(.*)$ public/fonts/$1 [L]
 
   # 5. Next.js Static Assets (_next)
   RewriteRule ^_next/(.*)$ out/_next/$1 [L]
